@@ -1,0 +1,327 @@
+{
+ "paging": {
+  "page": 1,
+  "pageSize": 30,
+  "total": 11,
+  "pages": 1
+ },
+ "items": [
+  {
+   "distance": 3.101099967956543,
+   "pickupPoint": {
+    "friendlyName": "Atacadão - FORTALEZA FATIMA",
+    "address": {
+     "addressType": "pickup",
+     "receiverName": null,
+     "addressId": "autoservico_fortaleza_fatima",
+     "isDisposable": true,
+     "postalCode": "60410-321",
+     "city": "Fortaleza",
+     "state": "CE",
+     "country": "BRA",
+     "street": "Avenida Luciano Carneiro",
+     "number": "S/N",
+     "neighborhood": "Parreão",
+     "complement": null,
+     "reference": null,
+     "geoCoordinates": [
+      -38.534733,
+      -3.758612
+     ]
+    },
+    "additionalInfo": null,
+    "id": "atacadaobr619_autoservico_fortaleza_fatima",
+    "isActive": true,
+    "businessHours": [
+     {
+      "DayOfWeek": 0,
+      "OpeningTime": "08:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 1,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 2,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 3,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 4,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 5,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 6,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     }
+    ]
+   }
+  },
+  {
+   "distance": 3.3965463638305664,
+   "pickupPoint": {
+    "friendlyName": "Atacadão - Curitiba",
+    "address": {
+     "addressType": "pickup",
+     "receiverName": null,
+     "addressId": "atacado_curitiba",
+     "isDisposable": true,
+     "postalCode": "83015-162",
+     "city": "SÃO JOSÉ DOS PINHAIS",
+     "state": "PR",
+     "country": "BRA",
+     "street": "Rod. Contorno Leste BR-116",
+     "number": "8849",
+     "neighborhood": "Costeira",
+     "complement": "",
+     "reference": null,
+     "geoCoordinates": [
+      -38.518826,
+      -3.761418
+     ]
+    },
+    "additionalInfo": null,
+    "id": "atacadaobr177_atacado_curitiba",
+    "isActive": true,
+    "businessHours": [
+     {
+      "DayOfWeek": 0,
+      "OpeningTime": "08:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 1,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 2,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 3,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 4,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 5,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "20:00:00"
+     },
+     {
+      "DayOfWeek": 6,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     }
+    ]
+   }
+  },
+  {
+   "distance": 5.010013103485107,
+   "pickupPoint": {
+    "friendlyName": "Atacadão - Fortaleza Papicu",
+    "address": {
+     "addressType": "pickup",
+     "receiverName": null,
+     "addressId": "autoservico_fortalezapapicu",
+     "isDisposable": true,
+     "postalCode": "60175-657",
+     "city": "Fortaleza",
+     "state": "CE",
+     "country": "BRA",
+     "street": "Avenida Engenheiro Santana Júnior",
+     "number": "999",
+     "neighborhood": "Papicu",
+     "complement": "",
+     "reference": null,
+     "geoCoordinates": [
+      -38.481873,
+      -3.7372959
+     ]
+    },
+    "additionalInfo": null,
+    "id": "atacadaobr840_autoservico_fortalezapapicu",
+    "isActive": false,
+    "businessHours": [
+     {
+      "DayOfWeek": 1,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 2,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 3,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 4,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 5,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 6,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "20:00:00"
+     }
+    ]
+   }
+  },
+  {
+   "distance": 5.636803150177002,
+   "pickupPoint": {
+    "friendlyName": "Atacadão - FORTALEZA AEROPORTO",
+    "address": {
+     "addressType": "pickup",
+     "receiverName": null,
+     "addressId": "autoservico_fortaleza_aeroporto",
+     "isDisposable": true,
+     "postalCode": "60741-215",
+     "city": "Fortaleza",
+     "state": "CE",
+     "country": "BRA",
+     "street": "Avenida Senador Carlos Jereissati",
+     "number": "3001",
+     "neighborhood": "Serrinha",
+     "complement": null,
+     "reference": null,
+     "geoCoordinates": null
+    },
+    "additionalInfo": null,
+    "id": "atacadaobr80_autoservico_fortaleza_aeroporto",
+    "isActive": true,
+    "businessHours": [
+     {
+      "DayOfWeek": 0,
+      "OpeningTime": "08:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 1,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 2,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 3,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 4,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 5,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 6,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     }
+    ]
+   }
+  },
+  {
+   "distance": 3.101099967956543,
+   "pickupPoint": {
+    "friendlyName": "Atacadão - FORTALEZA FATIMA",
+    "address": {
+     "addressType": "pickup",
+     "receiverName": null,
+     "addressId": "autoservico_fortaleza_fatima",
+     "isDisposable": true,
+     "postalCode": "60410-321",
+     "city": "Fortaleza",
+     "state": "CE",
+     "country": "BRA",
+     "street": "Avenida Luciano Carneiro",
+     "number": "S/N",
+     "neighborhood": "Parreão",
+     "complement": null,
+     "reference": null,
+     "geoCoordinates": [
+      -38.534733,
+      -3.758612
+     ]
+    },
+    "additionalInfo": null,
+    "id": "atacadaobr619_autoservico_fortaleza_fatima",
+    "isActive": true,
+    "businessHours": [
+     {
+      "DayOfWeek": 0,
+      "OpeningTime": "08:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 1,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 2,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 3,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 4,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 5,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     },
+     {
+      "DayOfWeek": 6,
+      "OpeningTime": "07:00:00",
+      "ClosingTime": "22:00:00"
+     }
+    ]
+   }
+  }
+ ]
+}

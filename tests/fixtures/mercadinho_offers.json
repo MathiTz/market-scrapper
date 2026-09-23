@@ -1,0 +1,114 @@
+{
+ "mixes": [
+  {
+   "id": 1,
+   "items": [
+    {
+     "id": 7266758,
+     "product_id": 1003,
+     "stock": 179,
+     "price": 9.99,
+     "original_price": 11.57,
+     "offer_title": "",
+     "is_offer": true,
+     "description": "ENERGÉTICO RED BULL 250ML",
+     "short_description": "ENERGÉTICO RED BULL 250ML",
+     "bar_code": "611269991000",
+     "slug": "energetico-red-bull-250ml-1003",
+     "offers": [
+      {
+       "id": 49095877,
+       "kind": "global",
+       "price": 9.99,
+       "priority": 0,
+       "model": "Offer",
+       "start_at": "2026-09-08T20:00:00.000-03:00",
+       "unlimited_end": false,
+       "end_at": "2026-09-30T20:00:00.000-03:00"
+      }
+     ]
+    },
+    {
+     "id": 7267088,
+     "product_id": 426849,
+     "stock": 8,
+     "price": 8.99,
+     "original_price": 11.04,
+     "offer_title": "",
+     "is_offer": true,
+     "description": "BEBIDA DE SOJA ADES UVA 1L",
+     "short_description": "BEBIDA DE SOJA ADES UVA 1L",
+     "bar_code": "7894900087123",
+     "slug": "bebida-a-base-soja-ades-1l-uva-426849",
+     "offers": [
+      {
+       "id": 49095958,
+       "kind": "global",
+       "price": 8.99,
+       "priority": 0,
+       "model": "Offer",
+       "start_at": "2026-09-08T20:00:00.000-03:00",
+       "unlimited_end": false,
+       "end_at": "2026-09-30T20:00:00.000-03:00"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "items": [
+    {
+     "id": 7267091,
+     "product_id": 1008,
+     "stock": 93,
+     "price": 2.19,
+     "original_price": 2.52,
+     "offer_title": "",
+     "is_offer": true,
+     "description": "BEBIDA KAPO LARANJA 200ML",
+     "short_description": "BEBIDA KAPO LARANJA 200ML",
+     "bar_code": "7894900563702",
+     "slug": "suco-kapo-laranja-200ml",
+     "offers": [
+      {
+       "id": 49095906,
+       "kind": "global",
+       "price": 2.19,
+       "priority": 0,
+       "model": "Offer",
+       "start_at": "2026-09-08T20:00:00.000-03:00",
+       "unlimited_end": false,
+       "end_at": "2026-09-30T20:00:00.000-03:00"
+      }
+     ]
+    },
+    {
+     "id": 7267092,
+     "product_id": 1989,
+     "stock": 8,
+     "price": 2.19,
+     "original_price": 2.52,
+     "offer_title": "",
+     "is_offer": true,
+     "description": "BEBIDA KAPO MARACUJA 200ML",
+     "short_description": "BEBIDA KAPO MARACUJA 200ML",
+     "bar_code": "7894900573701",
+     "slug": "suco-del-valle-kapo-200ml-maracuja",
+     "offers": [
+      {
+       "id": 49095907,
+       "kind": "global",
+       "price": 2.19,
+       "priority": 0,
+       "model": "Offer",
+       "start_at": "2026-09-08T20:00:00.000-03:00",
+       "unlimited_end": false,
+       "end_at": "2026-09-30T20:00:00.000-03:00"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

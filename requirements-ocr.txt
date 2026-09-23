@@ -1,0 +1,2 @@
+# Optional: lets the Cometa scraper read prices from its flyer images (installs PyTorch; the first run downloads the OCR model).
+easyocr

@@ -1,0 +1,55 @@
+{
+ "products": [
+  {
+   "productName": "Bombom Nestlé Especialidades 220g",
+   "link": "/bombom-nestle-especialidades-13570/p",
+   "items": [
+    {
+     "sellers": [
+      {
+       "commertialOffer": {
+        "Price": 10.9,
+        "ListPrice": 10.9,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "productName": "Bombom Garoto Sortido 220g",
+   "link": "/bombom-garoto-sortido-13571/p",
+   "items": [
+    {
+     "sellers": [
+      {
+       "commertialOffer": {
+        "Price": 10.49,
+        "ListPrice": 10.49,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "productName": "Biscoito Marilan Maizena 300g",
+   "link": "/biscoito-marilan-maizena-12297/p",
+   "items": [
+    {
+     "sellers": [
+      {
+       "commertialOffer": {
+        "Price": 6.39,
+        "ListPrice": 6.39,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

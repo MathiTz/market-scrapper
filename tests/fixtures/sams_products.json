@@ -1,0 +1,77 @@
+{
+ "discounted": [
+  {
+   "productName": "Condicionador Dove Reconstrução + Aminoácido 600g",
+   "link": "/condicionador-dove-reconstrucao-aminoacido-600g-7891150102583/p",
+   "brand": "Dove",
+   "items": [
+    {
+     "ean": "7891150102583",
+     "images": [{"imageUrl": "https://samsclub.vtexassets.com/arquivos/ids/123456/dove.jpg"}],
+     "sellers": [
+      {
+       "commertialOffer": {
+        "Price": 39.89,
+        "ListPrice": 58.98,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "productName": "Cerveja Corona Cero Pack 6 Long Neck 330ml",
+   "link": "/cerveja-corona-cero-pack-6-long-neck-330ml-7891991304184/p",
+   "items": [
+    {
+     "sellers": [
+      {
+       "commertialOffer": {
+        "Price": 34.58,
+        "ListPrice": 49.98,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "productName": "Pano Reutilizável Duramax 3x58 Folhas",
+   "link": "/pano-reutilizavel-duramax-3x58-folhas-7891172523342/p",
+   "items": [
+    {
+     "sellers": [
+      {
+       "commertialOffer": {
+        "Price": 29.99,
+        "ListPrice": 42.98,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "not_discounted": [
+  {
+   "productName": "Azeite de Oliva Extravirgem Member's Mark Frasco 1L",
+   "link": "/azeite-de-oliva-extravirgem-members-mark-1l-7891737171056/p",
+   "items": [
+    {
+     "sellers": [
+      {
+       "commertialOffer": {
+        "Price": 64.98,
+        "ListPrice": 64.98,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

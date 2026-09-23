@@ -1,0 +1,58 @@
+[
+ {
+  "tipo": "Pão de Açúcar",
+  "nome": "Náutico",
+  "endereco": "Av da Abolição, 2900",
+  "bairro": "Meireles            ",
+  "cidade": "Fortaleza",
+  "estado": "Ceará"
+ },
+ {
+  "tipo": "Pão de Açúcar",
+  "nome": "Júlio Ventura",
+  "endereco": "Rua Bárbara de Alencar, 1887, Loja 1",
+  "bairro": "Aldeota             ",
+  "cidade": "Fortaleza",
+  "estado": "Ceará"
+ },
+ {
+  "tipo": "Minuto PA",
+  "nome": "Minuto Aldeota",
+  "endereco": "Rua X, 1",
+  "bairro": "Aldeota",
+  "cidade": "Fortaleza",
+  "estado": "Ceará"
+ },
+ {
+  "tipo": "Posto Pão de Açúcar",
+  "nome": "Posto Brigadeiro",
+  "endereco": "Av. Brigadeiro Luiz Antonio, 1967",
+  "bairro": "Bela Vista",
+  "cidade": "São Paulo",
+  "estado": "São Paulo"
+ },
+ {
+  "tipo": "Pão de Açúcar",
+  "nome": "Coco",
+  "endereco": "Av. Eng. Santana Jr., 2277, Shopping Casa Blanca Mall ",
+  "bairro": "-",
+  "cidade": "Fortaleza",
+  "estado": "Ceará"
+ },
+ {
+  "tipo": "Pão de Açúcar",
+  "nome": "Náutico",
+  "endereco": "Av da Abolição, 2900",
+  "bairro": "Meireles",
+  "cidade": "Fortaleza",
+  "estado": "Ceará"
+ },
+ {
+  "tipo": "Pão de Açúcar",
+  "nome": "Ibirapuera",
+  "endereco": "Av. Ibirapuera, 1770",
+  "bairro": "Indianópolis",
+  "cidade": "São Paulo",
+  "estado": "São Paulo"
+ }
+]

@@ -1,0 +1,58 @@
+{
+  "results": [
+    {
+      "width": 320,
+      "home": true,
+      "flyer": true,
+      "search": true,
+      "comparison": true,
+      "listPersistence": true,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "home": true,
+      "flyer": true,
+      "search": true,
+      "comparison": true,
+      "listPersistence": true,
+      "overflow": false,
+      "pageErrors": []
+    },
+    {
+      "width": 1280,
+      "home": true,
+      "flyer": true,
+      "search": true,
+      "comparison": true,
+      "listPersistence": true,
+      "overflow": false,
+      "pageErrors": []
+    }
+  ],
+  "checks": [
+    {
+      "url": "/",
+      "status": 200
+    },
+    {
+      "url": "/admin",
+      "status": 200
+    },
+    {
+      "url": "/manifest.webmanifest",
+      "status": 200
+    },
+    {
+      "url": "/demo/encarte/demo-a-atual",
+      "status": 200
+    },
+    {
+      "url": "/demo/encarte/demo-a-atual?pagina=2",
+      "status": 200
+    }
+  ],
+  "locationStatus": 501,
+  "sessionActor": null
+}

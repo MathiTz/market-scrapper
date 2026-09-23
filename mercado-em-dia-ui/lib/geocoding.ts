@@ -1,0 +1,1 @@
+export type AddressResult = { id: string; label: string; latitude: number; longitude: number; };

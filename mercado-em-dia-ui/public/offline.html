@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Você está offline · Mercado em Dia</title
+  ><style>
+    body {
+      font: 18px/1.6 system-ui;
+      max-width: 580px;
+      margin: 12vh auto;
+      padding: 24px;
+      background: #f6f8f7;
+      color: #20382d;
+    }
+    h1 {
+      font-size: 32px;
+    }
+    a {
+      color: #116249;
+    }
+    li {
+      padding: 10px 0;
+    }
+  </style>
+  <h1>Suas compras podem esperar a conexão.</h1>
+  <p>
+    Não há preços atuais disponíveis offline. Sua lista continua salva neste
+    dispositivo.
+  </p>
+  <ul id="list"></ul>
+  <a href="/">Tentar conectar</a>
+  <script>
+    try {
+      const a = JSON.parse(localStorage.getItem("med-list-real") || "[]");
+      for (const x of a) {
+        const e = document.createElement("li");
+        e.textContent =
+          x.name + " · " + x.quantity + " un. · preço indisponível";
+        document.getElementById("list").appendChild(e);
+      }
+    } catch {}
+  </script>
+</html>

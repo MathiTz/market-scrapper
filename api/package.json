@@ -1,0 +1,25 @@
+{
+  "name": "mercado-em-dia-api",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "mkdir -p ../mercado-em-dia-ui/dist && wrangler dev",
+    "build:ui": "cd ../mercado-em-dia-ui && npm run build",
+    "deploy": "npm run build:ui && wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.13.8",
+    "postgres": "^3.4.9"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260921.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1",
+    "wrangler": "^4.136.1"
+  }
+}

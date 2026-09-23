@@ -1,0 +1,32 @@
+[
+ {
+  "id": 355,
+  "name": "Oliveira Paiva",
+  "address": "OLIVEIRA PAIVA, 170, C DOS FUNCIONARIOS, Fortaleza, CE",
+  "service_tax": "5.0"
+ },
+ {
+  "id": 369,
+  "name": "Juazeiro",
+  "address": "PADRE CICERO, 2555, LOJA 01 CARIRI SHOPPING CENTER, CARIRI SHOPPING CENTER TR, Juazeiro do Norte, CE",
+  "service_tax": "5.0"
+ },
+ {
+  "id": 383,
+  "name": "Virgílio Távora",
+  "address": "AV SENADOR VIRGILIO TAVORA, 570, Aldeota, Fortaleza, CE",
+  "service_tax": "5.0"
+ },
+ {
+  "id": 355,
+  "name": "Oliveira Paiva",
+  "address": "OLIVEIRA PAIVA, 170, C DOS FUNCIONARIOS, Fortaleza, CE",
+  "service_tax": "5.0"
+ },
+ {
+  "id": 384,
+  "name": "  ",
+  "address": "AV ENGENHEIRO SANTANA JUNIOR, 2977, LOJA 01, Cocó, Fortaleza, CE",
+  "service_tax": "5.0"
+ }
+]

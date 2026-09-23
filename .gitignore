@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+venv/
+
+# Environment
+.env
+
+# Database (and local backups of it)
+*.db
+*.sqlite
+backups/
+
+# Generated output
+diagnostics/
+
+# Local tooling state (not part of the app)
+.motion/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Logs and stray local files
+*.log
+*.bak

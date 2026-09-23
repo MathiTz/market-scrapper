@@ -1,0 +1,58 @@
+{
+ "data": [
+  {
+   "id": 499,
+   "documentId": "d2f6v4973buytlb7b87ent7u",
+   "name": "FEIRÃO COMETA",
+   "description": "Ofertas válidas de 20 a 22/09 em todas as lojas, exceto Osório de Paiva e Gomes de Matos",
+   "createdAt": "2026-02-09T20:23:05.708Z",
+   "updatedAt": "2026-09-21T11:35:13.683Z",
+   "publishedAt": "2026-09-21T11:35:13.741Z",
+   "pdf": {
+    "id": 828,
+    "name": "Encarte Feirão 20 a 22 de setembro de 2026 FINAL.pdf",
+    "ext": ".pdf",
+    "mime": "application/pdf",
+    "url": "/uploads/Encarte_Feirao_20_a_22_de_setembro_de_2026_FINAL_c7ad393411.pdf"
+   },
+   "cover": {
+    "id": 827,
+    "name": "Encarte Feirão 20 a 22 de setembro de 2026 FINAL.jpg",
+    "ext": ".jpg",
+    "mime": "image/jpeg",
+    "url": "/uploads/Encarte_Feirao_20_a_22_de_setembro_de_2026_FINAL_033e0cbb7f.jpg"
+   }
+  },
+  {
+   "id": 498,
+   "documentId": "dx5seld4q5a520c2msp2e44x",
+   "name": "OFERTAS EXCLUSIVAS DE INAUGURAÇÃO GUARARAPES ",
+   "description": "Ofertas válidas de 18 a 24/09 somente na loja Guararapes.",
+   "createdAt": "2026-09-17T21:03:21.517Z",
+   "updatedAt": "2026-09-21T11:33:49.975Z",
+   "publishedAt": "2026-09-21T11:33:50.028Z",
+   "pdf": {
+    "id": 824,
+    "name": "Encarte Inauguracao Guararapes - 18 a 24.09.2026.pdf",
+    "ext": ".pdf",
+    "mime": "application/pdf",
+    "url": "/uploads/Encarte_Inauguracao_Guararapes_18_a_24_09_2026_64701adaea.pdf"
+   },
+   "cover": {
+    "id": 823,
+    "name": "Encarte Inauguracao Guararapes - 18 a 24.09.2026.jpg",
+    "ext": ".jpg",
+    "mime": "image/jpeg",
+    "url": "/uploads/Encarte_Inauguracao_Guararapes_18_a_24_09_2026_92819950df.jpg"
+   }
+  }
+ ],
+ "meta": {
+  "pagination": {
+   "page": 1,
+   "pageSize": 25,
+   "pageCount": 1,
+   "total": 8
+  }
+ }
+}

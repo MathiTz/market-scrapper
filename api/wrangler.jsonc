@@ -1,0 +1,20 @@
+{
+  // One Worker serves the built UI (static files) and the Hono API (/api/*).
+  "name": "mercado-em-dia",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../mercado-em-dia-ui/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      // The Hyperdrive config (read-only login to Neon), created with `wrangler hyperdrive create`.
+      // For local development set WRANGLER_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE instead.
+      "id": "3b1314bbb12b4f508438496ca1e6c547"
+    }
+  ]
+}
