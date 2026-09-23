@@ -1,6 +1,6 @@
 """Serve ``market.db`` in the shape the Mercado em Dia UI expects (``GET /api/public``).
 
-The contract is described in ``mercado-em-dia-ui/INTEGRACAO.md``. Prices are
+The contract is described in ``web/INTEGRACAO.md``. Prices are
 integer cents, offers reference products by id, and flyers carry validity dates.
 
 Our database is thinner than that contract, so some fields are derived:

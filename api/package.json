@@ -6,8 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "mkdir -p ../mercado-em-dia-ui/dist && wrangler dev",
-    "build:ui": "cd ../mercado-em-dia-ui && npm run build",
+    "dev": "mkdir -p ../web/dist && wrangler dev",
+    "build:ui": "cd ../web && npm run build",
     "deploy": "npm run build:ui && wrangler deploy",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

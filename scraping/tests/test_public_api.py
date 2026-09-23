@@ -516,14 +516,14 @@ class TestCurrentList(unittest.TestCase):
 
 class TestApiPublicRoute(unittest.TestCase):
     def setUp(self):
-        from web import app as web_app
+        from local_api import app as local_api_app
 
-        web_app._public_cache.clear()
+        local_api_app._public_cache.clear()
 
     def test_route_returns_contract_keys(self):
-        from web.app import app
+        from local_api.app import app
 
-        with patch("web.app.build_public", return_value={"products": []}) as mock_build:
+        with patch("local_api.app.build_public", return_value={"products": []}) as mock_build:
             resp = app.test_client().get("/api/public?q=cafe&network=3&category=Bebidas")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.get_json(), {"products": []})
@@ -531,17 +531,17 @@ class TestApiPublicRoute(unittest.TestCase):
         self.assertEqual((kwargs["q"], kwargs["network"], kwargs["category"]), ("cafe", "3", "Bebidas"))
 
     def test_route_reports_failures_as_json_error(self):
-        from web.app import app
+        from local_api.app import app
 
-        with patch("web.app.build_public", side_effect=RuntimeError("boom")):
+        with patch("local_api.app.build_public", side_effect=RuntimeError("boom")):
             resp = app.test_client().get("/api/public")
         self.assertEqual(resp.status_code, 500)
         self.assertIn("error", resp.get_json())
 
     def test_repeated_requests_are_served_from_the_cache(self):
-        from web.app import app
+        from local_api.app import app
 
-        with patch("web.app.build_public", return_value={"products": []}) as mock_build:
+        with patch("local_api.app.build_public", return_value={"products": []}) as mock_build:
             client = app.test_client()
             first = client.get("/api/public?q=leite")
             second = client.get("/api/public?q=leite")
@@ -550,22 +550,22 @@ class TestApiPublicRoute(unittest.TestCase):
         self.assertEqual(mock_build.call_count, 2)  # one per distinct filter combination
 
     def test_cache_expires(self):
-        from web import app as web_app
+        from local_api import app as local_api_app
 
-        ttl = web_app.PUBLIC_CACHE_SECONDS
-        with patch("web.app.build_public", return_value={"products": []}) as mock_build, \
-                patch("web.app.time") as clock:
+        ttl = local_api_app.PUBLIC_CACHE_SECONDS
+        with patch("local_api.app.build_public", return_value={"products": []}) as mock_build, \
+                patch("local_api.app.time") as clock:
             clock.monotonic.side_effect = [100.0, 100.0 + ttl - 1, 100.0 + ttl + 1, 100.0 + ttl + 1]
-            client = web_app.app.test_client()
+            client = local_api_app.app.test_client()
             client.get("/api/public")  # built (stored at 100)
             client.get("/api/public")  # still fresh
             client.get("/api/public")  # expired: rebuilt
         self.assertEqual(mock_build.call_count, 2)
 
     def test_response_carries_cache_headers_and_answers_conditional_requests(self):
-        from web.app import app
+        from local_api.app import app
 
-        with patch("web.app.build_public", return_value={"products": []}):
+        with patch("local_api.app.build_public", return_value={"products": []}):
             client = app.test_client()
             first = client.get("/api/public")
             again = client.get("/api/public", headers={"If-None-Match": first.headers["ETag"]})
@@ -573,22 +573,22 @@ class TestApiPublicRoute(unittest.TestCase):
         self.assertEqual(again.status_code, 304)
 
     def test_failures_are_not_cached(self):
-        from web.app import app
+        from local_api.app import app
 
         client = app.test_client()
-        with patch("web.app.build_public", side_effect=RuntimeError("boom")):
+        with patch("local_api.app.build_public", side_effect=RuntimeError("boom")):
             self.assertEqual(client.get("/api/public").status_code, 500)
-        with patch("web.app.build_public", return_value={"products": []}):
+        with patch("local_api.app.build_public", return_value={"products": []}):
             self.assertEqual(client.get("/api/public").status_code, 200)
 
     def test_cache_is_bounded(self):
-        from web import app as web_app
+        from local_api import app as local_api_app
 
-        with patch("web.app.build_public", return_value={"products": []}):
-            client = web_app.app.test_client()
-            for n in range(web_app.PUBLIC_CACHE_MAX_ENTRIES + 10):
+        with patch("local_api.app.build_public", return_value={"products": []}):
+            client = local_api_app.app.test_client()
+            for n in range(local_api_app.PUBLIC_CACHE_MAX_ENTRIES + 10):
                 client.get(f"/api/public?q=busca{n}")
-        self.assertEqual(len(web_app._public_cache), web_app.PUBLIC_CACHE_MAX_ENTRIES)
+        self.assertEqual(len(local_api_app._public_cache), local_api_app.PUBLIC_CACHE_MAX_ENTRIES)
 
 
 if __name__ == "__main__":

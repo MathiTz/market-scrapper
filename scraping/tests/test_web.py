@@ -4,10 +4,10 @@ import os
 import unittest
 from unittest.mock import patch
 
-# Must be set before web.app imports config: never touch the real market.db.
+# Must be set before local_api.app imports config: never touch the real market.db.
 os.environ["DATABASE_URL"] = "sqlite://"
 
-from web.app import app  # noqa: E402
+from local_api.app import app  # noqa: E402
 
 
 class TestWebEndpoints(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestWebEndpoints(unittest.TestCase):
         self.assertIn("status", data)
         self.assertIn("database", data)
 
-    @patch("web.app.run_and_store")
+    @patch("local_api.app.run_and_store")
     def test_scrape_with_query(self, mock_run_and_store):
         mock_run_and_store.return_value = 5
         resp = self.client.get("/scrape?query=arroz")
@@ -31,7 +31,7 @@ class TestWebEndpoints(unittest.TestCase):
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["saved"], 5)
 
-    @patch("web.app.run_all_offers")
+    @patch("local_api.app.run_all_offers")
     def test_scrape_offers(self, mock_run_all_offers):
         mock_run_all_offers.return_value = {"pao_de_acucar": 3}
         resp = self.client.get("/scrape")
@@ -40,7 +40,7 @@ class TestWebEndpoints(unittest.TestCase):
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["total"], 3)
 
-    @patch("web.app.run_all_products")
+    @patch("local_api.app.run_all_products")
     def test_scrape_all_products(self, mock_run_all_products):
         mock_run_all_products.return_value = 10
         resp = self.client.get("/scrape?mode=products")
@@ -49,7 +49,7 @@ class TestWebEndpoints(unittest.TestCase):
         self.assertEqual(data["status"], "ok")
         self.assertEqual(data["saved"], 10)
 
-    @patch("web.app.run_all_offers")
+    @patch("local_api.app.run_all_offers")
     def test_scrape_no_query_runs_all_offers(self, mock_run_all_offers):
         """No query and no mode should scrape every site's offers page."""
         mock_run_all_offers.return_value = {"pao_de_acucar": 7}

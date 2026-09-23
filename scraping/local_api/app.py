@@ -1,7 +1,8 @@
-"""Flask web application: local backend for the Mercado em Dia UI, plus scrape/health/diagnose endpoints.
+"""Local Flask API: mirrors api/ (the production Hono app) for local development, plus scrape/health/
+diagnose endpoints that have no production equivalent.
 
-Everything this serves is JSON - there is no server-rendered page here. See mercado-em-dia-ui/AGENTS.md for
-the frontend, and vite.config.ts's proxy for how the two are wired together in local development.
+Everything this serves is JSON - there is no server-rendered page here. See web/AGENTS.md for the
+frontend, and web/vite.config.ts's proxy for how the two are wired together in local development.
 """
 
 import os

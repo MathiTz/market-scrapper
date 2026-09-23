@@ -81,27 +81,27 @@ class TestSearchAddresses(unittest.TestCase):
 
 class TestLocationRoute(unittest.TestCase):
     def post(self, body):
-        from web.app import app
+        from local_api.app import app
 
         return app.test_client().post("/api/location", json=body)
 
     def test_returns_places(self):
         places = [{"id": "W1", "label": "Rua A", "latitude": -3.7, "longitude": -38.5}]
-        with patch("web.app.search_addresses", return_value=places) as mock_search:
+        with patch("local_api.app.search_addresses", return_value=places) as mock_search:
             resp = self.post({"query": " Rua   A "})
         self.assertEqual((resp.status_code, resp.get_json()), (200, {"places": places}))
         mock_search.assert_called_once_with("Rua A")
 
     def test_rejects_short_long_and_missing_queries(self):
         for body in ({"query": "ab"}, {"query": "x" * 121}, {}, {"query": None}):
-            with patch("web.app.search_addresses") as mock_search:
+            with patch("local_api.app.search_addresses") as mock_search:
                 resp = self.post(body)
             self.assertEqual(resp.status_code, 400, body)
             self.assertIn("error", resp.get_json())
             mock_search.assert_not_called()
 
     def test_service_outage_is_a_502_with_a_message(self):
-        with patch("web.app.search_addresses", side_effect=AddressSearchError("down")):
+        with patch("local_api.app.search_addresses", side_effect=AddressSearchError("down")):
             resp = self.post({"query": "beira mar"})
         self.assertEqual(resp.status_code, 502)
         self.assertIn("indisponível", resp.get_json()["error"])
@@ -202,31 +202,31 @@ class TestReverseAddress(unittest.TestCase):
 
 class TestReverseRoute(unittest.TestCase):
     def get(self, query):
-        from web.app import app
+        from local_api.app import app
 
         return app.test_client().get(f"/api/location/reverse?{query}")
 
     def test_returns_the_place(self):
         place = {"id": "W1", "label": "Rua A · Fortaleza", "latitude": -3.7, "longitude": -38.5}
-        with patch("web.app.reverse_address", return_value=place) as mock_reverse:
+        with patch("local_api.app.reverse_address", return_value=place) as mock_reverse:
             resp = self.get("lat=-3.7&lon=-38.5")
         self.assertEqual((resp.status_code, resp.get_json()), (200, {"place": place}))
         mock_reverse.assert_called_once_with(-3.7, -38.5)
 
     def test_rejects_invalid_coordinates(self):
         for query in ("", "lat=abc&lon=1", "lat=91&lon=0", "lat=0&lon=181", "lat=-3.7", "lat=nan&lon=0"):
-            with patch("web.app.reverse_address") as mock_reverse:
+            with patch("local_api.app.reverse_address") as mock_reverse:
                 self.assertEqual(self.get(query).status_code, 400, query)
             mock_reverse.assert_not_called()
 
     def test_service_outage_is_a_502(self):
-        with patch("web.app.reverse_address", side_effect=AddressSearchError("down")):
+        with patch("local_api.app.reverse_address", side_effect=AddressSearchError("down")):
             self.assertEqual(self.get("lat=-3.7&lon=-38.5").status_code, 502)
 
 
 class TestSessionPlaceholder(unittest.TestCase):
     def test_answers_match_the_old_stub(self):
-        from web.app import app
+        from local_api.app import app
 
         client = app.test_client()
         self.assertEqual(client.get("/api/session").get_json(), {"actor": None})
