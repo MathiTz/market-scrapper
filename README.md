@@ -109,6 +109,7 @@ cd scraping
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+pip install -r requirements-ocr.txt              # optional, but without it Cometa's flyers scrape empty
 python setup_chromedriver.py
 cp .env.example .env
 python -m models.database
@@ -185,7 +186,10 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
 1. **Neon** (console.neon.tech): create a project (region São Paulo, Postgres 17). In *Connect*, copy the
    direct (not pooled) connection string into `scraping/.env` as `PUBLISH_DATABASE_URL=...`. Never commit it.
 2. **Publish once:** `cd scraping && venv/bin/python -m services.publish` creates the table and uploads the
-   data. From then on the scheduler publishes after every scrape.
+   data. From then on the scheduler publishes after every scrape. This command runs the same validation as
+   `refresh.py` (see *What a store's list is* below) and refuses to publish something empty or broken - add
+   `--force` to publish past a blocking finding anyway, or `--dry-run FILE` to write the payload to a file
+   instead of the database.
 3. **Read-only role for the API:** edit the password in `scraping/db/readonly_role.sql`, run it in Neon's
    SQL editor, and note that role's connection string (the API must not use the owner's).
 4. **Cloudflare:** `cd api && npm install && npx wrangler login`, then
@@ -220,7 +224,8 @@ seen:
 - **How it works:** each scrape run gets an id (`run_id`) saved on its attempt and on every price it
   stored.
 
-`refresh.py`'s own validation, on top of the above:
+Validation on top of the above, shared by both ways data can go live - `refresh.py`'s full flow and the
+standalone `python -m services.publish` (see `services/publish.py`'s `check_snapshot`):
 
 | Finding | Level | What happens |
 |---------|-------|---------------|
@@ -230,7 +235,8 @@ seen:
 | The snapshot is empty, or has offers without a valid price or product | error | nothing is published |
 | The snapshot has under half the offers of the live one | error | nothing is published |
 
-Errors leave the live data untouched. Publishing identical data twice is a no-op ("Nothing new").
+Errors leave the live data untouched, from either path - `--force` publishes past them anyway. Publishing
+identical data twice is a no-op ("Nothing new").
 
 ## How each site is scraped
 
