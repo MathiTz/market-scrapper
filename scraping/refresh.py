@@ -22,7 +22,7 @@ import sys
 import time
 import warnings
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional
+from typing import Callable, List, Optional
 
 from sqlalchemy import func
 
@@ -30,17 +30,9 @@ import config
 from models import ScrapeAttempt, SessionLocal, init_db
 from scraper.sites import SCRAPER_MAP
 from services.public_api import _listed_runs
-from services.publish import build_snapshot, publish, published_offer_count
+from services.publish import Finding, build_snapshot, check_snapshot, publish, published_offer_count
 from services.scraper_service import run_all_offers
 from services.store_locations import sync_store_locations
-
-MIN_SHARE_OF_LIVE = 0.5  # a new snapshot with fewer offers than this share of the live one is refused
-
-
-@dataclass(frozen=True)
-class Finding:
-    level: str  # "error" blocks the publish; "warning" is only reported
-    message: str
 
 
 @dataclass(frozen=True)
@@ -89,35 +81,6 @@ def scrape_chain(key: str, scrape: Callable = run_all_offers) -> ChainResult:
         return evaluate_scrape(db, key, name, since_id)
     finally:
         db.close()
-
-
-def check_snapshot(data: dict, live_offers: Optional[int]) -> List[Finding]:
-    """Problems with the payload about to be published, compared with the live snapshot's offer count."""
-    findings: List[Finding] = []
-    offers = data.get("offers") or []
-    if not offers:
-        findings.append(Finding("error", "the snapshot has no offers"))
-        return findings
-
-    product_ids = {p["id"] for p in data.get("products", [])}
-    broken = [o for o in offers
-              if not isinstance(o.get("price_cents"), int) or o["price_cents"] <= 0 or o.get("product_id") not in product_ids]
-    if broken:
-        findings.append(Finding("error", f"{len(broken)} offers have no valid price or product (first: {broken[0].get('id')})"))
-
-    counts: Dict[str, int] = {}
-    for offer in offers:
-        counts[offer.get("retailer_name")] = counts.get(offer.get("retailer_name"), 0) + 1
-    for retailer in data.get("retailers", []):
-        if not counts.get(retailer["name"]):
-            findings.append(Finding("warning", f"{retailer['name']} has no offers in the snapshot"))
-
-    if live_offers is None:
-        findings.append(Finding("warning", "could not compare with the live snapshot (none yet, or not reachable)"))
-    elif len(offers) < MIN_SHARE_OF_LIVE * live_offers:
-        findings.append(Finding(
-            "error", f"the snapshot has {len(offers)} offers against {live_offers} live (under {MIN_SHARE_OF_LIVE:.0%})"))
-    return findings
 
 
 def _say(message: str) -> None:

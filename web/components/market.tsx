@@ -1330,6 +1330,11 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                         : rankOffers(
                             offers.filter((o) => o.product_id === l.product_id),
                           )[0];
+                    // Same per-kg/L/unit price shown everywhere else a price appears (search cards, the
+                    // range-card modal, the detail comparison list) - suppressed the same way too, when
+                    // the pack is already exactly one kg/L/unit and it would just repeat the price.
+                    const product = data?.products.find((p) => p.id === l.product_id);
+                    const up = o && product ? unitPrice(product, o.price_cents!) : null;
                     return (
                       <article className="list-item" key={l.product_id}>
                         <div className="list-product">
@@ -1338,7 +1343,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                             <h3>{l.name}</h3>
                             <p>
                               {o
-                                ? `Referência: ${money(o.price_cents!)} por embalagem · ${o.retailer_name}`
+                                ? `Referência: ${money(o.price_cents!)}${up && up.value !== o.price_cents ? ` (${money(up.value)}/${up.unit})` : ""} por embalagem · ${o.retailer_name}`
                                 : `Sem preço atual nas lojas consultadas${nearby ? " neste raio" : ""}`}
                             </p>
                             {o && (

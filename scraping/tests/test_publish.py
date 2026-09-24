@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
 from services import publish
-from services.publish import build_snapshot, publish_current
+from services.publish import PublishBlocked, build_snapshot, check_snapshot, publish_current
 
 DATA = {"products": [{"id": "1", "name": "Café"}], "offers": [], "coverage": {"offers": 0},
         "generated_at": "2026-09-21T15:00:00+00:00"}
@@ -17,6 +17,47 @@ DATA = {"products": [{"id": "1", "name": "Café"}], "offers": [], "coverage": {"
 def snapshot(**changes):
     with patch("services.publish.build_public", return_value={**DATA, **changes}):
         return build_snapshot(db=None)
+
+
+def snapshot_data(offers=3, retailers=("A", "B")):
+    return {
+        "products": [{"id": str(i)} for i in range(offers)],
+        "retailers": [{"name": n} for n in retailers],
+        "offers": [{"id": f"o{i}", "product_id": str(i), "price_cents": 100 + i,
+                    "retailer_name": retailers[i % len(retailers)]} for i in range(offers)],
+        "coverage": {"networks": len(retailers)},
+    }
+
+
+class TestCheckSnapshot(unittest.TestCase):
+    """Both publishing paths - refresh.py's full flow and this module's own publish_current() - share this
+    check, so neither can put an empty, broken, or much-smaller-than-usual snapshot live."""
+
+    def levels(self, data, live):
+        return [(f.level, f.message) for f in check_snapshot(data, live)]
+
+    def test_a_healthy_snapshot_has_no_findings(self):
+        self.assertEqual(self.levels(snapshot_data(), 3), [])
+
+    def test_an_empty_snapshot_is_an_error(self):
+        self.assertEqual([f.level for f in check_snapshot(snapshot_data(0), 100)], ["error"])
+
+    def test_offers_without_a_valid_price_or_product_are_an_error(self):
+        for change in ({"price_cents": 0}, {"price_cents": None}, {"price_cents": 1.5}, {"product_id": "missing"}):
+            data = snapshot_data()
+            data["offers"][1].update(change)
+            self.assertEqual([f.level for f in check_snapshot(data, 3)], ["error"], change)
+
+    def test_a_chain_without_offers_is_only_a_warning(self):
+        findings = check_snapshot(snapshot_data(2, retailers=("A", "B", "C")), 2)
+        self.assertEqual([(f.level, "C" in f.message) for f in findings], [("warning", True)])
+
+    def test_a_snapshot_under_half_the_live_one_is_refused(self):
+        self.assertEqual([f.level for f in check_snapshot(snapshot_data(4), 9)], ["error"])
+        self.assertEqual(check_snapshot(snapshot_data(5), 10), [])  # exactly half is fine
+
+    def test_not_knowing_the_live_size_is_a_warning_not_a_block(self):
+        self.assertEqual([f.level for f in check_snapshot(snapshot_data(), None)], ["warning"])
 
 
 class FakeConnection:
@@ -98,6 +139,10 @@ class TestPublish(unittest.TestCase):
         self.assertEqual(seen, ["postgresql://x"])
 
 
+VALID_DATA = {**DATA, "offers": [{"id": "o1", "product_id": "1", "price_cents": 100, "retailer_name": "A"}],
+              "retailers": [{"name": "A"}]}
+
+
 class TestPublishCurrent(unittest.TestCase):
     def test_does_nothing_without_a_configured_database(self):
         with patch.object(publish.config, "PUBLISH_DATABASE_URL", ""), \
@@ -108,15 +153,47 @@ class TestPublishCurrent(unittest.TestCase):
     def test_publishes_when_configured(self):
         with patch.object(publish.config, "PUBLISH_DATABASE_URL", "postgresql://x"), \
                 patch("services.publish.SessionLocal"), patch("services.publish.init_db") as mock_init, \
-                patch("services.publish.build_public", return_value=DATA), \
+                patch("services.publish.build_public", return_value=VALID_DATA), \
+                patch("services.publish.published_offer_count", return_value=1), \
                 patch("services.publish.publish", return_value=True) as mock_publish:
             self.assertTrue(publish_current())
         self.assertEqual(mock_publish.call_args.args[0], "postgresql://x")
         mock_init.assert_called_once()  # the local schema is brought up to date before building
 
+    def test_refuses_to_publish_something_worse_than_what_is_live(self):
+        # DATA has no offers at all - exactly the case that caused a real outage once, before this guard
+        # existed: this function used to publish unconditionally.
+        with patch.object(publish.config, "PUBLISH_DATABASE_URL", "postgresql://x"), \
+                patch("services.publish.SessionLocal"), patch("services.publish.init_db"), \
+                patch("services.publish.build_public", return_value=DATA), \
+                patch("services.publish.published_offer_count", return_value=100), \
+                patch("services.publish.publish") as mock_publish:
+            with self.assertRaises(PublishBlocked) as ctx:
+                publish_current()
+        mock_publish.assert_not_called()
+        self.assertTrue(any(f.level == "error" for f in ctx.exception.findings))
+
+    def test_force_publishes_past_a_blocking_error(self):
+        with patch.object(publish.config, "PUBLISH_DATABASE_URL", "postgresql://x"), \
+                patch("services.publish.SessionLocal"), patch("services.publish.init_db"), \
+                patch("services.publish.build_public", return_value=DATA), \
+                patch("services.publish.published_offer_count", return_value=100), \
+                patch("services.publish.publish", return_value=True) as mock_publish:
+            self.assertTrue(publish_current(force=True))
+        mock_publish.assert_called_once()
+
     def test_cli_without_a_database_explains_what_to_set(self):
         with patch.object(publish.config, "PUBLISH_DATABASE_URL", ""):
             self.assertEqual(publish.main([]), 2)
+
+    def test_cli_reports_a_blocked_publish_and_leaves_live_data_untouched(self):
+        with patch.object(publish.config, "PUBLISH_DATABASE_URL", "postgresql://x"), \
+                patch("services.publish.SessionLocal"), patch("services.publish.init_db"), \
+                patch("services.publish.build_public", return_value=DATA), \
+                patch("services.publish.published_offer_count", return_value=100), \
+                patch("services.publish.publish") as mock_publish:
+            self.assertEqual(publish.main([]), 1)
+        mock_publish.assert_not_called()
 
 
 def _scratch_dsn():

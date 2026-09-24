@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import refresh
 from models import ScrapeAttempt, SessionLocal, init_db
-from refresh import ChainResult, check_snapshot, evaluate_scrape
+from refresh import ChainResult, evaluate_scrape
 
 KEY, NAME = "refresh_test", "Refresh Test"
 
@@ -19,34 +19,6 @@ def snapshot_data(offers=3, retailers=("A", "B")):
                     "retailer_name": retailers[i % len(retailers)]} for i in range(offers)],
         "coverage": {"networks": len(retailers)},
     }
-
-
-class TestCheckSnapshot(unittest.TestCase):
-    def levels(self, data, live):
-        return [(f.level, f.message) for f in check_snapshot(data, live)]
-
-    def test_a_healthy_snapshot_has_no_findings(self):
-        self.assertEqual(self.levels(snapshot_data(), 3), [])
-
-    def test_an_empty_snapshot_is_an_error(self):
-        self.assertEqual([f.level for f in check_snapshot(snapshot_data(0), 100)], ["error"])
-
-    def test_offers_without_a_valid_price_or_product_are_an_error(self):
-        for change in ({"price_cents": 0}, {"price_cents": None}, {"price_cents": 1.5}, {"product_id": "missing"}):
-            data = snapshot_data()
-            data["offers"][1].update(change)
-            self.assertEqual([f.level for f in check_snapshot(data, 3)], ["error"], change)
-
-    def test_a_chain_without_offers_is_only_a_warning(self):
-        findings = check_snapshot(snapshot_data(2, retailers=("A", "B", "C")), 2)
-        self.assertEqual([(f.level, "C" in f.message) for f in findings], [("warning", True)])
-
-    def test_a_snapshot_under_half_the_live_one_is_refused(self):
-        self.assertEqual([f.level for f in check_snapshot(snapshot_data(4), 9)], ["error"])
-        self.assertEqual(check_snapshot(snapshot_data(5), 10), [])  # exactly half is fine
-
-    def test_not_knowing_the_live_size_is_a_warning_not_a_block(self):
-        self.assertEqual([f.level for f in check_snapshot(snapshot_data(), None)], ["warning"])
 
 
 class TestEvaluateScrape(unittest.TestCase):
