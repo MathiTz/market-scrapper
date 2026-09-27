@@ -134,6 +134,16 @@ Then run three processes, each in its own terminal tab:
 Start tab 1 before opening the UI - it reads its data from the API. `HOST=127.0.0.1` keeps Flask (which
 runs in debug mode) reachable only from your machine; put it in `scraping/.env` to make that permanent.
 
+### One command for the whole release
+
+```bash
+./release.sh              # tests, scrape every chain, store, validate, publish, deploy the site
+./release.sh --no-deploy  # data only (deploy is only needed when web/ or api/ code changed)
+```
+
+Any other flag goes straight to `scraping/refresh.py` (`--only atacadao`, `--sync-locations`, ...). A step that
+fails, or a snapshot that validation blocks, stops the run before anything later happens.
+
 ### Other ways to run a scrape
 
 All from `scraping/`:
