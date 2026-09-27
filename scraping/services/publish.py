@@ -68,8 +68,9 @@ def check_snapshot(data: dict, live_offers: Optional[int]) -> List[Finding]:
     counts: Dict[str, int] = {}
     for offer in offers:
         counts[offer.get("retailer_name")] = counts.get(offer.get("retailer_name"), 0) + 1
+    with_flyers = {f.get("retailer_name") for f in data.get("flyers", [])}
     for retailer in data.get("retailers", []):
-        if not counts.get(retailer["name"]):
+        if not counts.get(retailer["name"]) and retailer["name"] not in with_flyers:
             findings.append(Finding("warning", f"{retailer['name']} has no offers in the snapshot"))
 
     if live_offers is None:

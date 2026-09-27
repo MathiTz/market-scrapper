@@ -321,6 +321,22 @@ class TestBuildPublic(unittest.TestCase):
                          (799, None, None))
         self.assertNotEqual(club["id"], everyone["id"])
 
+    def test_image_only_flyers_are_published_as_pages_that_started_but_have_no_end(self):
+        from scraper.sites.cometa import Encarte
+        from services.public_api import _image_flyers
+
+        self.db.add(Store(name="Frangolândia", website="https://frangolandia.com"))
+        self.db.commit()
+        canonical = {s.name: s for s in self.db.query(Store).all()}
+        enc = [Encarte(9, "BBQ", "", "https://x/1.jpg", None, pages=["https://x/1.jpg", "https://x/2.jpg"],
+                       posted_at="2026-09-24T14:00:01")]
+        [flyer] = _image_flyers(canonical, "Frangolândia", "https://frangolandia.com/encartes/", enc, "now")
+        self.assertEqual((flyer["id"], flyer["retailer_name"], flyer["media_pages"]),
+                         ("frangolândia-9", "Frangolândia", ["https://x/1.jpg", "https://x/2.jpg"]))
+        # started the day it was posted (Fortaleza time), no end: the UI treats that as still running
+        self.assertEqual((flyer["valid_from"], flyer["valid_until"]), ("2026-09-24T14:00:01-03:00", None))
+        self.assertEqual(_image_flyers({}, "Frangolândia", "u", enc, "now"), [])  # no store row, no flyers
+
     def test_cometa_flyers(self):
         enc = [Encarte(499, "FEIRÃO COMETA", "Ofertas válidas de 20 a 22/09 em todas as lojas",
                        "https://adminx.example/uploads/a.jpg", None)]

@@ -52,6 +52,11 @@ class TestCheckSnapshot(unittest.TestCase):
         findings = check_snapshot(snapshot_data(2, retailers=("A", "B", "C")), 2)
         self.assertEqual([(f.level, "C" in f.message) for f in findings], [("warning", True)])
 
+    def test_a_flyers_only_chain_is_not_a_missing_chain(self):
+        data = snapshot_data(2, retailers=("A", "B", "C"))
+        data["flyers"] = [{"retailer_name": "C"}]  # e.g. Frangolândia: no price catalog online, only flyers
+        self.assertEqual(check_snapshot(data, 2), [])
+
     def test_a_snapshot_under_half_the_live_one_is_refused(self):
         self.assertEqual([f.level for f in check_snapshot(snapshot_data(4), 9)], ["error"])
         self.assertEqual(check_snapshot(snapshot_data(5), 10), [])  # exactly half is fine

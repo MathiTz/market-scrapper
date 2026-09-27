@@ -1,0 +1,99 @@
+{
+ "data": [
+  {
+   "id": "1",
+   "item_type": "product",
+   "name": "Farinha de Milho Flocão Dona Clara Premium Pacote 500g",
+   "slug": "farinha-de-milho-flocao-dona-clara-premium-pacote-500g",
+   "image": "3a58f5972f2846cbb81494b7998ff6a6.jpeg",
+   "brand": "Dona Clara",
+   "unit_type": "UNI",
+   "price_config": {
+    "price": 1.99,
+    "price_discount": {
+     "promo_price": 1.89,
+     "end_date": "2026-09-28T02:59:59Z"
+    },
+    "promo_crm_massive": {
+     "price": 1.69,
+     "promo_end_at": "2026-09-28T02:59:59Z"
+    },
+    "highlighted_promo": "promo_crm_massive"
+   },
+   "stock": {
+    "has_available_stock": true
+   }
+  },
+  {
+   "id": "2",
+   "item_type": "product",
+   "name": "Óleo de Soja Soya Garrafa 900ml",
+   "slug": "oleo-de-soja-soya-garrafa-900ml",
+   "image": "aa.jpeg",
+   "brand": "Soya",
+   "unit_type": "UNI",
+   "price_config": {
+    "price": 9.19,
+    "price_discount": {
+     "promo_price": 8.79,
+     "end_date": "2026-09-28T02:59:59Z"
+    }
+   },
+   "stock": {
+    "has_available_stock": true
+   }
+  },
+  {
+   "id": "3",
+   "item_type": "product",
+   "name": "Manga Rosa",
+   "slug": "manga-rosa",
+   "image": "bb.jpeg",
+   "brand": "",
+   "unit_type": "KG",
+   "price_config": {
+    "price": 12.99,
+    "price_discount": {
+     "promo_price": 10.99
+    }
+   },
+   "stock": {
+    "has_available_stock": true
+   }
+  },
+  {
+   "id": "4",
+   "item_type": "product",
+   "name": "Sabão Sem Promoção 1kg",
+   "slug": "sabao",
+   "image": null,
+   "brand": "X",
+   "unit_type": "UNI",
+   "price_config": {
+    "price": 7.5
+   },
+   "stock": {
+    "has_available_stock": true
+   }
+  },
+  {
+   "id": "5",
+   "item_type": "product",
+   "name": "Esgotado Qualquer 1kg",
+   "slug": "esgotado",
+   "image": "cc.jpeg",
+   "brand": "Y",
+   "unit_type": "UNI",
+   "price_config": {
+    "price": 3.0,
+    "price_discount": {
+     "promo_price": 2.0
+    }
+   },
+   "stock": {
+    "has_available_stock": false
+   }
+  }
+ ],
+ "pagination": {}
+}

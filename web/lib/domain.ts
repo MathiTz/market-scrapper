@@ -297,8 +297,11 @@ export type Flyer = {
 export function flyerState(f: Flyer, now = new Date()) {
   const from = f.valid_from ? Date.parse(f.valid_from) : NaN;
   const until = f.valid_until ? Date.parse(f.valid_until) : NaN;
-  if (!Number.isFinite(from) || !Number.isFinite(until) || from > until)
-    return "unknown";
+  if (!Number.isFinite(from)) return "unknown";
+  // A source that gives a start but no end (a chain that just posts its flyer) is still running: the
+  // scraper re-reads it regularly, so one that stops being listed simply drops out.
+  if (!Number.isFinite(until)) return now.getTime() < from ? "future" : "current";
+  if (from > until) return "unknown";
   if (now.getTime() < from) return "future";
   return now.getTime() > until ? "expired" : "current";
 }

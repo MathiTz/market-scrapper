@@ -43,6 +43,7 @@ export function flyerCountdown(flyer: Flyer, now = new Date()) {
   const state = flyerState(flyer, now);
   if (state === "unknown") return "Validade a confirmar";
   if (state === "expired") return "Encerrado";
+  if (state === "current" && !flyer.valid_until) return "Em vigor";
   const end = Date.parse(
     (state === "future" ? flyer.valid_from : flyer.valid_until)!,
   );
@@ -70,6 +71,7 @@ export function flyerDateRange(f: Flyer) {
     dateStyle: "short",
     timeZone: "America/Fortaleza",
   });
+  if (!f.valid_until) return `A partir de ${format.format(new Date(f.valid_from!))}`;
   return `${format.format(new Date(f.valid_from!))} a ${format.format(new Date(f.valid_until!))}`;
 }
 

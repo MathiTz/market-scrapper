@@ -272,25 +272,52 @@ _ORDINARY_CONDITIONS = {
     "limit_per_customer": None, "payment": None, "region_note": "",
 }
 
-_flyer_cache: Tuple[float, list] = (0.0, [])
+_flyer_caches: Dict[str, Tuple[float, list]] = {}
+
+
+def _cached_encartes(name: str, fetch) -> list:
+    """A chain's published flyers, cached; a network failure yields the last known list."""
+    fetched_at, cached = _flyer_caches.get(name, (0.0, []))
+    if fetched_at and time.monotonic() - fetched_at < FLYER_CACHE_SECONDS:
+        return cached
+    try:
+        cached = fetch()
+    except Exception as exc:
+        logger.warning("Could not fetch %s flyers: %s", name, exc)
+    _flyer_caches[name] = (time.monotonic(), cached)
+    return cached
+
+
+def _short_timeouts(scraper):
+    scraper.max_retries, scraper.timeout = 1, 5  # a page request must not hang on a slow site
+    return scraper
 
 
 def cometa_encartes() -> list:
-    """Cometa's published flyers, cached; a network failure yields the last known list."""
-    global _flyer_cache
-    fetched_at, cached = _flyer_cache
-    if time.monotonic() - fetched_at < FLYER_CACHE_SECONDS and fetched_at:
-        return cached
-    try:
+    def fetch():
         from scraper.sites.cometa import CometaScraper
 
-        scraper = CometaScraper()
-        scraper.max_retries, scraper.timeout = 1, 5  # a page request must not hang on a slow site
-        cached = scraper.fetch_encartes()
-    except Exception as exc:
-        logger.warning("Could not fetch Cometa flyers: %s", exc)
-    _flyer_cache = (time.monotonic(), cached)
-    return cached
+        return _short_timeouts(CometaScraper()).fetch_encartes()
+
+    return _cached_encartes("Cometa", fetch)
+
+
+def centerbox_encartes() -> list:
+    def fetch():
+        from scraper.sites.centerbox import CenterboxScraper
+
+        return _short_timeouts(CenterboxScraper()).fetch_encartes()
+
+    return _cached_encartes("Centerbox", fetch)
+
+
+def frangolandia_encartes() -> list:
+    def fetch():
+        from scraper.sites.frangolandia import FrangolandiaFlyers
+
+        return _short_timeouts(FrangolandiaFlyers()).fetch_encartes()
+
+    return _cached_encartes("Frangolândia", fetch)
 
 
 def _site_keys() -> Dict[str, str]:
@@ -514,7 +541,14 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
             })
 
     errors = _last_errors(db, site_keys, runs)
-    flyers = _flyers(canonical, encartes if encartes is not None else cometa_encartes(), now)
+    if encartes is not None:  # explicit flyers (tests): no network for the other chains
+        flyers = _flyers(canonical, encartes, now)
+    else:
+        flyers = (
+            _flyers(canonical, cometa_encartes(), now)
+            + _image_flyers(canonical, "Centerbox", "https://www.grupocenterbox.com.br/ofertas/", centerbox_encartes(), now)
+            + _image_flyers(canonical, "Frangolândia", "https://frangolandia.com/encartes/", frangolandia_encartes(), now)
+        )
     with_data = {o["retailer_id"] for o in offers} | {f["retailer_id"] for f in flyers}
     retailers = [
         {"id": str(s.id), "name": s.name, "official_url": s.website or "",
@@ -575,3 +609,21 @@ def _flyers(canonical: Dict[str, Store], encartes: list, now: str) -> List[dict]
             "method": "automatic", "status": "published", "published": 1,
         })
     return flyers
+
+
+def _image_flyers(canonical: Dict[str, Store], store_name: str, source_url: str, encartes: list, now: str) -> List[dict]:
+    """Flyers of a chain that just posts its pages as images (Centerbox, Frangolândia): shown as images, read
+    into no prices. They give a start (the day they were posted) but no end - the UI treats that as still
+    running, and one that stops being listed simply drops out of the next scrape."""
+    store = canonical.get(store_name)
+    if store is None:
+        return []
+    return [{
+        "id": f"{store_name.lower()}-{e.id}", "retailer_id": str(store.id), "retailer_name": store.name,
+        "title": e.name, "source_url": source_url,
+        "media_url": e.cover_url, "media_type": "image", "media_pages": e.pages or [e.cover_url],
+        "valid_from": f"{e.posted_at}-03:00" if e.posted_at else None,  # Fortaleza has no daylight saving time
+        "valid_until": None, "scope": "",
+        "version_hash": str(e.id), "collected_at": now, "source_checked_at": now,
+        "method": "automatic", "status": "published", "published": 1,
+    } for e in encartes]

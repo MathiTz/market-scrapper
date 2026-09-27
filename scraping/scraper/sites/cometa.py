@@ -24,7 +24,7 @@ either, a plain request answers it.
 
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 from scraper import flyer_ocr
@@ -42,6 +42,8 @@ class Encarte:
     description: str  # includes the validity window, e.g. "Ofertas válidas de 20 a 22/09 ..."
     cover_url: str    # banner image, full size, absolute URL
     pdf_url: Optional[str]
+    pages: List[str] = field(default_factory=list)  # every page image, when the flyer has more than a cover
+    posted_at: Optional[str] = None  # ISO date it was published, for sources that give no validity window
 
 
 class CometaScraper(BaseScraper):

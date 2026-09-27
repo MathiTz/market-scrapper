@@ -72,6 +72,16 @@ def seed():
             website="https://carnaubasupermercados.com.br",
         ),
         Store(
+            # Real branches are not tracked for it yet (19 in Fortaleza); prices come from its Conceito store.
+            name="Centerbox",
+            website="https://www.grupocenterbox.com.br",
+        ),
+        Store(
+            # Flyers only (no price catalog online): real branches are not tracked for it yet.
+            name="Frangolândia",
+            website="https://frangolandia.com",
+        ),
+        Store(
             name="Pinheiro Supermercado",
             address="Rua Barão de Studart, 1500 - Aldeota",
             lat=-3.7400,
