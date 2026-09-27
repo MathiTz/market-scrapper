@@ -30,6 +30,19 @@ class TestPaoDeAcucarScraper(unittest.TestCase):
         # The fixture holds 6 products plus a slick-cloned duplicate of the first.
         self.assertEqual(len(self.by_name), 6)
 
+    def test_the_photo_is_read_from_the_card_and_asked_for_a_bit_larger(self):
+        html = (
+            '<a href="/produto/791647/molho-x"><img alt="Molho X" src="https://static.paodeacucar.com/img/uploads/1/192/'
+            '33086192.png?im=Resize,width=200"></a><div><a href="/produto/791647/molho-x">Molho X 300g</a> R$2,69</div>'
+        )
+        card = BeautifulSoup(f"<div>{html}</div>", "lxml").div
+        product = self.scraper._parse_card(card, "/produto/791647/molho-x")
+        self.assertEqual(product.image_url, "https://static.paodeacucar.com/img/uploads/1/192/33086192.png?im=Resize,width=300")
+
+    def test_a_card_without_a_real_photo_url_has_none(self):
+        card = BeautifulSoup('<div><img src="data:image/gif;base64,AAAA"><a href="/produto/1/x">Molho X 300g</a> R$2,69</div>', "lxml").div
+        self.assertIsNone(self.scraper._parse_card(card, "/produto/1/x").image_url)
+
     def test_name_excludes_price_text(self):
         self.assertIn("Margarina Cremosa com Sal Qualy Pote 500g", self.by_name)
 
@@ -316,6 +329,19 @@ class TestPinheiroOffersApi(unittest.TestCase):
         p = self.by_name["Refrigerante H2oh Limao 500ml Pet"]
         self.assertEqual((p.price, p.regular_price, p.offer), (4.29, 4.59, "7% OFF"))
         self.assertEqual(p.url, "https://www.lojaonline.pinheirosupermercado.com.br/produto/14/refrigerante-h2oh-limao-500ml-pet")
+
+    def test_barcode_and_photo_come_from_the_same_response(self):
+        p = self.by_name["Refrigerante H2oh Limao 500ml Pet"]
+        self.assertEqual(p.gtin, "7892840812447")
+        # the store's own image CDN, the same file its cards show
+        self.assertEqual(p.image_url, "https://produto-assets-vipcommerce-com-br.br-se1.magaluobjects.com/500x500/433a338f-6ba1-4d31-afed-d493468c5f32.jpg")
+
+    def test_a_missing_or_placeholder_barcode_is_none(self):
+        item = json.loads(json.dumps(self.items[0] if isinstance(self.items, list) else next(iter(self.items))))
+        for bad in (None, "", "0", "SEM GTIN"):
+            item["codigo_barras"] = bad
+            product = self.scraper._item_to_product(item)
+            self.assertTrue(product is None or product.gtin is None, bad)
 
     def test_matches_what_the_card_shows(self):
         # The rendered-card fixture shows the same product with the same price, old price and label.
@@ -721,6 +747,14 @@ class TestMercadinhoOffers(unittest.TestCase):
     def test_unusable_items_are_skipped(self):
         bad = [self.item(price=0), self.item(price=None), self.item(description="", short_description=""), self.item(id=None)]
         self.assertEqual(self.parse(*bad), [])
+
+    def test_barcode_and_photo_come_from_the_offer(self):
+        with_photo = self.item(bar_code="7891000005620", image="https://cdn.mercadapp.services/uploads/products/7891000005620-min.png")
+        without = self.item(id=99, bar_code="123", image="")  # not a valid EAN, and no photo
+        first, second = self.parse(with_photo, without)
+        self.assertEqual((first.gtin, first.image_url),
+                         ("7891000005620", "https://cdn.mercadapp.services/uploads/products/7891000005620-min.png"))
+        self.assertEqual((second.gtin, second.image_url), (None, None))
 
     def test_malformed_responses_are_ignored(self):
         products = self.scraper.parse_offers(["not json", "[]", '{"mixes": null}', "null", self.body], now=self.NOW)

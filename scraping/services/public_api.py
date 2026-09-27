@@ -470,6 +470,14 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
         latest[(price.product_id, retailer.id)] = price
 
     products_by_id = {p.id: p for p in db.query(Product).all()}
+    # The same barcode at another chain: a product with none of its own photo/brand borrows that one's.
+    photo_of_gtin: Dict[str, str] = {}
+    brand_of_gtin: Dict[str, str] = {}
+    for p in products_by_id.values():
+        if p.gtin and p.image_url:
+            photo_of_gtin.setdefault(p.gtin, p.image_url)
+        if p.gtin and p.brand:
+            brand_of_gtin.setdefault(p.gtin, p.brand)
     usable = {key: price for key, price in latest.items()
               if key[0] in products_by_id and price.price and price.price > 0}
     groups = match_products(products_by_id[pid] for pid in {pid for pid, _ in usable})
@@ -500,12 +508,15 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
             continue
         store = retailer_of[retailer_id]
         gtin = _first_of(members, "gtin")
+        gtins = {m.gtin for m in members if m.gtin}
+        image = _first_of(members, "image_url") or next((photo_of_gtin[g] for g in gtins if g in photo_of_gtin), None)
+        brand = _first_of(members, "brand") or next((brand_of_gtin[g] for g in gtins if g in brand_of_gtin), None)
         products.setdefault(rep, {
-            "id": str(rep), "name": display_name(source.name), "brand": _first_of(members, "brand") or "",
+            "id": str(rep), "name": display_name(source.name), "brand": brand or "",
             "category": cat, "subcategory": subcategorize(source.name),
             "variant": "", "amount": amount, "unit": unit, "pack_count": pack,
             "gtin": gtin, "gtin_evidence": "Código de barras (EAN) informado pela loja." if gtin else None,
-            "image_url": _first_of(members, "image_url"), "image_source_url": None,
+            "image_url": image, "image_source_url": None,
         })
         observed = _iso_utc(price.scraped_at)
         cents = round(price.price * 100)

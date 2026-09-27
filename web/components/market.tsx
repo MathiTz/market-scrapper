@@ -37,7 +37,7 @@ import {
 } from "@/lib/domain";
 import { demoData } from "@/lib/demo";
 import { FlyerBrowser, FlyerCard } from "@/components/flyers";
-import { ProductCard } from "@/components/product-card";
+import { ProductCard, ProductHero } from "@/components/product-card";
 import { ProductRangeCard } from "@/components/product-range-card";
 import { groupBySize } from "@/lib/group";
 import { OfferRail } from "@/components/offer-rail";
@@ -106,14 +106,6 @@ const channelNames: Record<string, string> = {
   physical: "Loja física",
   flyer: "Encarte",
 };
-function Placeholder() {
-  return (
-    <div className="product-placeholder">
-      <Package size={30} strokeWidth={1.2} />
-      <span>Sem imagem</span>
-    </div>
-  );
-}
 
 export default function Market({ demo = false }: { demo?: boolean }) {
   const [view, setView] = useState<View>("today"),
@@ -625,7 +617,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
               <ArrowLeft size={18} /> Voltar à busca
             </button>
             <div className="product-heading">
-              <Placeholder />
+              <ProductHero product={active} />
               <div>
                 <span className="eyebrow">{active.brand}</span>
                 <h1>{active.name}</h1>

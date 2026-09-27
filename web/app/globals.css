@@ -1212,7 +1212,8 @@ footer a {
   align-items: center;
   gap: 35px;
 }
-.product-heading .product-placeholder {
+.product-heading .product-placeholder,
+.product-heading .product-hero {
   width: 200px;
   height: 180px;
   flex-shrink: 0;
@@ -2025,7 +2026,8 @@ footer a {
   .product-heading {
     display: block;
   }
-  .product-heading .product-placeholder {
+  .product-heading .product-placeholder,
+  .product-heading .product-hero {
     width: 100%;
     height: 160px;
     margin-bottom: 25px;
@@ -3096,3 +3098,6 @@ footer a {
 /* an image flyer is centred on both axes when it is smaller than the viewport, and scrolls when larger */
 .flyer-viewport.image-view { display: flex; }
 .flyer-viewport.image-view .flyer-image { flex: none; }
+
+.product-hero { display: grid; place-items: center; background: white; border-radius: 10px; overflow: hidden; }
+.product-hero img { width: 100%; height: 100%; object-fit: contain; }

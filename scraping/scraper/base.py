@@ -28,6 +28,16 @@ SCROLL_STEP_PX = 900
 SCROLL_PAUSE_SECONDS = 0.7
 
 
+def valid_ean(value: Optional[str]) -> Optional[str]:
+    """A real-looking GTIN/EAN (8, 12, 13 or 14 digits - matches the UI's own gtin validation), or None.
+
+    A generic placeholder like "0" or "SEM EAN" is not a barcode; keeping it would look like real evidence
+    for a product that has none.
+    """
+    text = str(value or "").strip()
+    return text if len(text) in (8, 12, 13, 14) and text.isdigit() and text != "0" * len(text) else None
+
+
 @dataclass
 class ProductPrice:
     """A scraped product price entry."""

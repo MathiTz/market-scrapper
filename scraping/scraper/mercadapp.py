@@ -27,7 +27,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
-from scraper.base import BranchLocation, ProductPrice
+from scraper.base import BranchLocation, ProductPrice, valid_ean
 
 logger = logging.getLogger(__name__)
 
@@ -201,6 +201,8 @@ class MercadappScraper(BaseScraper):
             regular_price=float(regular) if discounted else None,
             offer=label,
             stock=int(stock) if isinstance(stock, (int, float)) else None,
+            gtin=valid_ean(item.get("bar_code")),
+            image_url=(item.get("image") or "").strip() or None,
         )
 
     def fetch_locations(self) -> List[BranchLocation]:

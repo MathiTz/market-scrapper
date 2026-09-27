@@ -171,4 +171,11 @@ class PaoDeAcucarScraper(BaseScraper):
             url=self._make_absolute(href),
             regular_price=regular if price != regular else None,
             offer=offer,
+            image_url=self._card_image(card),
         )
+
+    @staticmethod
+    def _card_image(card: Tag) -> Optional[str]:
+        """The product photo, resized a little larger than the card's own 200px so it stays sharp when shown big."""
+        img = card.find("img", src=re.compile(r"^https?://"))
+        return img["src"].replace("width=200", "width=300") if img else None

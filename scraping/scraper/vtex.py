@@ -22,7 +22,7 @@ import json
 import logging
 from typing import List, Optional, Tuple
 
-from scraper.base import BranchLocation, ProductPrice
+from scraper.base import BranchLocation, ProductPrice, valid_ean
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -34,14 +34,7 @@ def _clean_field(value: Optional[str]) -> Optional[str]:
     return text or None
 
 
-def _ean(value: Optional[str]) -> Optional[str]:
-    """A real-looking GTIN/EAN (8, 12, 13 or 14 digits - matches the UI's own gtin validation), or None.
-
-    A generic placeholder like "0" or "SEM EAN" is not a barcode; keeping it would look like real evidence
-    for a product that has none.
-    """
-    text = (value or "").strip()
-    return text if len(text) in (8, 12, 13, 14) and text.isdigit() and text != "0" * len(text) else None
+_ean = valid_ean
 
 
 def _image_url(images: Optional[list]) -> Optional[str]:

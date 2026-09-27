@@ -222,6 +222,19 @@ class TestBuildPublic(unittest.TestCase):
                          ("Melitta", "7891000100103", "https://img.example/cafe.jpg"))
         self.assertEqual(product["gtin_evidence"], "Código de barras (EAN) informado pela loja.")
 
+    def test_a_product_with_no_photo_borrows_the_one_a_chain_has_for_the_same_barcode(self):
+        # Different names at two chains (so they are not matched as one product), the same EAN: one has a photo.
+        self.db.add_all([Product(name="Cafe Melitta Tradicional 500g Vacuo", gtin="7891000100103", brand="Melitta",
+                                 image_url="https://img.example/melitta.jpg"),
+                         Product(name="Pinheiro Cafe Torrado Moido Tradicional 500g", gtin="7891000100103")])
+        self.db.flush()
+        self.db.add_all([Price(product_id=4, store_id=1, price=20.0, scraped_at=datetime.utcnow()),
+                         Price(product_id=5, store_id=3, price=21.0, scraped_at=datetime.utcnow())])
+        self.db.commit()
+        products = {p["name"]: p for p in self.build()["products"]}
+        pinheiro = products["Pinheiro Cafe Torrado Moido Tradicional 500g"]
+        self.assertEqual((pinheiro["image_url"], pinheiro["brand"]), ("https://img.example/melitta.jpg", "Melitta"))
+
     def test_brand_gtin_and_photo_stay_blank_when_no_member_has_them(self):
         arroz = next(p for p in self.build()["products"] if p["id"] == "3")
         self.assertEqual((arroz["brand"], arroz["gtin"], arroz["gtin_evidence"], arroz["image_url"]),

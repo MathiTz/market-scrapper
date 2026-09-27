@@ -36,7 +36,7 @@ from html import unescape
 
 from bs4 import BeautifulSoup, Tag
 
-from scraper.base import BranchLocation, ProductPrice
+from scraper.base import BranchLocation, ProductPrice, valid_ean
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -109,6 +109,10 @@ _BRANCH_RE = re.compile(
     r"<h2[^>]*>\s*Pinheiro\s+([^<]+?)\s*</h2>.*?Endereço:</strong>\s*([^<]+?)\s*</p>",
     re.IGNORECASE | re.DOTALL,
 )
+
+
+# The store's own image CDN (what its cards show), at the size its product page uses.
+_IMAGE_BASE = "https://produto-assets-vipcommerce-com-br.br-se1.magaluobjects.com/500x500/"
 
 
 def _money(value: Any) -> Optional[float]:
@@ -231,6 +235,7 @@ class PinheiroScraper(BaseScraper):
         # The store sometimes lists a price a centavo above the offer ("28,40" against "28,39"): not a discount.
         if regular is not None and round((1 - price / regular) * 100) < 1:
             regular = None
+        image, brand = item.get("imagem"), item.get("marca")
         return ProductPrice(
             store_name=self.site_name,
             product_name=name,
@@ -238,6 +243,11 @@ class PinheiroScraper(BaseScraper):
             url=f"{self.base_url}/produto/{item.get('produto_id')}/{item.get('link') or ''}".rstrip("/"),
             regular_price=regular,
             offer=self._label(offer, price, regular),
+            # The same API response carries these too: the barcode is what lets another chain's photo of the
+            # same item be found for a product that has none of its own.
+            gtin=valid_ean(item.get("codigo_barras")),
+            image_url=f"{_IMAGE_BASE}{image}" if image else None,
+            brand=brand.strip() if isinstance(brand, str) and brand.strip() else None,
         )
 
     @staticmethod

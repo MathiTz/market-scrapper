@@ -31,6 +31,29 @@ export function ProductPhoto({ product }: { product: Product }) {
   );
 }
 
+/** The big photo on a product's detail page: the same image the list cards show, or the "no image" box. */
+export function ProductHero({ product }: { product: Product }) {
+  const [failedUrl, setFailedUrl] = useState("");
+  if (product.image_url && product.image_url !== failedUrl)
+    return (
+      <div className="product-hero">
+        <img
+          src={product.image_url}
+          alt={`${product.name} ${product.brand}`}
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={() => setFailedUrl(product.image_url!)}
+        />
+      </div>
+    );
+  return (
+    <div className="product-placeholder">
+      <Package size={30} strokeWidth={1.2} />
+      <span>Sem imagem</span>
+    </div>
+  );
+}
+
 export function ProductCard({
   p,
   offers,
