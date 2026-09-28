@@ -7,6 +7,12 @@ import {
   type Nearby,
 } from "@/lib/location";
 import type { AddressResult } from "@/lib/geocoding";
+import { Button, IconButton } from "@/components/ui/button";
+import { TextField } from "@/components/ui/field";
+import { Segmented } from "@/components/ui/segmented";
+import { Tooltip } from "@/components/ui/tooltip";
+import { useDialog } from "@/components/ui/use-dialog";
+import { useSheetDrag } from "@/components/ui/use-sheet-drag";
 
 /** The street address at a GPS position, or null when it cannot be found (the position is rounded first). */
 async function addressAt(latitude: number, longitude: number): Promise<string | null> {
@@ -36,11 +42,20 @@ export function NearbyFilter({
   demo: boolean;
 }) {
   const id = useId();
-  const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const sequence = useRef(0);
   const request = useRef<AbortController | null>(null);
   const [opened, setOpened] = useState(false);
+  // Always mounted; the hook shows it while `opened` and, after the exit transition, runs the cleanup below.
+  const { ref: dialog, requestClose } = useDialog(
+    opened,
+    () => {
+      cancelPending();
+      setOpened(false);
+    },
+    trigger,
+  );
+  useSheetDrag(dialog, requestClose);
   const [radius, setRadius] = useState(value?.radiusKm || 5);
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState<AddressResult[]>([]);
@@ -49,14 +64,6 @@ export function NearbyFilter({
   // True from the moment an address is long enough to search until its suggestions arrive, including the
   // short wait after the last key, so the box below the field never looks idle while a search is coming.
   const [searching, setSearching] = useState(false);
-  useEffect(() => {
-    if (!opened) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [opened]);
   useEffect(
     () => () => {
       sequence.current++;
@@ -71,17 +78,13 @@ export function NearbyFilter({
     setSearching(false);
   }
   function close() {
-    cancelPending();
-    dialog.current?.close();
-    setOpened(false);
-    trigger.current?.focus({ preventScroll: true });
+    requestClose();
   }
   function open() {
     setRadius(value?.radiusKm || 5);
     setQuery("");
     setPlaces([]);
     setMessage("");
-    dialog.current?.showModal();
     setOpened(true);
   }
   function apply(point: LocationPoint) {
@@ -224,7 +227,6 @@ export function NearbyFilter({
               : "Filtrar por endereço"
           }
           aria-haspopup="dialog"
-          title={value?.point.label}
         >
           <MapPin size={19} />
           <span>{value ? value.point.label : "Perto de você"}</span>
@@ -244,6 +246,7 @@ export function NearbyFilter({
       <dialog
         className="nearby-dialog"
         ref={dialog}
+        data-sheet=""
         aria-labelledby={`${id}-title`}
         onCancel={(event) => {
           event.preventDefault();
@@ -253,19 +256,17 @@ export function NearbyFilter({
           if (event.target === dialog.current) close();
         }}
       >
-        <div className="nearby-dialog-content">
-          <div className="nearby-dialog-heading">
+        <div className="nearby-dialog-content" data-scroll="">
+          <div className="nearby-dialog-heading" data-sheet-grip="">
             <div>
-              <span className="eyebrow green-text">LOJAS MAIS PRÓXIMAS</span>
+              <p className="overline">Lojas mais próximas</p>
               <h2 id={`${id}-title`}>De onde você quer comparar?</h2>
             </div>
-            <button
-              className="icon-button"
-              onClick={close}
-              aria-label="Fechar localização"
-            >
-              <X size={21} />
-            </button>
+            <Tooltip label="Fechar">
+              <IconButton label="Fechar localização" onClick={close}>
+                <X size={21} aria-hidden="true" />
+              </IconButton>
+            </Tooltip>
           </div>
           <p>
             Escolha uma referência em Fortaleza. As distâncias são aproximadas,
@@ -279,40 +280,35 @@ export function NearbyFilter({
           {value && (
             <p className="nearby-current">Referência: {value.point.label}</p>
           )}
-          <fieldset className="nearby-radius" disabled={busy !== null}>
-            <legend>Mostrar lojas até</legend>
-            {radii.map((r) => (
-              <label key={r} className={radius === r ? "selected" : ""}>
-                <input
-                  type="radio"
-                  name={`${id}-radius`}
-                  value={r}
-                  checked={radius === r}
-                  onChange={() => setRadius(r)}
-                  // With a reference already set, choosing a distance applies it right away. A click
-                  // (detail > 0) also closes the dialog; arrowing through the options (detail 0) does not.
-                  onClick={(event) => {
-                    if (!value) return;
-                    onChange({ point: value.point, radiusKm: r });
-                    if (event.detail > 0) close();
-                  }}
-                />
-                {r} km
-              </label>
-            ))}
-          </fieldset>
-          <button
-            className="secondary nearby-device"
+          <Segmented<number>
+            className="nearby-radius"
+            legend="Mostrar lojas até"
+            options={radii.map((r) => ({ value: r, label: `${r} km` }))}
+            value={radius}
+            onChange={setRadius}
             disabled={busy !== null}
+            // With a reference already set, choosing a distance applies it right away. A click also closes
+            // the dialog; arrowing through the options does not.
+            onPick={(r, byPointer) => {
+              if (!value) return;
+              onChange({ point: value.point, radiusKm: r });
+              if (byPointer) close();
+            }}
+          />
+          <Button
+            variant="secondary"
+            className="nearby-device"
+            disabled={busy !== null}
+            loading={busy === "device" || busy === "lookup"}
+            icon={<LocateFixed size={19} aria-hidden="true" />}
             onClick={locate}
           >
-            <LocateFixed size={19} />
             {busy === "device"
               ? "Obtendo localização…"
               : busy === "lookup"
                 ? "Buscando seu endereço…"
                 : "Usar minha localização"}
-          </button>
+          </Button>
           <div className="nearby-divider">ou informe um endereço</div>
           <form
             // Preserve Chrome iOS autofill metadata added before hydration.
@@ -322,12 +318,9 @@ export function NearbyFilter({
               void search();
             }}
           >
-            <label htmlFor={`${id}-query`}>
-              Endereço ou bairro em Fortaleza
-            </label>
-            <input
+            <TextField
+              label="Endereço ou bairro em Fortaleza"
               suppressHydrationWarning
-              id={`${id}-query`}
               value={query}
               type="search"
               minLength={3}
@@ -400,14 +393,15 @@ export function NearbyFilter({
                 )}
               </div>
             </div>
-            <button
+            <Button
               type="submit"
-              className="primary"
+              variant="primary"
               disabled={busy !== null || query.trim().length < 3}
+              loading={busy === "address"}
+              icon={<Search size={17} aria-hidden="true" />}
             >
-              <Search size={17} />
               {busy === "address" ? "Buscando endereço…" : "Buscar endereço"}
-            </button>
+            </Button>
             <p className="nearby-privacy">
               O texto digitado é enviado ao Photon/OpenStreetMap para sugerir
               endereços. Ao usar o GPS, suas coordenadas (arredondadas) também

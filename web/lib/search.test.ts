@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildIndex, filterIndexed, matchesQuery, searchIndexed, searchProducts } from "./search";
+import { buildIndex, filterIndexed, matchesQuery, relevance, searchIndexed, searchProducts } from "./search";
 
 describe("matchesQuery", () => {
   const perola = "Abacaxi Pérola Unidade";
@@ -115,5 +115,24 @@ describe("buildIndex + searchIndexed/filterIndexed", () => {
     const withBrand = [{ name: "Refrigerante", brand: "Cometa" }, { name: "Suco", brand: "Del Valle" }];
     const byNameAndBrand = buildIndex(withBrand, (p) => `${p.name} ${p.brand}`);
     expect(filterIndexed(byNameAndBrand, "cometa").map((p) => p.name)).toEqual(["Refrigerante"]);
+  });
+});
+
+describe("relevance", () => {
+  it("puts names that start with the typed words first, then the phrase anywhere, then the first word", () => {
+    const q = "leite integral";
+    expect(relevance("Leite Integral Italac 1l", q)).toBe(0);
+    expect(relevance("Bebida Láctea Leite Integral Morango", q)).toBe(1);
+    expect(relevance("Leite de Coco Sococo Integral Vidro 500ml", q)).toBe(2);
+    expect(relevance("Achocolatado com Leite Integral em Pó", q)).toBe(1);
+    expect(relevance("Iogurte Integral com Leite", q)).toBe(3);
+  });
+
+  it("ignores accents and case, like the match itself", () => {
+    expect(relevance("FEIJÃO Carioca Kicaldo 1kg", "feijao carioca")).toBe(0);
+  });
+
+  it("has nothing to rank without a query", () => {
+    expect(relevance("Qualquer coisa", "   ")).toBe(3);
   });
 });

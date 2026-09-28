@@ -1,7 +1,18 @@
 import { rankOffers, type Offer, type Product } from "@/lib/domain";
 import { nearestLocation, type Coordinates, type LocationsByRetailer } from "@/lib/location";
+import { relevance } from "@/lib/search";
 
-export type SortKey = "name" | "price-asc" | "price-desc" | "discount" | "discount-near";
+/** "relevance" orders by how well the name answers the typed search (see lib/search.ts); it needs a query. */
+export type SortKey = "name" | "price-asc" | "price-desc" | "discount" | "discount-near" | "relevance";
+
+export const sortLabels: Record<SortKey, string> = {
+  relevance: "Mais relevantes",
+  "discount-near": "Maior desconto e mais perto",
+  discount: "Maior desconto",
+  "price-asc": "Menor preço",
+  "price-desc": "Maior preço",
+  name: "Nome (A a Z)",
+};
 
 export type ProductFilters = {
   /** Retailer ids to show; empty means every chain. */
@@ -63,10 +74,14 @@ export function filterProducts(
     includeUnpriced: boolean;
     nearby?: Coordinates | null;
     locationsByRetailer?: LocationsByRetailer;
+    /** The typed search, for the "relevance" order. */
+    query?: string;
   },
 ): Product[] {
   const restricted = activeFilterCount(f) > 0;
-  const needsDistance = f.sort === "discount-near" && options.nearby && options.locationsByRetailer;
+  // "relevance" without anything typed has nothing to rank by: it falls back to the default order.
+  const sort: SortKey = f.sort === "relevance" && !options.query?.trim() ? "discount-near" : f.sort;
+  const needsDistance = sort === "discount-near" && options.nearby && options.locationsByRetailer;
   const rows: { product: Product; price: number | null; discount: number; distanceKm: number | null }[] = [];
   for (const product of products) {
     const offers = rankOffers(offersByProduct.get(product.id) ?? [], options.conditions).filter(
@@ -92,12 +107,22 @@ export function filterProducts(
   }
   const missingLast = (a: number | null, b: number | null, sign: 1 | -1) =>
     a === null ? (b === null ? 0 : 1) : b === null ? -1 : sign * (a - b);
-  if (f.sort === "price-asc") rows.sort((a, b) => missingLast(a.price, b.price, 1));
-  else if (f.sort === "price-desc") rows.sort((a, b) => missingLast(a.price, b.price, -1));
-  else if (f.sort === "discount")
+  if (sort === "price-asc") rows.sort((a, b) => missingLast(a.price, b.price, 1));
+  else if (sort === "price-desc") rows.sort((a, b) => missingLast(a.price, b.price, -1));
+  else if (sort === "discount")
     rows.sort((a, b) => b.discount - a.discount || missingLast(a.price, b.price, 1));
-  else if (f.sort === "discount-near")
+  else if (sort === "discount-near")
     rows.sort((a, b) => b.discount - a.discount || missingLast(a.distanceKm, b.distanceKm, 1));
+  else if (sort === "relevance") {
+    // Ranked once per row, then: best match, shorter (more exact) name, A to Z - as the list's autocomplete.
+    const rank = new Map(rows.map((r) => [r.product.id, relevance(r.product.name, options.query!)]));
+    rows.sort(
+      (a, b) =>
+        rank.get(a.product.id)! - rank.get(b.product.id)! ||
+        a.product.name.length - b.product.name.length ||
+        a.product.name.localeCompare(b.product.name, "pt-BR"),
+    );
+  }
   return rows.map((r) => r.product);
 }
 

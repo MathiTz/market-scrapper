@@ -1,4 +1,9 @@
 # Mercado em Dia — entrega da interface
+> **Estado atual (27/09/2026):** a interface é Vite + React + TypeScript com TanStack React Query (veja
+> [AGENTS.md](AGENTS.md)); as seções abaixo descrevem o pacote de handoff de 21/09 e citam Next.js, que não
+> é mais usado. Auditoria de UX, jornada, estados e validação atuais: [AUDITORIA-UX.md](AUDITORIA-UX.md),
+> [ESTADOS-UX.md](ESTADOS-UX.md) e [VALIDACAO.md](VALIDACAO.md).
+
 Preparado em 21/09/2026 a partir da cópia local fornecida pelo proprietário.
 
 ## Comece aqui
@@ -18,7 +23,11 @@ Para validar e executar o build:
     npm run preview
 
 ## Conteúdo
-- components/: componentes originais, incluindo painel administrativo.
+- components/: componentes originais, incluindo painel administrativo; components/ui/: primitivos (botão,
+  campo, chip, select, tooltip, checkbox, segmentado, skeleton) e hooks de diálogo/sheet; components/vitrine.tsx:
+  vitrine de estados em /demo?vitrine=1.
+- tokens/: fonte dos tokens de design (tokens.json → app/tokens.css por `npm run tokens`) e os verificadores
+  (`npm run tokens:check`).
 - app/globals.css: estilos completos, cores, tipografia e responsividade originais.
 - index.html, app/main.tsx, public/: entrada da aplicação, rotas (/, /demo, /admin), ícone e recursos PWA.
 - lib/: tipos e funções utilizadas pela interface; fixtures fictícias.

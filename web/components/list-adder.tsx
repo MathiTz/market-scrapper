@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { money, type Product } from "@/lib/domain";
 import { buildIndex, searchIndexed } from "@/lib/search";
 import { useDebounced } from "@/lib/use-debounced";
+import { Button } from "@/components/ui/button";
 
 /**
  * The "add an item" box of the shopping list. It only adds products we have: typing "banana" lists the
@@ -122,15 +123,14 @@ export function ListAdder({
           </ul>
         )}
         {notFound && (
-          <p className="field-hint" role="alert">
+          <p className="field-hint field-error" role="alert">
             Escolha um produto da lista de sugestões.
           </p>
         )}
       </div>
-      <button className="primary" type="submit">
-        <Plus size={18} />
+      <Button variant="primary" type="submit" icon={<Plus size={18} aria-hidden="true" />}>
         Adicionar
-      </button>
+      </Button>
     </form>
   );
 }

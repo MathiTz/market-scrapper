@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ShoppingBasket,
@@ -14,11 +14,11 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   WifiOff,
-  Check,
-  Store,
   ChevronRight,
   X,
   Clock,
+  TriangleAlert,
+  Undo2,
 } from "lucide-react";
 import {
   BRAND,
@@ -26,11 +26,6 @@ import {
   rankOffers,
   isConditional,
   conditionLabel,
-  unitPrice,
-  localTime,
-  basket,
-  flyerState,
-  clean,
   type Product,
   type Offer,
   type Flyer,
@@ -46,32 +41,50 @@ import { ListAdder } from "@/components/list-adder";
 import { StoreEstimates } from "@/components/store-estimates";
 import { storeEstimates } from "@/lib/estimates";
 import { buildIndex, filterIndexed } from "@/lib/search";
-import { stockNote } from "@/lib/stock";
 import { PriceInput } from "@/components/price-input";
 import {
-  activeFilterCount,
   alternativesOf,
   filterProducts,
   noFilters,
   productsWithPrice,
+  sortLabels,
   type ProductFilters,
+  type SortKey,
 } from "@/lib/filters";
 import { useDebounced } from "@/lib/use-debounced";
-import { DealNote } from "@/components/deal-note";
 import { StoreContact } from "@/components/store-contact";
-import { StoreLocation } from "@/components/store-location";
-import { OfferShare } from "@/components/offer-share";
+import { OfferRow } from "@/components/offer-row";
+import { Sources } from "@/components/sources";
+import { RetryButton, StatusPanel } from "@/components/status-panel";
 import { organizeFlyers } from "@/lib/flyers";
 import { NearbyFilter } from "@/components/nearby-filter";
+import { Button, IconButton } from "@/components/ui/button";
+import { Chip, ChipCheckbox } from "@/components/ui/chip";
+import { CheckboxField } from "@/components/ui/checkbox";
+import { SelectField } from "@/components/ui/select";
+import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
+import { FlyerGridSkeleton, GridSkeleton, RailSkeleton, Skeleton } from "@/components/ui/skeleton";
+import { Notifications, notify } from "@/lib/notify";
+import { markHero, withViewTransition } from "@/lib/view-transition";
+import { useIndicator } from "@/components/ui/use-indicator";
+import { Count } from "@/components/ui/number";
 import { dailyDeals } from "@/lib/deals";
+import { lowestPriceLabel, outOfComparison, priceSpread, suspiciousSpread } from "@/lib/comparison";
+import { count, listName, packLabel, unitPriceText, whenLabel } from "@/lib/format";
+import { loadErrorMessage, loadSnapshot } from "@/lib/snapshot";
+import {
+  MAX_QUANTITY,
+  browserStorage,
+  readList,
+  storageMessage,
+  writeList,
+  type Line,
+  type StorageIssue,
+} from "@/lib/list-storage";
 import {
   filterNearby,
   readNearby,
-  offerLocation,
   groupLocations,
-  distanceLabel,
-  FORTALEZA_CENTER,
-  type LocationsByRetailer,
   type Nearby,
   type RetailerLocation,
 } from "@/lib/location";
@@ -99,18 +112,31 @@ type Data = {
   };
   generated_at: string;
 };
-type Line = { product_id: string; name: string; quantity: number };
 type View = "today" | "search" | "flyers" | "list";
-const channelNames: Record<string, string> = {
-  catalog: "Online",
-  physical: "Loja física",
-  flyer: "Encarte",
+const views: [View, string][] = [
+  ["today", "Hoje"],
+  ["search", "Buscar"],
+  ["flyers", "Encartes"],
+  ["list", "Minha lista"],
+];
+const discountLabels: Record<number, string> = {
+  1: "Só com desconto",
+  10: "Desconto de 10% ou mais",
+  20: "Desconto de 20% ou mais",
+  30: "Desconto de 30% ou mais",
+  50: "Desconto de 50% ou mais",
 };
+/** "Só para membros…" inside a sentence: only the first letter changes, proper names keep theirs. */
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+/** A product name short enough for a toast or a notice. */
+const short = (name: string) => (name.length > 42 ? `${name.slice(0, 40).trimEnd()}…` : name);
 
 export default function Market({ demo = false }: { demo?: boolean }) {
   const [view, setView] = useState<View>("today"),
     [query, setQuery] = useState(""),
     [pf, setPf] = useState<ProductFilters>(noFilters),
+    // Until the person picks an order, a typed search is ordered by relevance and browsing by discount.
+    [sortChosen, setSortChosen] = useState(false),
     [channel, setChannel] = useState(""),
     [category, setCategory] = useState(""),
     [conditions, setConditions] = useState(false),
@@ -120,10 +146,15 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     [lines, setLines] = useState<Line[]>([]),
     [loaded, setLoaded] = useState(false),
     [offline, setOffline] = useState(false),
-    [toast, setToast] = useState(""),
     [filters, setFilters] = useState(false),
+    // The toast stack sits above the mobile dock, whose height depends on the search bar being there.
+    [narrow, setNarrow] = useState(false),
     [clock, setClock] = useState(0),
-    [searching, setSearching] = useState(false);
+    [storageIssue, setStorageIssue] = useState<StorageIssue>(null),
+    // The list as it was before the last removal, until something else changes it.
+    [undo, setUndo] = useState<{ lines: Line[]; message: string } | null>(null),
+    // Where to scroll back to, and which card to focus, once a product page closes.
+    [restore, setRestore] = useState<{ scroll: number; productId: string } | null>(null);
   const networks = pf.networks;
   const [sharedTarget, setSharedTarget] = useState<{
     productId: string;
@@ -132,28 +163,22 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   const [sharedNotice, setSharedNotice] = useState("");
   const [nearby, setNearby] = useState<Nearby | null>(null);
   const nearbyKey = "med-nearby-" + (demo ? "demo" : "real");
+  const basePath = demo ? "/demo" : "/";
   const sharedOpened = useRef(false);
   const sharedScrolled = useRef(false);
+  const returnTo = useRef<{ scroll: number; productId: string } | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     const timer = setInterval(() => setClock((v) => v + 1), 60000);
     return () => clearInterval(timer);
   }, []);
   const listKey = "med-list-" + (demo ? "demo" : "real");
   useEffect(() => {
+    // A saved list that cannot be read is copied aside before anything is written over it (lib/list-storage.ts).
+    const saved = readList(browserStorage(), listKey);
+    setLines(saved.lines);
+    setStorageIssue(saved.issue);
     try {
-      const l = JSON.parse(localStorage.getItem(listKey) || "[]");
-      setLines(
-        Array.isArray(l)
-          ? l
-              .filter(
-                (x) =>
-                  typeof x.product_id === "string" &&
-                  Number.isInteger(x.quantity) &&
-                  x.quantity > 0,
-              )
-              .slice(0, 200)
-          : [],
-      );
       setRegion(localStorage.getItem("med-region") || "Fortaleza");
     } catch {}
     const params = new URLSearchParams(window.location.search);
@@ -171,7 +196,13 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       } catch {}
     }
     setLoaded(true);
-    const online = () => setOffline(!navigator.onLine);
+    let wasOffline = !navigator.onLine;
+    const online = () => {
+      const now = !navigator.onLine;
+      if (wasOffline && !now) notify("Conexão de volta. Os preços voltam a aparecer.");
+      wasOffline = now;
+      setOffline(now);
+    };
     online();
     window.addEventListener("online", online);
     window.addEventListener("offline", online);
@@ -190,44 +221,45 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     } catch {}
   }, [nearby, nearbyKey, loaded]);
   useEffect(() => {
-    if (loaded)
-      try {
-        localStorage.setItem(listKey, JSON.stringify(lines));
-      } catch {
-        setToast("Não foi possível salvar a lista neste navegador.");
-      }
+    if (!loaded) return;
+    const saved = writeList(browserStorage(), listKey, lines);
+    // A failed save is shown in the list itself, not only in a toast that disappears.
+    setStorageIssue((issue) =>
+      saved ? (issue === "save-failed" ? null : issue) : issue === "blocked" ? issue : "save-failed",
+    );
   }, [lines, loaded, listKey]);
   useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(""), 2800);
-    return () => clearTimeout(t);
-  }, [toast]);
+    const media = window.matchMedia("(max-width: 760px)");
+    const update = () => setNarrow(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   // The API sends one complete snapshot (cached by the browser, the edge and React Query), so search
   // and filters run here instead of asking the server for a new list on every keystroke.
   const search = useDebounced(query, 220);
-  const dataRegion = region;
+  const typed = search.trim();
+  // Between a keystroke and the debounced search catching up, the current grid stays on screen, veiled.
+  const searching = query.trim() !== typed;
   const result = useQuery({
     queryKey: ["public", demo],
-    queryFn: async ({ signal }): Promise<Data> => {
-      if (demo) return demoData();
-      const r = await fetch("/api/public", {
-        signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]),
-      });
-      if (!r.ok) {
-        const body = await r.json().catch(() => null);
-        throw Error(body?.error || "Não foi possível atualizar.");
-      }
-      return r.json();
-    },
+    queryFn: ({ signal }): Promise<Data> =>
+      demo ? Promise.resolve(demoData() as Data) : loadSnapshot<Data>(signal),
   });
   const loading = result.isPending;
-  // A failed refresh keeps showing the data that is already loaded.
-  const error =
-    result.isError && !result.data
-      ? result.error instanceof Error
-        ? result.error.message
-        : "Não foi possível atualizar."
-      : "";
+  // No snapshot at all: every view says so instead of reading as "no offers".
+  const error = result.isError && !result.data ? loadErrorMessage(result.error) : "";
+  // A failed refresh keeps showing the data already loaded, and says since when.
+  const refreshFailed = result.isError && !!result.data;
+  const retry = () => void result.refetch();
+  const priceHidden = offline
+    ? "Preço oculto sem conexão"
+    : error
+      ? "Preço indisponível no momento"
+      : undefined;
+  // Only the regions the snapshot actually covers; a link cannot put another city in the header.
+  const regions = result.data?.regions?.length ? result.data.regions : [BRAND.city];
+  const dataRegion = regions.includes(region) ? region : regions[0];
   // Built once per snapshot load, not per keystroke - see lib/search.ts's buildIndex for why that matters.
   const searchIndex = useMemo(
     () => buildIndex(result.data?.products ?? [], (p) => `${p.name} ${p.brand}`),
@@ -244,17 +276,21 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     sharedOpened.current = true;
     const product = d.products.find((p) => p.id === sharedTarget.productId);
     if (!product) {
-      setSharedNotice("Produto compartilhado não encontrado.");
+      setSharedNotice(
+        "O produto deste link não está mais entre as ofertas monitoradas: ele pode ter saído do site da loja ou da última coleta. Busque um produto parecido.",
+      );
       return;
     }
     setActive(product);
+    // A link to a product page (not to one of its offers) has no offer to look for.
+    if (!sharedTarget.offerId) return;
     const offer = rankOffers(d.offers, true).find(
       (o) => o.product_id === product.id && o.id === sharedTarget.offerId,
     );
     if (offer) setConditions(isConditional(offer.conditions));
     else
       setSharedNotice(
-        "Esta oferta não está disponível no momento. Veja as opções atuais.",
+        "O preço deste link não está mais atual. Veja abaixo os preços atuais deste produto.",
       );
   }, [result.data, sharedTarget]);
   useEffect(() => {
@@ -265,45 +301,144 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       sharedScrolled.current = true;
     }
   }, [active, loading, sharedTarget, conditions]);
+  // A product page is a history entry: the browser's back button (and a phone's back gesture) closes it
+  // and returns to the list where it was opened, instead of leaving the site.
+  useEffect(() => {
+    const onPop = () => {
+      const id = new URLSearchParams(window.location.search).get("produto");
+      const product = id ? result.data?.products.find((p) => p.id === id) : undefined;
+      if (product) {
+        markHero(product.id);
+        withViewTransition(() => {
+          setActive(product);
+          window.scrollTo({ top: 0, behavior: "instant" });
+        }, "product");
+        return;
+      }
+      withViewTransition(() => {
+        setActive(null);
+        setRestore(returnTo.current);
+        returnTo.current = null;
+      }, "product");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [result.data]);
+  // Back on the list: the same scroll position, and focus on the card that was opened.
+  useLayoutEffect(() => {
+    if (active || !restore) return;
+    window.scrollTo({ top: restore.scroll, behavior: "instant" });
+    const card = document.querySelector<HTMLElement>(`[data-product-id~="${CSS.escape(restore.productId)}"]`);
+    // Inside the closing view transition (flushSync): this photo is where the hero morphs back to.
+    markHero(restore.productId);
+    card?.querySelector<HTMLElement>(".product-open")?.focus({ preventScroll: true });
+    // A card in the horizontal rail starts scrolled out of view again: bring it back, sideways only.
+    card?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+    setRestore(null);
+  }, [active, restore]);
+  // On a product page, focus goes to its title, so keyboard and screen reader users start there.
+  useEffect(() => {
+    if (active) headingRef.current?.focus({ preventScroll: true });
+  }, [active?.id]);
+  function resetUrl() {
+    if (window.location.search) window.history.replaceState(null, "", basePath);
+  }
   function clearShared() {
-    if (!sharedTarget) return;
-    setSharedTarget(null);
-    setSharedNotice("");
-    sharedOpened.current = false;
-    sharedScrolled.current = false;
-    window.history.replaceState(window.history.state, "", demo ? "/demo" : "/");
+    if (sharedTarget) {
+      setSharedTarget(null);
+      setSharedNotice("");
+      sharedOpened.current = false;
+      sharedScrolled.current = false;
+    }
+    resetUrl();
   }
   const openProduct = (product: Product) => {
-    clearShared();
-    setActive(product);
+    if (!active) returnTo.current = { scroll: window.scrollY, productId: product.id };
+    setSharedNotice("");
+    window.history.pushState(
+      { mdProduct: product.id },
+      "",
+      `${basePath}?${new URLSearchParams({ produto: product.id })}`,
+    );
+    // The tapped photo becomes the hero of the product page (plan 006); elsewhere the page just changes.
+    markHero(product.id);
+    withViewTransition(() => {
+      setActive(product);
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }, "product");
+  };
+  const closeProduct = () => {
+    // Opened here: going back pops that entry (see the popstate handler). Opened from a shared link: close it.
+    if (window.history.state?.mdProduct) {
+      window.history.back();
+      return;
+    }
+    withViewTransition(() => {
+      clearShared();
+      setActive(null);
+      setRestore(returnTo.current);
+      returnTo.current = null;
+    }, "product");
   };
   const navigate = (v: View) => {
-    clearShared();
-    setView(v);
-    setActive(null);
-    setPf(noFilters);
-    setChannel("");
-    setCategory("");
-    setQuery("");
+    // A cross-fade of 150 ms between views; the pill of the navigation slides on its own.
+    withViewTransition(() => {
+      clearShared();
+      setView(v);
+      setActive(null);
+      returnTo.current = null;
+      setPf(noFilters);
+      setSortChosen(false);
+      setChannel("");
+      setCategory("");
+      setQuery("");
+      setUndo(null);
+      window.scrollTo({ top: 0, behavior: "instant" });
+    });
   };
+  const navPill = useIndicator<HTMLElement>('button[aria-current="page"]', [view, lines.length > 0]);
+  const dockMarker = useIndicator<HTMLElement>('button[aria-current="page"]', [view]);
   const add = (p: Product) => {
+    const existing = lines.find((x) => x.product_id === p.id);
+    if (existing && existing.quantity >= MAX_QUANTITY) {
+      notify(`“${short(p.name)}” já está com a quantidade máxima`);
+      return;
+    }
     setLines((l) =>
       l.some((x) => x.product_id === p.id)
         ? l.map((x) =>
             x.product_id === p.id
-              ? { ...x, quantity: Math.min(x.quantity + 1, 999) }
+              ? { ...x, quantity: Math.min(x.quantity + 1, MAX_QUANTITY) }
               : x,
           )
-        : [
-            ...l,
-            {
-              product_id: p.id,
-              name: [p.name, p.brand, `${p.amount} ${p.unit}`].filter(Boolean).join(" · "),
-              quantity: 1,
-            },
-          ],
+        : [...l, { product_id: p.id, name: listName(p), quantity: 1 }],
     );
-    setToast("Adicionado à sua lista");
+    setUndo(null);
+    notify(
+      existing
+        ? `Agora são ${existing.quantity + 1} de “${short(p.name)}” na lista`
+        : `“${short(p.name)}” adicionado à lista`,
+    );
+  };
+  const remove = (ids: string[], message: string) => {
+    const previous = lines;
+    setUndo({ lines: previous, message });
+    setLines((l) => l.filter((x) => !ids.includes(x.product_id)));
+    notify(message, {
+      undo: () => {
+        setLines(previous);
+        setUndo(null);
+        notify("Lista restaurada");
+      },
+    });
+  };
+  const setQuantity = (id: string, quantity: number) => {
+    setUndo(null);
+    setLines((a) =>
+      a.map((x) =>
+        x.product_id === id ? { ...x, quantity: Math.max(1, Math.min(MAX_QUANTITY, quantity)) } : x,
+      ),
+    );
   };
   const allOffers = data?.offers || [];
   const locationsByRetailer = useMemo(
@@ -314,18 +449,22 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     () => filterNearby(allOffers, nearby, locationsByRetailer),
     [allOffers, nearby, locationsByRetailer],
   );
+  const listQuantity = useMemo(
+    () => new Map(lines.map((l) => [l.product_id, l.quantity])),
+    [lines],
+  );
   // This whole derived block is memoized: `data` only changes when the *debounced* `search`
   // (or the snapshot) changes, so between keystrokes these stay stable and the catalog isn't
   // re-filtered on every render — that was the source of the typing lag.
   const {
-    products,
     filteredOffers,
-    current,
     productOffers,
     shown,
     todayProducts,
     deal,
     offersByProduct,
+    pricedIds,
+    coverageNow,
   } = useMemo(() => {
     const products = (data?.products || []).filter(
       (p) =>
@@ -341,34 +480,53 @@ export default function Market({ demo = false }: { demo?: boolean }) {
         (!networks.length || networks.includes(o.retailer_id)) &&
         (!channel || o.channel === channel),
     );
-    const current =
-      offline || error ? [] : rankOffers(filteredOffers, conditions);
     const productOffers = filteredOffers.filter(
       (o) => o.product_id === active?.id,
     );
-    const shown = products.filter((p) =>
-      view === "today" ? current.some((o) => o.product_id === p.id) : true,
-    );
-    const deal =
-      !offline && !error ? dailyDeals(shown, filteredOffers)[0] : undefined;
-    const todayProducts = deal
-      ? [deal.product, ...shown.filter((p) => p.id !== deal.product.id)]
-      : shown;
     const offersByProduct = new Map<string, Offer[]>();
     for (const o of filteredOffers) {
       const list = offersByProduct.get(o.product_id);
       if (list) list.push(o);
       else offersByProduct.set(o.product_id, [o]);
     }
+    const pricedIds = new Set<string>();
+    for (const [id, os] of offersByProduct) if (rankOffers(os, conditions).length) pricedIds.add(id);
+    const shown = products.filter((p) =>
+      view === "today" ? pricedIds.has(p.id) && !offline && !error : true,
+    );
+    const deal =
+      !offline && !error ? dailyDeals(shown, filteredOffers)[0] : undefined;
+    // "Ofertas do dia": the biggest discounts the stores themselves state (against their own regular price),
+    // nearest first among equals - the same order as the search's default, not the catalog's A to Z.
+    const byDiscount =
+      view === "today"
+        ? filterProducts(shown, offersByProduct, { ...noFilters, sort: "discount-near" }, {
+            conditions,
+            includeUnpriced: false,
+            nearby: nearby?.point,
+            locationsByRetailer,
+          })
+        : shown;
+    const todayProducts = deal
+      ? [deal.product, ...byDiscount.filter((p) => p.id !== deal.product.id)]
+      : byDiscount;
+    // What the coverage box counts: current prices (any condition) of the offers in reach, not the raw
+    // snapshot size, which also counts club variants and prices that are no longer current.
+    const currentAll = rankOffers(offers, true);
+    const coverageNow = {
+      networks: new Set(currentAll.map((o) => o.retailer_id)).size,
+      products: new Set(currentAll.map((o) => o.product_id)).size,
+      offers: currentAll.length,
+    };
     return {
-      products,
       filteredOffers,
-      current,
       productOffers,
       shown,
       todayProducts,
       deal,
       offersByProduct,
+      pricedIds,
+      coverageNow,
     };
   }, [
     data,
@@ -382,11 +540,13 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     nearby,
     networks,
     channel,
+    locationsByRetailer,
   ]);
   const listResetKey = [
     view,
     search,
     JSON.stringify(pf),
+    sortChosen,
     channel,
     category,
     conditions,
@@ -396,26 +556,37 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     old,
   ].join("|");
   const rail = useIncremental(todayProducts.length, 12, listResetKey);
+  const effectiveSort: SortKey = sortChosen
+    ? pf.sort === "relevance" && !typed
+      ? "discount-near"
+      : pf.sort
+    : typed
+      ? "relevance"
+      : "discount-near";
   // Memoized on the debounced `search` (via `shown`) so the filter over the whole catalog only
   // runs after typing pauses, not on every keystroke.
   const searchResults = useMemo(
     () =>
       view === "search"
-        ? filterProducts(shown, offersByProduct, pf, {
+        ? filterProducts(shown, offersByProduct, { ...pf, sort: effectiveSort }, {
             conditions,
             includeUnpriced: old,
             nearby: nearby?.point,
             locationsByRetailer,
+            query: typed,
           })
         : [],
-    [view, shown, offersByProduct, pf, conditions, old, nearby, locationsByRetailer],
+    [view, shown, offersByProduct, pf, effectiveSort, conditions, old, nearby, locationsByRetailer, typed],
   );
   const hasConditional = offers.some((o) => isConditional(o.conditions));
-  // Once the debounced search settles (new results are computed), clear the typing spinner.
-  useEffect(() => {
-    if (searching) setSearching(false);
-  }, [searchResults, searching]);
-  const hasUnpriced = shown.some((p) => !offersByProduct.get(p.id)?.length);
+  // Products the search found that have no current price (an outdated or expired one only, or none).
+  const hasUnpriced = shown.some((p) => !pricedIds.has(p.id));
+  // With no result: would the text alone have found priced products? Then the filters removed them all.
+  const matchedWithoutFilters = useMemo(() => {
+    if (view !== "search" || searchResults.length || !data) return 0;
+    const priced = new Set(rankOffers(offers, conditions).map((o) => o.product_id));
+    return data.products.filter((p) => priced.has(p.id)).length;
+  }, [view, searchResults, data, offers, conditions]);
   // Several sizes of the same product line become one card with a price range (see lib/group.ts), computed
   // once over the whole sorted result set - not per page, so "load more" never regroups an already-shown
   // card into (or out of) a range card the person has already seen.
@@ -434,16 +605,22 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     [productOffers, conditions],
   );
   const comparison = useIncremental(rankedProductOffers.length, 10, detailResetKey);
+  const comparisonFiltered = Boolean(nearby || networks.length || channel);
+  const suspect = suspiciousSpread(rankedProductOffers);
+  // Published offers of this product left out of the comparison, each with its reason.
+  const inactiveOffers = useMemo(
+    () => productOffers.filter((o) => o.published === 1 && outOfComparison(o) !== null),
+    [productOffers, clock],
+  );
+  const conditionalCount = useMemo(
+    () => rankOffers(productOffers, true).filter((o) => isConditional(o.conditions)).length,
+    [productOffers],
+  );
   // The whole catalog, not `products` above - that one is narrowed to whatever text is still sitting in
   // the search box (see the `data` memo's own note on why), which is exactly right for the search results
   // grid but wrong here: a product opened while "queijo" is still typed must still see every alternative,
   // not just the other ones whose name happens to contain "queijo".
   const allProducts = result.data?.products ?? [];
-  const pricedIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const [id, os] of offersByProduct) if (rankOffers(os, conditions).length) ids.add(id);
-    return ids;
-  }, [offersByProduct, conditions]);
   const altProducts = useMemo(
     () => (active ? alternativesOf(allProducts, active, pricedIds) : []),
     [allProducts, active, pricedIds],
@@ -463,7 +640,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       : 0;
   const unlocated = nearby
     ? rankOffers(allOffers, conditions).filter(
-        (o) => offerLocation(o, locationsByRetailer, nearby.point) === null,
+        (o) => !(locationsByRetailer[o.retailer_id]?.length),
       ).length
     : 0;
   const activeQuantity =
@@ -485,12 +662,49 @@ export default function Market({ demo = false }: { demo?: boolean }) {
         if (!cheapest.has(o.product_id)) cheapest.set(o.product_id, o.price_cents!);
     return cheapest;
   }, [offers, view]);
+  const productById = useMemo(
+    () => new Map((result.data?.products ?? []).map((p) => [p.id, p])),
+    [result.data],
+  );
+  const lineName = (l: Line) => {
+    const product = productById.get(l.product_id);
+    return product ? listName(product) : l.name;
+  };
+  const retailerName = (id: string) => result.data?.retailers.find((r) => r.id === id)?.name ?? id;
+  const filterChips: { key: string; label: string; clear: () => void }[] = [
+    ...(category ? [{ key: "category", label: `Categoria: ${category}`, clear: () => setCategory("") }] : []),
+    ...pf.networks.map((id) => ({
+      key: `network-${id}`,
+      label: retailerName(id),
+      clear: () => setPf((f) => ({ ...f, networks: f.networks.filter((x) => x !== id) })),
+    })),
+    ...(pf.minDiscount
+      ? [{ key: "discount", label: discountLabels[pf.minDiscount] ?? `Desconto de ${pf.minDiscount}% ou mais`, clear: () => setPf((f) => ({ ...f, minDiscount: 0 })) }]
+      : []),
+    ...(pf.minPrice !== null
+      ? [{ key: "min", label: `A partir de ${money(pf.minPrice)}`, clear: () => setPf((f) => ({ ...f, minPrice: null })) }]
+      : []),
+    ...(pf.maxPrice !== null
+      ? [{ key: "max", label: `Até ${money(pf.maxPrice)}`, clear: () => setPf((f) => ({ ...f, maxPrice: null })) }]
+      : []),
+    ...(conditions ? [{ key: "conditions", label: "Incluindo preços com condição", clear: () => setConditions(false) }] : []),
+    ...(old ? [{ key: "old", label: "Incluindo sem preço atual", clear: () => setOld(false) }] : []),
+  ];
+  const clearFilters = () => {
+    setPf(noFilters);
+    setSortChosen(false);
+    setCategory("");
+    setConditions(false);
+    setOld(false);
+  };
+  const unpricedLines = lines.filter((l) => !priceIndex.has(l.product_id));
   function SearchBox(className = "") {
     return (
       <form
         // Chrome iOS annotates forms/fields with __gCrUniqueID before React loads.
         suppressHydrationWarning
         className={`searchbar ${className}`}
+        role="search"
         onSubmit={(e) => {
           e.preventDefault();
           setView("search");
@@ -499,7 +713,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
           window.scrollTo({ top: 0, behavior: "instant" });
         }}
       >
-        <Search size={22} />
+        <Search size={22} aria-hidden="true" />
         <input
           suppressHydrationWarning
           aria-label="Buscar produtos"
@@ -509,20 +723,62 @@ export default function Market({ demo = false }: { demo?: boolean }) {
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            setSearching(true);
             clearShared();
             setView("search");
             setActive(null);
           }}
         />
+        {query && (
+          <Tooltip label="Limpar busca">
+            <button
+              type="button"
+              className="searchbar-clear"
+              aria-label="Limpar busca"
+              onClick={() => setQuery("")}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </Tooltip>
+        )}
         <button type="submit">
-          Buscar <span>→</span>
+          Buscar <span aria-hidden="true">→</span>
         </button>
       </form>
     );
   }
+  const retryButton = <RetryButton onRetry={retry} busy={result.isFetching} />;
+  const listButton = (
+    <Button variant="secondary" icon={<ClipboardList size={17} aria-hidden="true" />} onClick={() => navigate("list")}>
+      Abrir minha lista
+    </Button>
+  );
+  const errorPanel = (
+    <StatusPanel kind="error" title="Não foi possível carregar as ofertas">
+      <p>
+        {error} Nada foi perdido: sua lista continua salva neste aparelho.
+      </p>
+      <div className="status-actions">
+        {retryButton}
+        {listButton}
+      </div>
+    </StatusPanel>
+  );
+  const offlinePanel = (
+    <StatusPanel kind="offline" title="Você está sem conexão">
+      <p>
+        Os preços ficam ocultos até a conexão voltar, para não mostrar valores
+        que podem ter mudado. Sua lista continua salva neste aparelho.
+      </p>
+      <div className="status-actions">{listButton}</div>
+    </StatusPanel>
+  );
+  const best = rankedProductOffers[0];
   return (
+    <TooltipProvider>
     <div className={`app-shell${showSearch ? " has-mobile-search" : ""}`}>
+      <a className="skip-link" href="#conteudo">
+        Ir para o conteúdo
+      </a>
       {demo && (
         <div className="demo-banner">
           MODO DEMONSTRATIVO · dados fictícios{" "}
@@ -532,7 +788,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       <header className="header">
         <a className="brand" href={demo ? "/demo" : "/"}>
           <span className="brand-icon">
-            <ShoppingBasket size={25} />
+            <ShoppingBasket size={25} aria-hidden="true" />
           </span>
           <span>
             {BRAND.name.split(" ")[0].toLowerCase()}
@@ -542,59 +798,89 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             </span>
           </span>
         </a>
-        <nav className="desktop-nav" aria-label="Navegação principal">
-          {[
-            ["today", "Hoje"],
-            ["search", "Buscar"],
-            ["flyers", "Encartes"],
-            ["list", "Minha lista"],
-          ].map(([v, t]) => (
+        <nav
+          className="desktop-nav"
+          aria-label="Navegação principal"
+          ref={navPill.ref}
+          style={navPill.style}
+          data-ready={navPill.ready ? "" : undefined}
+        >
+          <span className="nav-pill" aria-hidden="true" />
+          {views.map(([v, t]) => (
             <button
               key={v}
               className={view === v ? "selected" : ""}
-              onClick={() => navigate(v as View)}
+              aria-current={view === v ? "page" : undefined}
+              onClick={() => navigate(v)}
             >
               {t}
               {v === "list" && lines.length > 0 && (
-                <span className="count">{lines.length}</span>
+                <span className="count" aria-label={`, ${lines.length} ${lines.length === 1 ? "item" : "itens"}`}>
+                  <Count value={lines.length} />
+                </span>
               )}
             </button>
           ))}
         </nav>
-        <label className="region">
-          <MapPin size={18} />
-          <span className="sr-only">Região</span>
-          <select
-            suppressHydrationWarning
-            value={region}
-            onChange={(e) => {
-              setRegion(e.target.value);
-              setNearby(null);
-              try {
-                localStorage.setItem("med-region", e.target.value);
-              } catch {}
-            }}
-          >
-            {(data?.regions || ["Fortaleza"]).map((r) => (
-              <option key={r}>{r}</option>
-            ))}
-          </select>
-          <span className="region-state">CE</span>
-        </label>
+        {regions.length > 1 ? (
+          <div className="region">
+            <MapPin size={18} aria-hidden="true" />
+            <SelectField
+              label="Região"
+              hideLabel
+              value={dataRegion}
+              onChange={(next) => {
+                setRegion(next);
+                setNearby(null);
+                try {
+                  localStorage.setItem("med-region", next);
+                } catch {}
+              }}
+              options={regions.map((r) => ({ value: r, label: r }))}
+            />
+            <span className="region-state">CE</span>
+          </div>
+        ) : (
+          // One covered city only: a label, not a selector with a single option.
+          <p className="region region-static">
+            <MapPin size={18} aria-hidden="true" />
+            <span>
+              <span className="sr-only">Cobertura: </span>
+              {dataRegion}
+              <span className="region-state"> CE</span>
+            </span>
+          </p>
+        )}
       </header>
-      <main className="main">
-        {offline && (
+      <main className="main" id="conteudo" tabIndex={-1}>
+        {offline && !active && view !== "today" && (
           <div className="notice amber" role="status">
-            <WifiOff size={19} />
-            Sem conexão. Os preços não serão tratados como atuais.
+            <WifiOff size={19} aria-hidden="true" />
+            <span>
+              Você está sem conexão. Os preços ficam ocultos até a conexão
+              voltar; sua lista continua salva neste aparelho.
+            </span>
           </div>
         )}
-        {error && (
+        {error && view === "list" && !active && (
           <div className="notice amber" role="alert">
-            {error}{" "}
-            <button onClick={() => window.location.reload()}>
-              Tentar novamente
-            </button>
+            <TriangleAlert size={19} aria-hidden="true" />
+            <span>{error}</span>
+            <Button variant="ghost" size="sm" onClick={retry} loading={result.isFetching}>
+              {result.isFetching ? "Tentando…" : "Tentar novamente"}
+            </Button>
+          </div>
+        )}
+        {refreshFailed && !offline && (
+          <div className="notice" role="status">
+            <Clock size={19} aria-hidden="true" />
+            <span>
+              Não foi possível atualizar os preços agora. Você está vendo os
+              dados carregados {whenLabel(new Date(result.dataUpdatedAt).toISOString())}.
+            </span>
+            <Button variant="ghost" size="sm" onClick={retry} loading={result.isFetching}>
+              {result.isFetching ? "Tentando…" : "Tentar novamente"}
+            </Button>
           </div>
         )}
         {sharedNotice && (
@@ -607,23 +893,44 @@ export default function Market({ demo = false }: { demo?: boolean }) {
         )}
         {active ? (
           <>
-            <button
-              className="back"
-              onClick={() => {
-                setActive(null);
-                clearShared();
-              }}
-            >
-              <ArrowLeft size={18} /> Voltar à busca
+            <button className="back" onClick={closeProduct}>
+              <ArrowLeft size={18} aria-hidden="true" />{" "}
+              {view === "today" ? "Voltar para Hoje" : "Voltar à busca"}
             </button>
             <div className="product-heading">
               <ProductHero product={active} />
               <div>
-                <span className="eyebrow">{active.brand}</span>
-                <h1>{active.name}</h1>
-                <p>
-                  {active.variant && `${active.variant} · `}{active.pack_count} embalagem ·{" "}
-                  {active.amount} {active.unit}
+                {active.brand && <p className="overline">{active.brand}</p>}
+                <h1 ref={headingRef} tabIndex={-1}>
+                  {active.name}
+                </h1>
+                <p>{packLabel(active)}</p>
+                <p className="product-summary-line">
+                  {offline ? (
+                    "Preços ocultos sem conexão."
+                  ) : error ? (
+                    "Preços indisponíveis no momento."
+                  ) : best && suspect ? (
+                    <>
+                      {rankedProductOffers.length} preços com diferença incomum entre redes: confira
+                      a embalagem antes de decidir.{" "}
+                      <a href="#comparacao" className="text-link">
+                        Ver comparação
+                      </a>
+                    </>
+                  ) : best ? (
+                    <>
+                      {rankedProductOffers.length === 1 ? "Único preço atual" : "Menor preço atual"}:{" "}
+                      <strong>{money(best.price_cents!)}</strong> no {best.retailer_name}
+                      {isConditional(best.conditions) && ` (${lowerFirst(conditionLabel(best.conditions))})`} ·{" "}
+                      {rankedProductOffers.length} {rankedProductOffers.length === 1 ? "preço" : "preços"}{" "}
+                      <a href="#comparacao" className="text-link">
+                        Ver comparação
+                      </a>
+                    </>
+                  ) : (
+                    "Sem preço atual nas lojas monitoradas."
+                  )}
                 </p>
                 <div className="product-list-actions">
                   <p className="product-list-status" aria-live="polite">
@@ -632,195 +939,160 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                       : "Salve na lista para planejar suas quantidades."}
                   </p>
                   <div>
-                    <button
-                      className="primary"
-                      disabled={activeQuantity >= 999}
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      disabled={activeQuantity >= MAX_QUANTITY}
+                      icon={<Plus size={18} aria-hidden="true" />}
                       onClick={() => add(active)}
                     >
-                      <Plus size={18} />{" "}
                       {activeQuantity
                         ? "Adicionar mais 1"
                         : "Adicionar à lista"}
-                    </button>
+                    </Button>
                     {activeQuantity > 0 && (
-                      <button
-                        className="text-link"
+                      <Button
+                        variant="ghost"
+                        trailing
+                        icon={<ChevronRight size={17} aria-hidden="true" />}
                         onClick={() => navigate("list")}
                       >
-                        Ver minha lista <ChevronRight size={17} />
-                      </button>
+                        Ver minha lista
+                      </Button>
                     )}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="section-heading">
+            <div className="section-heading" id="comparacao">
               <div>
                 <h2>Mesmo produto, preços encontrados</h2>
                 <p>
-                  Marca, variante e embalagem equivalentes.
+                  Mesmo nome e tamanho de embalagem em cada rede monitorada.
                   {nearby
                     ? ` Lojas até ${nearby.radiusKm} km da sua referência.`
                     : ""}
                 </p>
               </div>
             </div>
-            <label className="checkbox">
-              <input
-                type="checkbox"
+            {(conditionalCount > 0 || conditions) && (
+              <CheckboxField
+                className="detail-conditions"
                 checked={conditions}
-                onChange={(e) => setConditions(e.target.checked)}
+                onChange={setConditions}
+                label={
+                  <>
+                    Incluir preços de clube, cupom e outras condições
+                    {conditionalCount > 0 &&
+                      ` (${conditionalCount} ${conditionalCount === 1 ? "disponível" : "disponíveis"})`}
+                  </>
+                }
               />
-              Incluir clube, cupom e preços condicionados
-            </label>
-            <div className="comparison-list">
-              {!offline &&
-                !error &&
-                rankedProductOffers.slice(0, comparison.count).map((o, i) => {
-                  const up = unitPrice(active, o.price_cents!);
-                  return (
-                    <article
-                      className={`offer-row${sharedTarget?.offerId === o.id ? " shared-offer" : ""}`}
-                      id={`offer-${o.id}`}
-                      key={o.id}
-                    >
-                      <div className="store-mark">
-                        <Store size={23} />
-                      </div>
-                      <div className="offer-details">
-                        {sharedTarget?.offerId === o.id && (
-                          <span className="badge green">
-                            Oferta compartilhada
-                          </span>
-                        )}
-                        {i === 0 && (
-                          <span className="eyebrow green-text">
-                            Menor preço encontrado entre as ofertas monitoradas
-                          </span>
-                        )}
-                        <h3>{o.retailer_name}</h3>
-                        <p>
-                          {o.context_label} · {channelNames[o.channel]}
-                          {nearby &&
-                            (() => {
-                              const found = offerLocation(o, locationsByRetailer, nearby.point);
-                              return found && ` · ${distanceLabel(found.distanceKm)}`;
-                            })()}
-                        </p>
-                        <span
-                          className={
-                            "badge " +
-                            (conditionLabel(o.conditions) ===
-                            "Sem condição especial"
-                              ? "green"
-                              : "amber")
-                          }
-                        >
-                          {conditionLabel(o.conditions)}
-                        </span>
-                        <p className="small">
-                          {o.channel === "flyer"
-                            ? "Preço anunciado no encarte"
-                            : "Observado em"}{" "}
-                          {localTime(o.price_observed_at)}
-                          {o.valid_until &&
-                            ` · válido até ${localTime(o.valid_until)}`}
-                        </p>
-                        <p className="small">
-                          {o.availability === "available"
-                            ? "Disponível na consulta da fonte"
-                            : "Disponibilidade desconhecida"}
-                          {stockNote(o) && ` · ${stockNote(o)}`}{" "}
-                          ·{" "}
-                          {o.method === "manual"
-                            ? "Registro manual identificado"
-                            : o.method === "demo"
-                              ? "Dado fictício"
-                              : "Coleta automática"}
-                        </p>
-                        {o.collection_error && (
-                          <p className="small warning">
-                            Última coleta falhou; a observação não foi renovada.
-                          </p>
-                        )}
-                      </div>
-                      <div className="offer-value">
-                        <strong>{money(o.price_cents!)}</strong>
-                        <DealNote offer={o} />
-                        <span>
-                          {money(up.value)}/{up.unit}
-                        </span>
-                        {demo ? (
-                          <span className="small">
-                            Origem: exemplo fictício
-                          </span>
-                        ) : (
-                          <a
-                            href={o.source_url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Ver origem <ArrowUpRight size={16} />
-                          </a>
-                        )}
-                        <OfferShare
-                          offer={o}
-                          productName={active.name}
-                          region={dataRegion}
-                        />
-                        <StoreLocation
-                          offer={o}
-                          productName={active.name}
-                          region={dataRegion}
-                          address={
-                            offerLocation(o, locationsByRetailer, nearby?.point ?? FORTALEZA_CENTER)
-                              ?.location.address ?? null
-                          }
-                        />
-                      </div>
-                    </article>
-                  );
-                })}
-            </div>
-            {comparison.hasMore && !offline && !error && (
+            )}
+            {offline ? (
+              offlinePanel
+            ) : error ? (
+              errorPanel
+            ) : (
               <>
-                <LoadMore onVisible={comparison.more} />
-                <p className="muted list-progress">
-                  Mostrando {comparison.count.toLocaleString("pt-BR")} de{" "}
-                  {rankedProductOffers.length.toLocaleString("pt-BR")} ofertas
-                </p>
+                {suspect && (
+                  <div className="notice amber suspect-warning" role="note">
+                    <TriangleAlert size={19} aria-hidden="true" />
+                    <span>
+                      Os preços deste produto variam{" "}
+                      {new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(
+                        priceSpread(rankedProductOffers),
+                      )}{" "}
+                      vezes entre as redes. Isso costuma indicar embalagem ou
+                      unidade de venda diferente (por quilo, por unidade, caixa).
+                      Confira no site da loja antes de decidir; o preço por kg/L
+                      não é mostrado.
+                    </span>
+                  </div>
+                )}
+                <div className="comparison-list">
+                  {rankedProductOffers.slice(0, comparison.count).map((o, i) => (
+                    <OfferRow
+                      key={o.id}
+                      offer={o}
+                      product={active}
+                      // A 3x gap means the rows may not be the same pack: no "lowest" claim on any of them.
+                      note={suspect ? null : lowestPriceLabel(rankedProductOffers, i, comparisonFiltered)}
+                      shared={sharedTarget?.offerId === o.id}
+                      demo={demo}
+                      region={dataRegion}
+                      nearby={nearby}
+                      locationsByRetailer={locationsByRetailer}
+                      hideUnitPrice={suspect}
+                    />
+                  ))}
+                </div>
+                {comparison.hasMore && (
+                  <>
+                    <LoadMore onVisible={comparison.more} />
+                    <p className="muted list-progress">
+                      Mostrando {comparison.count.toLocaleString("pt-BR")} de{" "}
+                      {rankedProductOffers.length.toLocaleString("pt-BR")} ofertas
+                    </p>
+                  </>
+                )}
+                {outsideOffers > 0 && (
+                  <div className="nearby-outside">
+                    <p>
+                      {outsideOffers}{" "}
+                      {outsideOffers === 1
+                        ? "outra opção está"
+                        : "outras opções estão"}{" "}
+                      fora deste filtro de localização.
+                    </p>
+                    <Button variant="ghost" size="sm" trailing icon={<ChevronRight size={16} aria-hidden="true" />} onClick={() => setNearby(null)}>
+                      Ver preços em todas as lojas
+                    </Button>
+                  </div>
+                )}
+                {rankedProductOffers.length === 0 && (
+                  <div className="empty compact">
+                    <Clock aria-hidden="true" />
+                    <h3>Sem preço atual para este produto</h3>
+                    <p>
+                      {conditionalCount > 0 && !conditions
+                        ? "Há preços com condição (clube, cupom ou quantidade mínima). Marque a opção acima para vê-los."
+                        : "Você pode mantê-lo na lista e consultar novamente depois."}
+                    </p>
+                  </div>
+                )}
+                {inactiveOffers.length > 0 && (
+                  <details className="inactive-offers" open={rankedProductOffers.length === 0}>
+                    <summary>
+                      {inactiveOffers.length}{" "}
+                      {inactiveOffers.length === 1 ? "preço fora da comparação" : "preços fora da comparação"}
+                    </summary>
+                    <ul>
+                      {inactiveOffers.map((o) => (
+                        <li key={o.id}>
+                          <strong>{o.retailer_name}</strong>
+                          {o.price_cents !== null && <span> · {money(o.price_cents)}</span>}
+                          <span className="inactive-reason">{outOfComparison(o)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="fineprint">
+                      Estes preços não entram no menor preço, nas ofertas do dia
+                      nem nas estimativas da lista.
+                    </p>
+                  </details>
+                )}
               </>
-            )}
-            {outsideOffers > 0 && !offline && !error && (
-              <div className="nearby-outside">
-                <p>
-                  {outsideOffers}{" "}
-                  {outsideOffers === 1
-                    ? "outra opção está"
-                    : "outras opções estão"}{" "}
-                  fora deste filtro de localização.
-                </p>
-                <button className="text-link" onClick={() => setNearby(null)}>
-                  Ver preços em todas as lojas <ChevronRight size={16} />
-                </button>
-              </div>
-            )}
-            {rankedProductOffers.length === 0 && (
-              <div className="empty compact">
-                <Clock />
-                <h3>Sem oferta atual para este produto</h3>
-                <p>Você pode mantê-lo na lista e consultar novamente depois.</p>
-              </div>
             )}
             <h2 className="spaced">Alternativas</h2>
             <p className="muted">
               {active.subcategory
-                ? `Outros produtos do tipo "${active.subcategory}". Não entram na comparação exata acima.`
-                : "Produtos diferentes da mesma categoria. Não entram na comparação exata acima."}
+                ? `Outros produtos do tipo "${active.subcategory}". São produtos diferentes: não entram na comparação acima.`
+                : "Produtos diferentes da mesma categoria. Não entram na comparação acima."}
             </p>
             {altProducts.length === 0 ? (
               <div className="empty compact">
-                <Clock />
+                <Clock aria-hidden="true" />
                 <h3>Sem alternativas no momento</h3>
                 <p>Nenhum outro produto do mesmo tipo tem preço atual agora.</p>
               </div>
@@ -836,7 +1108,8 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                       locationsByRetailer={locationsByRetailer}
                       offers={filteredOffers}
                       conditions={conditions}
-                      unavailable={Boolean(offline || error)}
+                      priceHidden={priceHidden}
+                      listQuantity={listQuantity.get(p.id)}
                       onOpen={openProduct}
                       onAdd={add}
                     />
@@ -863,9 +1136,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     className={`intro catalog-intro${view === "search" ? " search-intro" : ""}`}
                   >
                     <div>
-                      <span className="eyebrow green-text">
-                        SUAS COMPRAS EM FORTALEZA
-                      </span>
+                      <p className="overline">Suas compras em Fortaleza</p>
                       <h1>
                         <span className="catalog-mobile-title">
                           Buscar produtos
@@ -876,7 +1147,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                       </h1>
                     </div>
                     <div className="pilot-stamp">
-                      <ShieldCheck size={22} />
+                      <ShieldCheck size={22} aria-hidden="true" />
                       <span>
                         Piloto em validação
                         <br />
@@ -887,33 +1158,35 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                 )}
                 {SearchBox("desktop-search")}
                 <div className="search-hint">
-                  Busque por produto, marca ou embalagem.
+                  Busque por produto, marca ou embalagem. Acentos não fazem diferença.
                 </div>
                 {view === "search" && (
                   <div
                     className={`category-row${filters ? " categories-expanded" : ""}`}
+                    role="group"
+                    aria-label="Categorias"
                   >
                     {[
                       "Todas",
                       ...(data?.categories.length
                         ? data.categories
                         : ["Mercearia", "Limpeza", "Bebidas", "Higiene"]),
-                    ].map((c) => (
-                      <button
-                        key={c}
-                        className={
-                          category === c || (c === "Todas" && !category)
-                            ? "active"
-                            : ""
-                        }
-                        onClick={() => {
-                          setCategory(c === "Todas" ? "" : c);
-                          setView("search");
-                        }}
-                      >
-                        {c === "Todas" && <SlidersHorizontal size={16} />} {c}
-                      </button>
-                    ))}
+                    ].map((c) => {
+                      const on = category === c || (c === "Todas" && !category);
+                      return (
+                        <Chip
+                          key={c}
+                          selected={on}
+                          icon={c === "Todas" ? <SlidersHorizontal size={16} aria-hidden="true" /> : undefined}
+                          onClick={() => {
+                            setCategory(c === "Todas" ? "" : c);
+                            setView("search");
+                          }}
+                        >
+                          {c}
+                        </Chip>
+                      );
+                    })}
                   </div>
                 )}
               </>
@@ -925,32 +1198,47 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     <h1>
                       Ofertas do dia<span>.</span>
                     </h1>
-                    <p>Menores preços nas lojas consultadas.</p>
+                    <p>
+                      Maiores descontos informados pelas lojas, entre as ofertas
+                      monitoradas{nearby ? ` até ${nearby.radiusKm} km da sua referência` : ""}.
+                    </p>
                   </div>
-                  <button
-                    className="text-link"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    trailing
+                    icon={<ChevronRight size={17} aria-hidden="true" />}
                     onClick={() => navigate("search")}
                   >
-                    Comparar <ChevronRight size={17} />
-                  </button>
+                    Ver todas
+                  </Button>
                 </div>
                 {loading ? (
-                  <div className="loading" role="status">
-                    Consultando ofertas publicadas…
-                  </div>
+                  <>
+                    <p className="loading" role="status">
+                      Carregando as ofertas publicadas…
+                    </p>
+                    <RailSkeleton />
+                  </>
+                ) : error ? (
+                  errorPanel
+                ) : offline ? (
+                  offlinePanel
                 ) : shown.length ? (
                   <OfferRail onEnd={rail.hasMore ? rail.more : undefined}>
-                    {todayProducts.slice(0, rail.count).map((p) => (
+                    {todayProducts.slice(0, rail.count).map((p, i) => (
                       <ProductCard
                         key={p.id}
                         p={p}
+                        style={{ "--i": Math.min(i, 5) } as CSSProperties}
                         region={dataRegion}
                         nearby={nearby}
                         locationsByRetailer={locationsByRetailer}
                         deal={deal?.product.id === p.id ? deal : undefined}
                         offers={filteredOffers}
                         conditions={conditions}
-                        unavailable={Boolean(offline || error)}
+                        priceHidden={priceHidden}
+                        listQuantity={listQuantity.get(p.id)}
                         onOpen={openProduct}
                         onAdd={add}
                       />
@@ -958,104 +1246,117 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                   </OfferRail>
                 ) : nearby ? (
                   <div className="empty compact nearby-empty">
-                    <MapPin size={30} />
+                    <MapPin size={30} aria-hidden="true" />
                     <h3>Nenhuma oferta neste raio</h3>
                     <p>
                       Ainda não temos preços atuais de lojas até{" "}
                       {nearby.radiusKm} km dessa referência.
                     </p>
-                    <button
-                      className="secondary"
-                      onClick={() => setNearby(null)}
-                    >
+                    <Button variant="secondary" onClick={() => setNearby(null)}>
                       Ver preços em todas as lojas
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <div className="empty">
                     <span className="empty-icon">
-                      <ShoppingBasket size={33} strokeWidth={1.3} />
+                      <ShoppingBasket size={33} strokeWidth={1.3} aria-hidden="true" />
                     </span>
                     <div>
-                      <span className="eyebrow">
-                        ESTAMOS CONFERINDO AS FONTES
-                      </span>
+                      <p className="overline">Estamos conferindo as fontes</p>
                       <h3>
                         Uma boa comparação começa
                         <br className="desktop-break" /> com um preço confiável.
                       </h3>
                       <p>
-                        Ainda não temos preços validados para comparar.
-                        <br />
+                        Ainda não há preços atuais publicados para comparar.{" "}
                         Enquanto isso, consulte os encartes oficiais e monte sua
                         lista.
                       </p>
-                      <button
-                        className="primary"
+                      <Button
+                        variant="primary"
+                        trailing
+                        icon={<ArrowUpRight size={17} aria-hidden="true" />}
                         onClick={() => navigate("flyers")}
                       >
-                        Consultar encartes <ArrowUpRight size={17} />
-                      </button>
+                        Consultar encartes
+                      </Button>
                     </div>
                   </div>
                 )}
-                {nearby && (
+                {nearby && !offline && !error && (
                   <p className="nearby-scope">
-                    Distâncias em linha reta.{" "}
+                    Distâncias em linha reta até a unidade mais próxima de cada
+                    rede.{" "}
                     {unlocated > 0
-                      ? `${unlocated} oferta(s) sem localização conferida ficaram fora do filtro.`
-                      : "O raio considera o endereço da unidade; preços online podem variar na loja."}
+                      ? `${unlocated} ${unlocated === 1 ? "preço de rede sem endereço cadastrado ficou" : "preços de redes sem endereço cadastrado ficaram"} fora do filtro.`
+                      : "Os preços são do site de cada rede e podem variar na loja."}
                   </p>
                 )}
-                <div className="coverage">
-                  <ShieldCheck size={20} />
-                  <div>
-                    <strong>
-                      Cobertura de preços {demo ? "fictícios" : "validados"}
-                    </strong>
-                    <span>
-                      {nearby
-                        ? new Set(current.map((o) => o.retailer_id)).size
-                        : data?.coverage.networks || 0}{" "}
-                      redes ·{" "}
-                      {nearby
-                        ? new Set(current.map((o) => o.product_id)).size
-                        : data?.coverage.products || 0}{" "}
-                      produtos ·{" "}
-                      {nearby ? current.length : data?.coverage.offers || 0}{" "}
-                      ofertas atuais{nearby ? " neste raio" : ""}
-                    </span>
+                {!error && (
+                  <div className="coverage">
+                    <ShieldCheck size={20} aria-hidden="true" />
+                    <div>
+                      <strong>
+                        {demo ? "Cobertura fictícia" : "Ofertas monitoradas"}
+                      </strong>
+                      <span>
+                        {loading || !data
+                          ? <><span className="sr-only">Carregando a cobertura…</span><Skeleton style={{ width: "min(240px, 70%)", height: 13 }} /></>
+                          : `${count(coverageNow.networks)} ${coverageNow.networks === 1 ? "rede" : "redes"} · ${count(coverageNow.products)} produtos · ${count(coverageNow.offers)} preços atuais${nearby ? " neste raio" : ""}`}
+                      </span>
+                      {data && (
+                        <span className="coverage-time">
+                          Dados publicados {whenLabel(data.generated_at)}
+                        </span>
+                      )}
+                    </div>
+                    <a href="#sources" className="text-link">
+                      Como ler os preços <ChevronRight size={17} aria-hidden="true" />
+                    </a>
                   </div>
-                  <a href="#sources" className="text-link">
-                    Ver fontes <ChevronRight size={17} />
-                  </a>
-                </div>
+                )}
                 <div className="section-heading">
                   <div>
-                    <span className="eyebrow green-text">
-                      DIRETO DOS SUPERMERCADOS
-                    </span>
+                    <p className="overline">Direto dos supermercados</p>
                     <h2>Encartes para consultar</h2>
                   </div>
-                  <button
-                    className="text-link"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    trailing
+                    icon={<ChevronRight size={17} aria-hidden="true" />}
                     onClick={() => navigate("flyers")}
                   >
-                    Ver todos <ChevronRight size={17} />
-                  </button>
+                    Ver todos
+                  </Button>
                 </div>
-                <div className="flyer-grid">
-                  {organizeFlyers(data?.flyers || [])
-                    .current.slice(0, 3)
-                    .map((f) => (
-                      <FlyerCard key={f.id} f={f} />
-                    ))}
-                </div>
+                {(() => {
+                  const flyers = organizeFlyers(data?.flyers || []).current.slice(0, 3);
+                  if (loading)
+                    return (
+                      <>
+                        <p className="loading" role="status">
+                          Carregando encartes…
+                        </p>
+                        <FlyerGridSkeleton />
+                      </>
+                    );
+                  if (error) return <p className="muted">Os encartes também dependem da consulta que falhou.</p>;
+                  if (!flyers.length)
+                    return <p className="muted">Nenhum encarte dentro da validade publicado agora.</p>;
+                  return (
+                    <div className="flyer-grid">
+                      {flyers.map((f) => (
+                        <FlyerCard key={f.id} f={f} />
+                      ))}
+                    </div>
+                  );
+                })()}
               </>
             )}
             {view === "search" && (
               <>
-                <div className="section-heading">
+                <div className="section-heading results-heading">
                   <h2>
                     <span className="catalog-mobile-title">
                       {query ? "Resultados" : "Produtos monitorados"}
@@ -1066,63 +1367,61 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                         : "Produtos monitorados"}
                     </span>
                   </h2>
-                  <button
-                    className="secondary"
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    aria-expanded={filters}
+                    aria-controls="filter-panel"
+                    icon={<SlidersHorizontal size={17} aria-hidden="true" />}
                     onClick={() => setFilters(!filters)}
                   >
-                    <SlidersHorizontal size={17} />
                     Filtros
-                  </button>
+                    {filterChips.length > 0 && (
+                      <span className="count" aria-label={`, ${filterChips.length} ativos`}>
+                        {filterChips.length}
+                      </span>
+                    )}
+                  </Button>
                 </div>
                 {filters && (
-                  <div className="filter-panel">
+                  <div className="filter-panel" id="filter-panel">
                     <fieldset className="filter-group">
                       <legend>Redes</legend>
                       <div className="chip-row">
                         {data?.retailers.map((r) => {
                           const on = pf.networks.includes(r.id);
                           return (
-                            <label
+                            <ChipCheckbox
                               key={r.id}
-                              className={`chip-check${on ? " selected" : ""}`}
+                              checked={on}
+                              onChange={() =>
+                                setPf((f) => ({
+                                  ...f,
+                                  networks: on
+                                    ? f.networks.filter((x) => x !== r.id)
+                                    : [...f.networks, r.id],
+                                }))
+                              }
                             >
-                              <input
-                                type="checkbox"
-                                checked={on}
-                                onChange={() =>
-                                  setPf((f) => ({
-                                    ...f,
-                                    networks: on
-                                      ? f.networks.filter((x) => x !== r.id)
-                                      : [...f.networks, r.id],
-                                  }))
-                                }
-                              />
                               {r.name}
-                            </label>
+                            </ChipCheckbox>
                           );
                         })}
                       </div>
                     </fieldset>
-                    <label>
-                      Desconto
-                      <select
-                        value={pf.minDiscount}
-                        onChange={(e) =>
-                          setPf((f) => ({
-                            ...f,
-                            minDiscount: Number(e.target.value),
-                          }))
-                        }
-                      >
-                        <option value={0}>Qualquer</option>
-                        <option value={1}>Só com desconto</option>
-                        <option value={10}>10% ou mais</option>
-                        <option value={20}>20% ou mais</option>
-                        <option value={30}>30% ou mais</option>
-                        <option value={50}>50% ou mais</option>
-                      </select>
-                    </label>
+                    <SelectField
+                      label="Desconto"
+                      value={String(pf.minDiscount)}
+                      onChange={(next) => setPf((f) => ({ ...f, minDiscount: Number(next) }))}
+                      options={[
+                        { value: "0", label: "Qualquer" },
+                        { value: "1", label: "Só com desconto" },
+                        { value: "10", label: "10% ou mais" },
+                        { value: "20", label: "20% ou mais" },
+                        { value: "30", label: "30% ou mais" },
+                        { value: "50", label: "50% ou mais" },
+                      ]}
+                    />
                     <PriceInput
                       label="Preço mínimo (R$)"
                       value={pf.minPrice}
@@ -1133,148 +1432,204 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                       value={pf.maxPrice}
                       onChange={(maxPrice) => setPf((f) => ({ ...f, maxPrice }))}
                     />
-                    <label>
-                      Ordenar por
-                      <select
-                        value={pf.sort}
-                        onChange={(e) =>
-                          setPf((f) => ({
-                            ...f,
-                            sort: e.target.value as ProductFilters["sort"],
-                          }))
-                        }
-                      >
-                        <option value="discount-near">Maior desconto e mais perto</option>
-                        <option value="discount">Maior desconto</option>
-                        <option value="price-asc">Menor preço</option>
-                        <option value="price-desc">Maior preço</option>
-                        <option value="name">Nome (A a Z)</option>
-                      </select>
-                      {pf.sort === "discount-near" && !nearby && (
-                        <small className="muted">
-                          Defina seu local em &ldquo;Perto de você&rdquo; para considerar a distância; por
-                          enquanto, só o desconto está ordenando.
-                        </small>
-                      )}
-                    </label>
                     {hasConditional && (
-                      <label className="checkbox">
-                        <input
-                          type="checkbox"
-                          checked={conditions}
-                          onChange={(e) => setConditions(e.target.checked)}
-                        />
-                        Incluir preços de clube e outras condições
-                      </label>
+                      <CheckboxField
+                        checked={conditions}
+                        onChange={setConditions}
+                        label="Incluir preços de clube e outras condições"
+                      />
                     )}
                     {hasUnpriced && (
-                      <label className="checkbox">
-                        <input
-                          type="checkbox"
-                          checked={old}
-                          onChange={(e) => setOld(e.target.checked)}
-                        />
-                        Incluir produtos sem preço atual
-                      </label>
+                      <CheckboxField checked={old} onChange={setOld} label="Incluir produtos sem preço atual" />
                     )}
-                    {(activeFilterCount(pf) > 0 || pf.sort !== "name") && (
-                      <button
-                        className="text-link clear-filters"
-                        onClick={() => setPf(noFilters)}
-                      >
-                        Limpar filtros
-                      </button>
-                    )}
+                    <p className="filter-note">
+                      Os filtros valem para o preço de cada loja: “20% ou mais
+                      até R$ 10” mostra produtos com uma oferta que atende às
+                      duas condições.
+                    </p>
                   </div>
                 )}
-                {loading || searching ? (
-                  <div role="status" className="loading">
-                    {searching ? "Filtrando…" : "Buscando no catálogo…"}
+                {!loading && !error && (
+                  <div className="results-toolbar">
+                    <p className="results-count" role="status">
+                      {searching
+                        ? "Atualizando resultados…"
+                        : `${count(searchResults.length)} ${searchResults.length === 1 ? "produto" : "produtos"}${
+                            groupedSearchResults.length !== searchResults.length
+                              ? ` em ${count(groupedSearchResults.length)} cartões`
+                              : ""
+                          }`}
+                    </p>
+                    <SelectField
+                      label="Ordenar por"
+                      className="sort-select"
+                      value={effectiveSort}
+                      onChange={(key) => {
+                        setPf((f) => ({ ...f, sort: key }));
+                        setSortChosen(true);
+                      }}
+                      options={(Object.keys(sortLabels) as SortKey[])
+                        .filter((key) => key !== "relevance" || typed)
+                        .map((key) => ({ value: key, label: sortLabels[key] }))}
+                    />
                   </div>
-                ) : (
+                )}
+                {effectiveSort === "discount-near" && !nearby && !loading && !error && (
+                  <p className="sort-hint muted">
+                    Defina seu local em “Perto de você” para desempatar pela
+                    distância; por enquanto, só o desconto está ordenando.
+                  </p>
+                )}
+                {filterChips.length > 0 && (
+                  <div className="filter-chips" role="group" aria-label="Filtros ativos">
+                    {filterChips.map((chip) => (
+                      <Chip
+                        key={chip.key}
+                        removable
+                        aria-label={`Remover filtro: ${chip.label}`}
+                        onClick={chip.clear}
+                      >
+                        {chip.label}
+                      </Chip>
+                    ))}
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                      Limpar filtros
+                    </Button>
+                  </div>
+                )}
+                {loading ? (
                   <>
-                  <div className="product-grid">
-                    {groupedSearchResults.slice(0, grid.count).map((entry) =>
-                      "members" in entry ? (
-                        <ProductRangeCard
-                          key={entry.key}
-                          group={entry}
-                          offersByProduct={offersByProduct}
-                          conditions={conditions}
-                          nearby={nearby}
-                          locationsByRetailer={locationsByRetailer}
-                          onOpen={openProduct}
-                          onAdd={add}
-                        />
-                      ) : (
-                        <ProductCard
-                          key={entry.id}
-                          p={entry}
-                          region={dataRegion}
-                          nearby={nearby}
-                          locationsByRetailer={locationsByRetailer}
-                          offers={filteredOffers}
-                          conditions={conditions}
-                          unavailable={Boolean(offline || error)}
-                          onOpen={openProduct}
-                          onAdd={add}
-                        />
-                      ),
+                    <p role="status" className="loading">
+                      {sharedTarget ? "Abrindo o produto do link…" : "Carregando as ofertas publicadas…"}
+                    </p>
+                    <GridSkeleton />
+                  </>
+                ) : error ? (
+                  errorPanel
+                ) : (
+                  // The grid stays mounted while a new search is computed: veiled, never replaced by a box.
+                  <div className="results" data-busy={searching}>
+                    <div className="product-grid">
+                      {groupedSearchResults.slice(0, grid.count).map((entry) =>
+                        "members" in entry ? (
+                          <ProductRangeCard
+                            key={entry.key}
+                            group={entry}
+                            offersByProduct={offersByProduct}
+                            conditions={conditions}
+                            nearby={nearby}
+                            locationsByRetailer={locationsByRetailer}
+                            onOpen={openProduct}
+                            onAdd={add}
+                          />
+                        ) : (
+                          <ProductCard
+                            key={entry.id}
+                            p={entry}
+                            region={dataRegion}
+                            nearby={nearby}
+                            locationsByRetailer={locationsByRetailer}
+                            offers={filteredOffers}
+                            conditions={conditions}
+                            priceHidden={priceHidden}
+                            listQuantity={listQuantity.get(entry.id)}
+                            onOpen={openProduct}
+                            onAdd={add}
+                          />
+                        ),
+                      )}
+                    </div>
+                    {grid.hasMore ? (
+                      <>
+                        <LoadMore onVisible={grid.more} />
+                        <p className="muted list-progress">
+                          Mostrando {grid.count.toLocaleString("pt-BR")} de{" "}
+                          {groupedSearchResults.length.toLocaleString("pt-BR")} cartões
+                        </p>
+                      </>
+                    ) : (
+                      groupedSearchResults.length > 24 && (
+                        <p className="muted list-progress">Fim dos resultados.</p>
+                      )
+                    )}
+                    {!searchResults.length && (
+                      <div className="empty compact">
+                        <Search size={30} aria-hidden="true" />
+                        {nearby ? (
+                          <>
+                            <h3>Nenhuma oferta neste raio</h3>
+                            <p>
+                              Não encontramos {typed ? "este produto" : "preços atuais"} em lojas até{" "}
+                              {nearby.radiusKm} km da referência. Amplie a distância ou remova o
+                              filtro de localização.
+                            </p>
+                            <Button variant="secondary" onClick={() => setNearby(null)}>
+                              Ver em todas as lojas
+                            </Button>
+                          </>
+                        ) : matchedWithoutFilters > 0 ? (
+                          <>
+                            <h3>Nenhuma oferta com estes filtros</h3>
+                            <p>
+                              {count(matchedWithoutFilters)}{" "}
+                              {matchedWithoutFilters === 1 ? "produto corresponde" : "produtos correspondem"}{" "}
+                              {typed ? "à busca" : "ao catálogo"} sem os filtros ativos.
+                            </p>
+                            <Button variant="secondary" onClick={clearFilters}>
+                              Remover filtros
+                            </Button>
+                          </>
+                        ) : typed ? (
+                          <>
+                            <h3>Nenhum produto encontrado para “{typed}”</h3>
+                            <p>
+                              Confira a grafia ou tente uma palavra mais curta, como
+                              “arroz” ou “leite”. A busca considera o começo das
+                              palavras e ignora acentos.
+                            </p>
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                clearShared();
+                                setQuery("");
+                                clearFilters();
+                              }}
+                            >
+                              Limpar busca
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <h3>Nenhum produto com preço atual</h3>
+                            <p>Consulte os encartes enquanto novos preços são publicados.</p>
+                          </>
+                        )}
+                      </div>
                     )}
                   </div>
-                  {grid.hasMore && (
-                    <>
-                      <LoadMore onVisible={grid.more} />
-                      <p className="muted list-progress">
-                        Mostrando {grid.count.toLocaleString("pt-BR")} de{" "}
-                        {groupedSearchResults.length.toLocaleString("pt-BR")} produtos
-                      </p>
-                    </>
-                  )}
-                  </>
                 )}
-                {!loading && !searchResults.length && (
-                    <div className="empty compact">
-                      <Search size={30} />
-                      <h3>
-                        {nearby
-                          ? "Nenhuma oferta neste raio"
-                          : "Nenhum produto encontrado"}
-                      </h3>
-                      <p>
-                        {nearby
-                          ? `Não encontramos este produto em lojas até ${nearby.radiusKm} km da referência. Amplie a distância ou remova o filtro.`
-                          : "Tente outro nome ou embalagem. A cobertura ainda está sendo validada."}
-                      </p>
-                      <button
-                        className="secondary"
-                        onClick={() => {
-                          clearShared();
-                          setQuery("");
-                          setCategory("");
-                          setPf(noFilters);
-                          setChannel("");
-                          setNearby(null);
-                        }}
-                      >
-                        Limpar busca e filtros
-                      </button>
-                    </div>
-                  )}
               </>
             )}
-            {view === "flyers" && (
-              <FlyerBrowser
-                flyers={data?.flyers || []}
-                retailers={data?.retailers || []}
-              />
-            )}
+            {view === "flyers" &&
+              (loading ? (
+                <>
+                  <p className="loading" role="status">
+                    Carregando os encartes…
+                  </p>
+                  <FlyerGridSkeleton count={6} />
+                </>
+              ) : error ? (
+                errorPanel
+              ) : (
+                <FlyerBrowser
+                  flyers={data?.flyers || []}
+                  retailers={data?.retailers || []}
+                />
+              ))}
             {view === "list" && (
               <>
                 <div className="page-title">
-                  <span className="eyebrow green-text">
-                    SEM CADASTRO, NO SEU DISPOSITIVO
-                  </span>
+                  <p className="overline">Sem cadastro, guardada neste aparelho</p>
                   <h1>Minha lista.</h1>
                   <p>
                     {lines.length} {lines.length === 1 ? "item" : "itens"} para
@@ -1285,33 +1640,69 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     diretamente com a loja.
                   </p>
                 </div>
+                {storageMessage(storageIssue) && (
+                  <div className="notice amber storage-notice" role="status">
+                    <TriangleAlert size={19} aria-hidden="true" />
+                    <span>{storageMessage(storageIssue)}</span>
+                    {(storageIssue === "unreadable" || storageIssue === "partial") && (
+                      <Button variant="ghost" size="sm" onClick={() => setStorageIssue(null)}>
+                        Entendi
+                      </Button>
+                    )}
+                  </div>
+                )}
                 <ListAdder
                   products={listProducts}
                   priceOf={(id) => priceIndex.get(id) ?? null}
                   onProduct={add}
                 />
+                {undo && (
+                  <div className="notice undo-notice" role="status">
+                    <span>{undo.message}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={<Undo2 size={16} aria-hidden="true" />}
+                      onClick={() => {
+                        setLines(undo.lines);
+                        setUndo(null);
+                        notify("Lista restaurada");
+                      }}
+                    >
+                      Desfazer
+                    </Button>
+                  </div>
+                )}
                 {!lines.length && (
                   <div className="empty compact">
-                    <ClipboardList size={32} />
+                    <ClipboardList size={32} aria-hidden="true" />
                     <h3>Comece sua lista de consulta.</h3>
                     <p>
                       Adicione um item acima ou escolha um produto na busca.
                     </p>
                   </div>
                 )}
-                {!loading && !offline && !error && lines.some((l) => !priceIndex.has(l.product_id)) && (
+                {!loading && !offline && !error && unpricedLines.length > 0 && (
                   <div className="notice">
-                    {lines.filter((l) => !priceIndex.has(l.product_id)).length === 1
-                      ? "1 item da lista não tem preço atual e não entra no cálculo."
-                      : `${lines.filter((l) => !priceIndex.has(l.product_id)).length} itens da lista não têm preço atual e não entram no cálculo.`}{" "}
-                    <button
-                      className="text-link"
+                    <span>
+                      {unpricedLines.length === 1
+                        ? "1 item da lista não tem preço atual e não entra no cálculo."
+                        : `${unpricedLines.length} itens da lista não têm preço atual e não entram no cálculo.`}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() =>
-                        setLines((l) => l.filter((x) => priceIndex.has(x.product_id)))
+                        remove(
+                          unpricedLines.map((l) => l.product_id),
+                          unpricedLines.length === 1
+                            ? "1 item sem preço atual foi removido."
+                            : `${unpricedLines.length} itens sem preço atual foram removidos.`,
+                        )
                       }
                     >
                       Remover esses itens
-                    </button>
+                    </Button>
                   </div>
                 )}
                 <div className="shopping-list">
@@ -1325,144 +1716,111 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     // Same per-kg/L/unit price shown everywhere else a price appears (search cards, the
                     // range-card modal, the detail comparison list) - suppressed the same way too, when
                     // the pack is already exactly one kg/L/unit and it would just repeat the price.
-                    const product = data?.products.find((p) => p.id === l.product_id);
-                    const up = o && product ? unitPrice(product, o.price_cents!) : null;
+                    const product = productById.get(l.product_id);
+                    const unit = o && product ? unitPriceText(product, o.price_cents!) : null;
+                    const name = lineName(l);
                     return (
                       <article className="list-item" key={l.product_id}>
                         <div className="list-product">
-                          <Package size={23} />
+                          <Package size={23} aria-hidden="true" />
                           <div>
-                            <h3>{l.name}</h3>
+                            <h3>{name}</h3>
                             <p>
-                              {o
-                                ? `Referência: ${money(o.price_cents!)}${up && up.value !== o.price_cents ? ` (${money(up.value)}/${up.unit})` : ""} por embalagem · ${o.retailer_name}`
-                                : `Sem preço atual nas lojas consultadas${nearby ? " neste raio" : ""}`}
+                              {offline
+                                ? "Preço oculto sem conexão"
+                                : error
+                                  ? "Preço indisponível no momento"
+                                  : loading
+                                    ? "Carregando preço…"
+                                    : !product
+                                      ? "Este produto não está mais entre as ofertas monitoradas"
+                                      : o
+                                        ? `Menor preço atual: ${money(o.price_cents!)}${unit ? ` (${unit})` : ""} no ${o.retailer_name} · visto ${whenLabel(o.price_observed_at)}`
+                                        : `Sem preço atual nas lojas monitoradas${nearby ? " neste raio" : ""}`}
                             </p>
                             {o && (
                               <StoreContact
                                 offer={o}
-                                address={
-                                  offerLocation(o, locationsByRetailer, nearby?.point ?? FORTALEZA_CENTER)
-                                    ?.location.address ?? null
-                                }
+                                nearby={nearby}
+                                locations={locationsByRetailer[o.retailer_id] ?? []}
                               />
                             )}
                           </div>
                         </div>
                         <div className="list-quantity">
-                          <p>Quantidade para planejar</p>
-                          <div className="quantity">
+                          <p id={`qtd-${l.product_id}`}>Quantidade para planejar</p>
+                          <div className="quantity" role="group" aria-labelledby={`qtd-${l.product_id}`}>
                             <button
-                              aria-label={`Diminuir ${l.name}`}
+                              aria-label={`Diminuir ${name}`}
                               disabled={l.quantity <= 1}
-                              onClick={() =>
-                                setLines((a) =>
-                                  a.map((x) =>
-                                    x.product_id === l.product_id
-                                      ? { ...x, quantity: x.quantity - 1 }
-                                      : x,
-                                  ),
-                                )
-                              }
+                              onClick={() => setQuantity(l.product_id, l.quantity - 1)}
                             >
-                              <Minus size={16} />
+                              <Minus size={16} aria-hidden="true" />
                             </button>
-                            <span>{l.quantity}</span>
+                            <span aria-live="polite" aria-atomic="true">
+                              <span className="sr-only">Quantidade: </span>
+                              <Count value={l.quantity} />
+                            </span>
                             <button
-                              aria-label={`Aumentar ${l.name}`}
-                              disabled={l.quantity >= 999}
-                              onClick={() =>
-                                setLines((a) =>
-                                  a.map((x) =>
-                                    x.product_id === l.product_id
-                                      ? {
-                                          ...x,
-                                          quantity: Math.min(
-                                            999,
-                                            x.quantity + 1,
-                                          ),
-                                        }
-                                      : x,
-                                  ),
-                                )
-                              }
+                              aria-label={`Aumentar ${name}`}
+                              disabled={l.quantity >= MAX_QUANTITY}
+                              onClick={() => setQuantity(l.product_id, l.quantity + 1)}
                             >
-                              <Plus size={16} />
+                              <Plus size={16} aria-hidden="true" />
                             </button>
                           </div>
                         </div>
-                        <button
-                          className="icon-button"
-                          aria-label={`Remover ${l.name}`}
-                          onClick={() =>
-                            setLines((a) =>
-                              a.filter((x) => x.product_id !== l.product_id),
-                            )
-                          }
-                        >
-                          <X size={19} />
-                        </button>
+                        <Tooltip label="Remover da lista">
+                          <IconButton
+                            label={`Remover ${name} da lista`}
+                            onClick={() => remove([l.product_id], `“${short(name)}” foi removido da lista.`)}
+                          >
+                            <X size={19} aria-hidden="true" />
+                          </IconButton>
+                        </Tooltip>
                       </article>
                     );
                   })}
                 </div>
                 {lines.length > 0 && (
                   <>
-                    <h2 className="spaced">Estimativa por loja</h2>
+                    <h2 className="spaced">Estimativa por rede</h2>
                     <p className="muted">
-                      Compare a cobertura de cada estimativa. Listas incompletas
-                      não são classificadas como mais baratas.
+                      Soma dos menores preços atuais de cada rede para as
+                      quantidades da lista. Uma rede sem preço para algum item
+                      mostra só o subtotal do que tem, que não é comparável a um
+                      total completo.
                     </p>
                     <StoreEstimates
                       estimates={estimates}
-                      lines={lines}
+                      total={lines.length}
+                      nameOf={(id) => {
+                        const line = lines.find((l) => l.product_id === id);
+                        return line ? lineName(line) : id;
+                      }}
                       hasReference={Boolean(nearby)}
                     />
                     {!estimates.length && (
                       <div className="notice">
-                        Ainda não há preços atuais para calcular sua lista.
+                        {offline
+                          ? "Estimativas ocultas sem conexão. Elas voltam quando a conexão voltar."
+                          : error
+                            ? "Estimativas indisponíveis: os preços não foram carregados."
+                            : loading
+                              ? "Carregando os preços para estimar…"
+                              : "Ainda não há preços atuais para os itens da sua lista."}
                       </div>
                     )}
                     <p className="fineprint">
-                      Sem frete ou deslocamento. Itens com clube, cupom ou
-                      quantidade mínima não entram no subtotal padrão.
+                      Sem frete ou deslocamento. Preços de clube, cupom ou
+                      quantidade mínima não entram nas estimativas.
                     </p>
                   </>
                 )}
               </>
             )}
-            {view === "today" && (
-              <section id="sources" className="sources">
-                <div className="section-heading">
-                  <h2>Transparência nas fontes</h2>
-                  <span className="badge">Piloto</span>
-                </div>
-                <p className="muted">
-                  Uma rede listada aqui não significa que seus preços já estão
-                  sendo monitorados.
-                </p>
-                {data?.retailers.map((r) => (
-                  <div key={r.id} className="source-row">
-                    <Store size={19} />
-                    <div>
-                      <strong>{r.name}</strong>
-                      <span>
-                        {r.last_error
-                          ? "Fonte temporariamente indisponível"
-                          : r.audit_status}
-                      </span>
-                    </div>
-                    <a
-                      href={r.official_url}
-                      aria-label={`Site oficial ${r.name}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <ArrowUpRight size={20} />
-                    </a>
-                  </div>
-                ))}
-              </section>
+            {view === "today" && data && (
+              <Sources retailers={data.retailers} offers={allOffers} demo={demo} />
             )}
           </>
         )}
@@ -1471,12 +1829,21 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             {BRAND.name.toLowerCase()}.{" "}
             <span className="muted">{BRAND.city}, CE</span>
           </span>
-          <a href="/admin">Administração</a>
+          <span className="muted footer-note">
+            Consulta de preços. Sem venda, reserva ou entrega.
+          </span>
         </footer>
       </main>
       <div className="mobile-dock">
         {showSearch && <div className="mobile-search">{SearchBox()}</div>}
-        <nav className="bottom-nav" aria-label="Navegação mobile">
+        <nav
+          className="bottom-nav"
+          aria-label="Navegação mobile"
+          ref={dockMarker.ref}
+          style={dockMarker.style}
+          data-ready={dockMarker.ready ? "" : undefined}
+        >
+          <span className="nav-marker" aria-hidden="true" />
           {(
             [
               { v: "today", t: "Hoje", icon: ShoppingBasket },
@@ -1489,20 +1856,21 @@ export default function Market({ demo = false }: { demo?: boolean }) {
               key={v}
               onClick={() => navigate(v)}
               className={view === v ? "selected" : ""}
+              aria-current={view === v ? "page" : undefined}
             >
-              <Icon size={22} />
+              <Icon size={22} aria-hidden="true" />
               <span>{t}</span>
-              {v === "list" && lines.length > 0 && <b>{lines.length}</b>}
+              {v === "list" && lines.length > 0 && (
+                <b aria-label={`, ${lines.length} ${lines.length === 1 ? "item" : "itens"}`}>
+                  <Count value={lines.length} />
+                </b>
+              )}
             </button>
           ))}
         </nav>
       </div>
-      {toast && (
-        <div className="toast" role="status">
-          <Check size={19} />
-          {toast}
-        </div>
-      )}
+      <Notifications bottom={narrow ? (showSearch ? 168 : 84) : 24} />
     </div>
+    </TooltipProvider>
   );
 }

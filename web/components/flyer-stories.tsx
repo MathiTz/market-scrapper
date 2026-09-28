@@ -9,11 +9,11 @@ import {
   X,
   Maximize2,
 } from "lucide-react";
-import { flyerState, type Flyer } from "@/lib/domain";
+import type { Flyer } from "@/lib/domain";
 import {
   flyerPages,
   flyerDateRange,
-  flyerStates,
+  flyerStateLabel,
   flyerShareUrl,
 } from "@/lib/flyers";
 import {
@@ -23,6 +23,10 @@ import {
   PageProgress,
   useFlyerPlayer,
 } from "./flyer-player";
+import { Button, IconButton, buttonClass } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
+import { useDialog } from "@/components/ui/use-dialog";
+import { Count } from "@/components/ui/number";
 
 /** The flyer viewer zooms from 25% to 150% of the size that fits the screen, in 25% steps. */
 const MIN_ZOOM = 25;
@@ -42,7 +46,7 @@ export function FlyerDialog({
   onClose: () => void;
   opener: RefObject<HTMLButtonElement | null>;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
+  const { ref, requestClose } = useDialog(true, onClose, opener);
   const [network, setNetwork] = useState(f.retailer_id);
   // Keep the reading sequence stable if another edition expires while this dialog is open.
   const [editions] = useState(() => [...flyers]);
@@ -59,17 +63,6 @@ export function FlyerDialog({
       ]),
     ).values(),
   ];
-  useEffect(() => {
-    const dialog = ref.current!,
-      overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    dialog.showModal();
-    return () => {
-      dialog.close();
-      document.body.style.overflow = overflow;
-      if (opener.current?.isConnected) opener.current.focus();
-    };
-  }, []);
   return (
     <dialog
       ref={ref}
@@ -77,22 +70,19 @@ export function FlyerDialog({
       aria-labelledby="flyer-dialog-title"
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        requestClose();
       }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget) requestClose();
       }}
     >
       <div className="story-topbar">
         <span>Encartes em stories</span>
-        <button
-          className="icon-button"
-          aria-label="Fechar encarte"
-          onClick={onClose}
-          autoFocus
-        >
-          <X size={22} />
-        </button>
+        <Tooltip label="Fechar" side="bottom">
+          <IconButton label="Fechar encarte" onClick={() => requestClose()} autoFocus>
+            <X size={22} aria-hidden="true" />
+          </IconButton>
+        </Tooltip>
       </div>
       <NetworkTabs
         networks={networks}
@@ -284,7 +274,7 @@ function StoryReader({
           </p>
           <h2 id="flyer-dialog-title">{f.title}</h2>
           <p>
-            {flyerDateRange(f)} · <strong>{flyerStates[flyerState(f)]}</strong>
+            {flyerDateRange(f)} · <strong>{flyerStateLabel(f)}</strong>
           </p>
         </div>
         <FlyerValidity flyer={f} />
@@ -296,56 +286,59 @@ function StoryReader({
       <div className="flyer-toolbar" onFocusCapture={() => player.pause()}>
         {frame.type === "image" && frame.url && !isFailed && (
           <div className="flyer-zoom" aria-label="Ampliação do encarte">
-            <button
-              className="icon-button"
-              aria-label="Reduzir encarte"
-              disabled={zoom <= MIN_ZOOM}
-              onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP))}
-            >
-              <ZoomOut size={20} />
-            </button>
-            <span aria-live="polite">{zoom}%</span>
-            <button
-              className="icon-button"
-              aria-label="Ampliar encarte"
-              disabled={zoom >= MAX_ZOOM}
-              onClick={() => {
-                player.pause();
-                setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP));
-              }}
-            >
-              <ZoomIn size={20} />
-            </button>
-            <button
-              className="icon-button"
-              aria-label="Ajustar à tela"
-              onClick={() => setZoom(100)}
-            >
-              <Maximize2 size={19} />
-            </button>
+            <Tooltip label="Reduzir">
+              <IconButton
+                label="Reduzir encarte"
+                disabled={zoom <= MIN_ZOOM}
+                onClick={() => setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP))}
+              >
+                <ZoomOut size={20} aria-hidden="true" />
+              </IconButton>
+            </Tooltip>
+            <span aria-live="polite">
+              <Count value={zoom} />%
+            </span>
+            <Tooltip label="Ampliar">
+              <IconButton
+                label="Ampliar encarte"
+                disabled={zoom >= MAX_ZOOM}
+                onClick={() => {
+                  player.pause();
+                  setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP));
+                }}
+              >
+                <ZoomIn size={20} aria-hidden="true" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip label="Ajustar à tela">
+              <IconButton label="Ajustar à tela" onClick={() => setZoom(100)}>
+                <Maximize2 size={19} aria-hidden="true" />
+              </IconButton>
+            </Tooltip>
           </div>
         )}
-        <button
-          className="secondary"
+        <Button
+          variant="secondary"
           aria-label="Baixar encarte"
-          disabled={!downloadUrl || busy}
+          disabled={!downloadUrl}
+          loading={busy}
+          icon={<Download size={18} aria-hidden="true" />}
           onClick={download}
         >
-          <Download size={18} />
           {busy
             ? "Baixando…"
             : f.media_type === "pdf"
               ? "Baixar PDF"
               : "Baixar"}
-        </button>
-        <button
-          className="secondary"
+        </Button>
+        <Button
+          variant="secondary"
           aria-label="Compartilhar encarte"
+          icon={<Share2 size={18} aria-hidden="true" />}
           onClick={share}
         >
-          <Share2 size={18} />
           Compartilhar
-        </button>
+        </Button>
       </div>
       <div
         ref={viewport}
@@ -422,6 +415,7 @@ function StoryReader({
               }
               draggable={false}
               referrerPolicy="no-referrer"
+              data-loaded={ready}
               onLoad={(event) => {
                 setNatural({
                   w: event.currentTarget.naturalWidth,
@@ -450,12 +444,12 @@ function StoryReader({
                 : "Temos o link da página oficial. A imagem ou o PDF para ampliar e baixar ainda não foi cadastrado."}
             </p>
             <a
-              className="secondary"
+              className={buttonClass("secondary")}
               href={f.source_url}
               target="_blank"
               rel="noreferrer"
             >
-              Abrir no site oficial <ArrowUpRight size={18} />
+              Abrir no site oficial <ArrowUpRight size={18} aria-hidden="true" />
             </a>
           </div>
         )}

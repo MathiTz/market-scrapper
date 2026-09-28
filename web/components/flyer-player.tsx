@@ -2,6 +2,8 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Pause, Play, Timer } from "lucide-react";
 import { flyerCountdown } from "@/lib/flyers";
 import type { Flyer } from "@/lib/domain";
+import { IconButton } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export const PAGE_DURATION = 8000;
 type Playback = { index: number; elapsed: number; playing: boolean };
@@ -112,37 +114,33 @@ export function PageControls({
   if (count <= 1) return null;
   return (
     <div className="story-controls" aria-label="Navegação das páginas">
-      <button
-        className="icon-button"
-        aria-label="Página anterior"
-        disabled={player.index === 0}
-        onClick={() => player.go(player.index - 1)}
-      >
-        <ChevronLeft size={20} />
-      </button>
+      <Tooltip label="Página anterior">
+        <IconButton label="Página anterior" disabled={player.index === 0} onClick={() => player.go(player.index - 1)}>
+          <ChevronLeft size={20} aria-hidden="true" />
+        </IconButton>
+      </Tooltip>
       <span className="story-page-count" aria-live="off">
         {player.index + 1} / {count}
       </span>
-      <button
-        className="icon-button"
-        aria-label="Próxima página"
-        disabled={player.index >= count - 1}
-        onClick={() => player.go(player.index + 1)}
-      >
-        <ChevronRight size={20} />
-      </button>
+      <Tooltip label="Próxima página">
+        <IconButton label="Próxima página" disabled={player.index >= count - 1} onClick={() => player.go(player.index + 1)}>
+          <ChevronRight size={20} aria-hidden="true" />
+        </IconButton>
+      </Tooltip>
       <span className="story-timer" aria-live="off">
         {player.playing
           ? `Próxima em ${Math.ceil((PAGE_DURATION - player.elapsed) / 1000)}s`
           : "Pausado"}
       </span>
-      <button
-        className="icon-button story-play"
-        aria-label={player.playing ? "Pausar páginas" : "Reproduzir páginas"}
-        onClick={player.toggle}
-      >
-        {player.playing ? <Pause size={18} /> : <Play size={18} />}
-      </button>
+      <Tooltip label={player.playing ? "Pausar" : "Reproduzir"}>
+        <IconButton
+          className="story-play"
+          label={player.playing ? "Pausar páginas" : "Reproduzir páginas"}
+          onClick={player.toggle}
+        >
+          {player.playing ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
+        </IconButton>
+      </Tooltip>
     </div>
   );
 }

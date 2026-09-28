@@ -8,9 +8,10 @@ import {
   flyerWeekLabel,
   flyerPages,
   flyerDateRange,
-  flyerStates,
+  flyerStateLabel,
 } from "@/lib/flyers";
 import { FlyerDialog } from "./flyer-stories";
+import { SelectField } from "@/components/ui/select";
 import {
   FlyerValidity,
   NetworkTabs,
@@ -55,7 +56,7 @@ export function FlyerCard({ f, flyers = [f] }: { f: Flyer; flyers?: Flyer[] }) {
         <span
           className={"badge " + (flyerState(f) === "current" ? "green" : "")}
         >
-          {demo ? "Fictício" : flyerStates[flyerState(f)]}
+          {demo ? "Fictício" : flyerStateLabel(f)}
         </span>
       </div>
       <div className="flyer-card-player">
@@ -95,6 +96,13 @@ export function FlyerCard({ f, flyers = [f] }: { f: Flyer; flyers?: Flyer[] }) {
             {page?.type === "image" && failed !== page.url ? (
               <img
                 key={page.url}
+                // A cached page fires no load event: the mount checks it, so the cover never stays invisible.
+                ref={(element) => {
+                  if (element?.complete && element.naturalWidth && loaded !== page.url) {
+                    setLoaded(page.url);
+                    setFailed("");
+                  }
+                }}
                 src={page.url}
                 alt={
                   "Ofertas de " +
@@ -105,6 +113,7 @@ export function FlyerCard({ f, flyers = [f] }: { f: Flyer; flyers?: Flyer[] }) {
                 }
                 loading="lazy"
                 draggable={false}
+                data-loaded={loaded === page.url}
                 onLoad={() => {
                   setLoaded(page.url);
                   setFailed("");
@@ -278,40 +287,29 @@ export function FlyerBrowser({
         {archived ? (
           <>
             <div className="filter-panel flyer-filters">
-              <label>
-                Mês
-                <select
-                  value={month}
-                  onChange={(event) => {
-                    setMonth(event.target.value);
-                    setWeek("");
-                  }}
-                >
-                  <option value="">Todos os meses</option>
-                  {months.map((m) => (
-                    <option key={m} value={m}>
-                      {flyerMonthLabel(m)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Semana
-                <select
-                  value={week}
-                  disabled={!month}
-                  onChange={(event) => setWeek(event.target.value)}
-                >
-                  <option value="">
-                    {month ? "Todas as semanas" : "Selecione um mês"}
-                  </option>
-                  {weeks.map((w) => (
-                    <option key={w} value={w}>
-                      {flyerWeekLabel(month, w)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {/* "*" stands for "all": the empty string is what the filter state uses for it. */}
+              <SelectField
+                label="Mês"
+                value={month || "*"}
+                onChange={(next) => {
+                  setMonth(next === "*" ? "" : next);
+                  setWeek("");
+                }}
+                options={[
+                  { value: "*", label: "Todos os meses" },
+                  ...months.map((m) => ({ value: m, label: flyerMonthLabel(m) })),
+                ]}
+              />
+              <SelectField
+                label="Semana"
+                value={week || "*"}
+                disabled={!month}
+                onChange={(next) => setWeek(next === "*" ? "" : next)}
+                options={[
+                  { value: "*", label: month ? "Todas as semanas" : "Selecione um mês" },
+                  ...weeks.map((w) => ({ value: String(w), label: flyerWeekLabel(month, w) })),
+                ]}
+              />
             </div>
             <p className="archive-note">
               Somente encartes com validade encerrada. Escolha o mês e depois a
