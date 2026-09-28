@@ -1,5 +1,10 @@
 # Verificação das fases 1–4 do plano de UI e motion — 28/09/2026
 
+> As capturas, relatórios JSON e roteiros de script citados abaixo (`referencias/auditoria-ux/...`) foram
+> usados na preparação desta entrega mas não foram mantidos no repositório; ver
+> [auditoria-ux-capturas.md](auditoria-ux-capturas.md) para o método. Os números e resultados abaixo são o
+> registro do que foi verificado.
+
 Planos `003` a `009` de [plans/README.md](plans/README.md), executados nesta branch na ordem 009 → 007 → 003
 → 004 → 005 → 006 → 008, depois da fase 0 abaixo. Mesmo mock de API, snapshot congelado, relógio fixo e
 larguras da auditoria. Nenhuma coleta, publicação, commit ou deploy. Desvios do texto dos planos:

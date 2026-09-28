@@ -1,8 +1,8 @@
 # Mercado em Dia — entrega da interface
 > **Estado atual (27/09/2026):** a interface é Vite + React + TypeScript com TanStack React Query (veja
 > [AGENTS.md](AGENTS.md)); as seções abaixo descrevem o pacote de handoff de 21/09 e citam Next.js, que não
-> é mais usado. Auditoria de UX, jornada, estados e validação atuais: [AUDITORIA-UX.md](AUDITORIA-UX.md),
-> [ESTADOS-UX.md](ESTADOS-UX.md) e [VALIDACAO.md](VALIDACAO.md).
+> é mais usado. Auditoria de UX, jornada, estados e validação atuais: [AUDITORIA-UX.md](docs/AUDITORIA-UX.md),
+> [ESTADOS-UX.md](docs/ESTADOS-UX.md) e [VALIDACAO.md](docs/VALIDACAO.md).
 
 Preparado em 21/09/2026 a partir da cópia local fornecida pelo proprietário.
 
@@ -31,12 +31,12 @@ Para validar e executar o build:
 - app/globals.css: estilos completos, cores, tipografia e responsividade originais.
 - index.html, app/main.tsx, public/: entrada da aplicação, rotas (/, /demo, /admin), ícone e recursos PWA.
 - lib/: tipos e funções utilizadas pela interface; fixtures fictícias.
+- docs/: documentação de processo (auditoria de UX, plano de design/motion, produto, validação) - veja
+  docs/AUDITORIA-UX.md, docs/VALIDACAO.md e docs/plans/.
 - INTEGRACAO.md: contrato de dados e roteiro para conectar o backend.
-- VISUAL.md: mapa de telas, componentes e critérios de conferência.
 - ALTERACOES.md: diferenças entre esta entrega e o projeto original.
 - referencias/historicas/: capturas e textos encontrados na origem; não são novas validações desta entrega.
 - referencias/preview/: capturas novas da demonstração separada.
-- VALIDACAO.md: verificações realizadas nesta entrega.
 - MANIFESTO-SHA256.csv: inventário, hashes e indicação dos arquivos idênticos à origem.
 
 ## O que funciona sem backend

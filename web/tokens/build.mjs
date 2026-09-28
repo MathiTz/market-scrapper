@@ -83,7 +83,7 @@ const lines = [
   ...Object.entries(tokens.z).map(([k, v]) => `  --md-z-${k}: ${v};`),
   "  /* Type. */",
   ...Object.entries(tokens.type).map(([k, v]) => `  --md-${k}: ${v};`),
-  "  /* Motion (curves and durations from emilkowalski/skills; see PLANO-UI-MOTION.md 7.1). */",
+  "  /* Motion (curves and durations from emilkowalski/skills; see ../docs/PLANO-UI-MOTION.md 7.1). */",
   ...Object.entries(tokens.motion).map(([k, v]) => `  --${k}: ${v};`),
   "}",
   "",

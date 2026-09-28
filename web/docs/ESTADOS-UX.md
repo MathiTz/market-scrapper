@@ -2,7 +2,8 @@
 
 Complemento de [AUDITORIA-UX.md](AUDITORIA-UX.md). Base: `main` @ `12e46d0` (antes) e branch local
 `ux/auditoria-experiencia` (depois), com a mesma cópia congelada do snapshot público de 27/09/2026 e relógio
-fixo em 27/09/2026 18:00 (Fortaleza). Capturas em `referencias/auditoria-ux/`.
+fixo em 27/09/2026 18:00 (Fortaleza). Método das capturas: [auditoria-ux-capturas.md](auditoria-ux-capturas.md)
+(imagens não mantidas no repositório).
 
 Legenda de evidência: **[O]** observado na interface executada (captura ou medição), **[C]** lido no código,
 **[H]** hipótese a validar com pessoas ou em aparelho real.

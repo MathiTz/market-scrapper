@@ -1,7 +1,8 @@
 # Auditoria de UX/UI e evolução da interface — Mercado em Dia
 
-27/09/2026. Jornada completa e matriz de estados: [ESTADOS-UX.md](ESTADOS-UX.md). Capturas comparativas:
-[referencias/auditoria-ux/](referencias/auditoria-ux/).
+27/09/2026. Jornada completa e matriz de estados: [ESTADOS-UX.md](ESTADOS-UX.md). Método das capturas
+comparativas usadas nesta auditoria: [auditoria-ux-capturas.md](auditoria-ux-capturas.md) (as imagens em si
+não foram mantidas no repositório).
 
 ## 1. Resumo do diagnóstico e direção adotada
 
@@ -201,27 +202,12 @@ plausibilidade no destaque, textos de condição, rótulos de encarte sem data f
 (nova opção, padrão só com termo) e ordem da faixa Hoje (reuso da ordem "maior desconto e mais perto").
 
 ### 6.6 Capturas comparativas
-Mesmos dados, relógio e larguras. Arquivos em `referencias/auditoria-ux/antes/` e `…/depois/`.
-
-| Tela | Antes | Depois |
-|---|---|---|
-| Hoje, 390 px | ![](referencias/auditoria-ux/antes/390-hoje-topo.png) | ![](referencias/auditoria-ux/depois/390-hoje-topo.png) |
-| Hoje, 1280 px | ![](referencias/auditoria-ux/antes/1280-hoje-topo.png) | ![](referencias/auditoria-ux/depois/1280-hoje-topo.png) |
-| API indisponível | ![](referencias/auditoria-ux/antes/390-estado-erro-503.png) | ![](referencias/auditoria-ux/depois/390-estado-erro-503.png) |
-| Sem conexão | ![](referencias/auditoria-ux/antes/390-estado-offline.png) | ![](referencias/auditoria-ux/depois/390-estado-offline.png) |
-| Busca "leite integral" | ![](referencias/auditoria-ux/antes/390-busca-leite.png) | ![](referencias/auditoria-ux/depois/390-busca-leite.png) |
-| Busca sem resultado por filtros | ![](referencias/auditoria-ux/antes/390-vazio-filtros.png) | ![](referencias/auditoria-ux/depois/390-vazio-filtros.png) |
-| Detalhe, 390 px | ![](referencias/auditoria-ux/antes/390-comparacao.png) | ![](referencias/auditoria-ux/depois/390-comparacao.png) |
-| Comparação suspeita, 1280 px | ![](referencias/auditoria-ux/antes/1280-comparacao-suspeita.png) | ![](referencias/auditoria-ux/depois/1280-comparacao-suspeita.png) |
-| Onde encontrar | ![](referencias/auditoria-ux/antes/390-ver-localizacao.png) | ![](referencias/auditoria-ux/depois/390-ver-localizacao.png) |
-| Tamanhos | ![](referencias/auditoria-ux/antes/390-tamanhos-dialogo.png) | ![](referencias/auditoria-ux/depois/390-tamanhos-dialogo.png) |
-| Lista e estimativa, 1280 px | ![](referencias/auditoria-ux/antes/1280-lista-completa.png) | ![](referencias/auditoria-ux/depois/1280-lista-completa.png) |
-| Lista após remover | ![](referencias/auditoria-ux/antes/390-lista-apos-remover.png) | ![](referencias/auditoria-ux/depois/390-lista-apos-remover.png) |
-| Lista ilegível no armazenamento | ![](referencias/auditoria-ux/antes/390-lista-armazenamento-ilegivel.png) | ![](referencias/auditoria-ux/depois/390-lista-armazenamento-ilegivel.png) |
-| Preço antigo (demo) | ![](referencias/auditoria-ux/antes/390-demo-preco-antigo.png) | ![](referencias/auditoria-ux/depois/390-demo-preco-antigo.png) |
-| Foco do teclado | ![](referencias/auditoria-ux/antes/390-foco-teclado.png) | ![](referencias/auditoria-ux/depois/390-foco-teclado.png) |
-| Cabeçalho a 768 px | ![](referencias/auditoria-ux/antes/768-hoje-topo.png) | ![](referencias/auditoria-ux/depois/768-hoje-topo.png) |
-| Timeout da API | ![](referencias/auditoria-ux/antes/390-estado-timeout.png) | ![](referencias/auditoria-ux/depois/390-estado-timeout.png) |
+Mesmos dados, relógio e larguras nos dois lados (antes/depois); método em
+[auditoria-ux-capturas.md](auditoria-ux-capturas.md). As imagens não foram mantidas no repositório; as telas
+comparadas foram: Hoje (390/1280 px), API indisponível, sem conexão, busca "leite integral", busca sem
+resultado por filtros, detalhe do produto (390 px), comparação suspeita (1280 px), onde encontrar, tamanhos,
+lista e estimativa (1280 px), lista após remover, lista ilegível no armazenamento, preço antigo (demo), foco
+do teclado, cabeçalho a 768 px e timeout da API.
 
 ## 7. Validação
 

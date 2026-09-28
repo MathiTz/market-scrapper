@@ -1,6 +1,6 @@
 # Referência visual
 ## Fonte de verdade
-Componentes e app/globals.css são a implementação atual. Capturas são apoio. referencias/historicas contém estados de momentos diferentes do projeto; para divergências, priorize o código atual, referencias/auditoria-ux (27/09/2026) e referencias/preview.
+Componentes e app/globals.css são a implementação atual. Capturas são apoio. referencias/historicas contém estados de momentos diferentes do projeto; para divergências, priorize o código atual e referencias/preview. A auditoria de 27/09/2026 (docs/auditoria-ux-capturas.md) não teve suas imagens mantidas no repositório.
 ## Estilo
 Archivo Variable (peso 100–900, largura 62–125), auto-hospedada via `@fontsource-variable/archivo`, com fallback de métricas ajustadas para Arial. Ícones lucide-react.
 Tokens: a fonte única é `tokens/tokens.json` (paleta em OKLCH → semântica → `app/tokens.css`, gerado por `npm run tokens`). O CSS consome só nomes semânticos com prefixo `--md-` (`surface-canvas` #f9fbfd, `surface-level-1` #fff, `text-primary`, `text-secondary`, `text-link*`, `border-subtle`, `interactive-primary-fill-*`, `selected-*`, `messaging-*`, `price-*`, `elevation-*`, `radius-*`, `space-*`, `z-*`) mais os tokens de motion (`--ease-out`, `--dur-*`). Não há mais aliases legados. `npm run tokens:check` reprova contraste abaixo de 4,5:1 (texto) ou 3:1 (foco, borda de campo), qualquer literal de cor ou raio fora da escala e qualquer `var(--x)` que não seja token nem variável local declarada, em `app/` e `components/`; roda no `prebuild`.

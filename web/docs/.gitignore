@@ -1,0 +1,8 @@
+# Process docs here are markdown only: no screenshots, reports or captured binaries. See auditoria-ux-capturas.md.
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.avif
+*.svg
