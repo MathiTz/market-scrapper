@@ -1,0 +1,356 @@
+[
+  {
+    "flow": "compra-390",
+    "step": "endereço manual retorna sugestões",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "compra-390",
+    "step": "referência aplicada no filtro",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "compra-390",
+    "step": "busca com resultados",
+    "ok": true,
+    "detail": "2 cartões"
+  },
+  {
+    "flow": "compra-390",
+    "step": "filtro de rede aplicado e visível (chip)",
+    "ok": false,
+    "detail": "0 chip(s)"
+  },
+  {
+    "flow": "compra-390",
+    "step": "comparação aberta",
+    "ok": true,
+    "detail": "1 linha(s)"
+  },
+  {
+    "flow": "compra-390",
+    "step": "foco no título do produto",
+    "ok": false,
+    "detail": "BODY"
+  },
+  {
+    "flow": "compra-390",
+    "step": "quantidade 2 no detalhe",
+    "ok": true,
+    "detail": "2 unidades na sua lista"
+  },
+  {
+    "flow": "compra-390",
+    "step": "voltar do navegador fecha o produto e fica no app",
+    "ok": false,
+    "detail": "about:blank"
+  },
+  {
+    "flow": "flowShopping-390",
+    "step": "execução",
+    "ok": false,
+    "detail": "TimeoutError: locator.click: Timeout 30000ms exceeded."
+  },
+  {
+    "flow": "encarte-390",
+    "step": "leitor aberto",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "encarte-390",
+    "step": "ampliar para 125%",
+    "ok": true,
+    "detail": "125%"
+  },
+  {
+    "flow": "encarte-390",
+    "step": "compartilhar dá retorno (link copiado ou campo com link)",
+    "ok": true,
+    "detail": "Copie o link abaixo para compartilhar."
+  },
+  {
+    "flow": "encarte-390",
+    "step": "Esc fecha e devolve o foco ao botão do encarte",
+    "ok": true,
+    "detail": "flyer-open"
+  },
+  {
+    "flow": "encarte-390",
+    "step": "sem erros de página",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "gps-390",
+    "step": "GPS negado explica e oferece endereço",
+    "ok": true,
+    "detail": "Localização não autorizada. Você pode digitar seu endereço ou bairro abaixo."
+  },
+  {
+    "flow": "gps-390",
+    "step": "endereço manual aplicado depois da recusa",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "oferta-antiga-390",
+    "step": "link de oferta não atual avisa",
+    "ok": true,
+    "detail": "Esta oferta não está disponível no momento. Veja as opções atuais."
+  },
+  {
+    "flow": "oferta-antiga-390",
+    "step": "preço antigo aparece fora da comparação com motivo",
+    "ok": false,
+    "detail": ""
+  },
+  {
+    "flow": "oferta-antiga-390",
+    "step": "preço antigo não entra na comparação",
+    "ok": true,
+    "detail": "0 linha(s)"
+  },
+  {
+    "flow": "cesta-390",
+    "step": "aviso quando nenhuma rede cobre a lista",
+    "ok": false,
+    "detail": ""
+  },
+  {
+    "flow": "cesta-390",
+    "step": "subtotais rotulados como parciais",
+    "ok": false,
+    "detail": ""
+  },
+  {
+    "flow": "cesta-390",
+    "step": "nenhuma rede parcial marcada como mais barata",
+    "ok": true,
+    "detail": "0"
+  },
+  {
+    "flow": "teclado-390",
+    "step": "primeiro Tab no atalho para o conteúdo",
+    "ok": false,
+    "detail": "mercadoem dia."
+  },
+  {
+    "flow": "teclado-390",
+    "step": "diálogo Onde encontrar abre pelo teclado",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "teclado-390",
+    "step": "Esc fecha e devolve o foco",
+    "ok": true,
+    "detail": "store-location-trigger"
+  },
+  {
+    "flow": "compra-1280",
+    "step": "endereço manual retorna sugestões",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "compra-1280",
+    "step": "referência aplicada no filtro",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "compra-1280",
+    "step": "busca com resultados",
+    "ok": true,
+    "detail": "2 cartões"
+  },
+  {
+    "flow": "compra-1280",
+    "step": "filtro de rede aplicado e visível (chip)",
+    "ok": false,
+    "detail": "0 chip(s)"
+  },
+  {
+    "flow": "compra-1280",
+    "step": "comparação aberta",
+    "ok": true,
+    "detail": "1 linha(s)"
+  },
+  {
+    "flow": "compra-1280",
+    "step": "foco no título do produto",
+    "ok": false,
+    "detail": "BODY"
+  },
+  {
+    "flow": "compra-1280",
+    "step": "quantidade 2 no detalhe",
+    "ok": true,
+    "detail": "2 unidades na sua lista"
+  },
+  {
+    "flow": "compra-1280",
+    "step": "voltar do navegador fecha o produto e fica no app",
+    "ok": false,
+    "detail": "about:blank"
+  },
+  {
+    "flow": "flowShopping-1280",
+    "step": "execução",
+    "ok": false,
+    "detail": "TimeoutError: locator.click: Timeout 30000ms exceeded."
+  },
+  {
+    "flow": "encarte-1280",
+    "step": "leitor aberto",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "encarte-1280",
+    "step": "ampliar para 125%",
+    "ok": true,
+    "detail": "125%"
+  },
+  {
+    "flow": "encarte-1280",
+    "step": "compartilhar dá retorno (link copiado ou campo com link)",
+    "ok": true,
+    "detail": "Copie o link abaixo para compartilhar."
+  },
+  {
+    "flow": "encarte-1280",
+    "step": "Esc fecha e devolve o foco ao botão do encarte",
+    "ok": true,
+    "detail": "flyer-open"
+  },
+  {
+    "flow": "encarte-1280",
+    "step": "sem erros de página",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "gps-1280",
+    "step": "GPS negado explica e oferece endereço",
+    "ok": true,
+    "detail": "Localização não autorizada. Você pode digitar seu endereço ou bairro abaixo."
+  },
+  {
+    "flow": "gps-1280",
+    "step": "endereço manual aplicado depois da recusa",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "oferta-antiga-1280",
+    "step": "link de oferta não atual avisa",
+    "ok": true,
+    "detail": "Esta oferta não está disponível no momento. Veja as opções atuais."
+  },
+  {
+    "flow": "oferta-antiga-1280",
+    "step": "preço antigo aparece fora da comparação com motivo",
+    "ok": false,
+    "detail": ""
+  },
+  {
+    "flow": "oferta-antiga-1280",
+    "step": "preço antigo não entra na comparação",
+    "ok": true,
+    "detail": "0 linha(s)"
+  },
+  {
+    "flow": "cesta-1280",
+    "step": "aviso quando nenhuma rede cobre a lista",
+    "ok": false,
+    "detail": ""
+  },
+  {
+    "flow": "cesta-1280",
+    "step": "subtotais rotulados como parciais",
+    "ok": false,
+    "detail": ""
+  },
+  {
+    "flow": "cesta-1280",
+    "step": "nenhuma rede parcial marcada como mais barata",
+    "ok": true,
+    "detail": "0"
+  },
+  {
+    "flow": "teclado-1280",
+    "step": "primeiro Tab no atalho para o conteúdo",
+    "ok": false,
+    "detail": "mercadoem dia."
+  },
+  {
+    "flow": "teclado-1280",
+    "step": "diálogo Onde encontrar abre pelo teclado",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "teclado-1280",
+    "step": "Esc fecha e devolve o foco",
+    "ok": true,
+    "detail": "store-location-trigger"
+  },
+  {
+    "flow": "compra-390",
+    "step": "endereço manual retorna sugestões",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "compra-390",
+    "step": "referência aplicada no filtro",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "flow": "compra-390",
+    "step": "busca com resultados",
+    "ok": true,
+    "detail": "2 cartões"
+  },
+  {
+    "flow": "compra-390",
+    "step": "filtro de rede aplicado e visível (chip)",
+    "ok": false,
+    "detail": "0 chip(s)"
+  },
+  {
+    "flow": "compra-390",
+    "step": "comparação aberta",
+    "ok": true,
+    "detail": "1 linha(s)"
+  },
+  {
+    "flow": "compra-390",
+    "step": "foco no título do produto",
+    "ok": false,
+    "detail": "BODY"
+  },
+  {
+    "flow": "compra-390",
+    "step": "quantidade 2 no detalhe",
+    "ok": true,
+    "detail": "2 unidades na sua lista"
+  },
+  {
+    "flow": "compra-390",
+    "step": "voltar do navegador fecha o produto e fica no app",
+    "ok": false,
+    "detail": "about:blank"
+  },
+  {
+    "flow": "webkit",
+    "step": "execução",
+    "ok": false,
+    "detail": "TimeoutError: locator.click: Timeout 30000ms exceeded."
+  }
+]

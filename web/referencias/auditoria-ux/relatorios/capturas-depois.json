@@ -1,0 +1,824 @@
+[
+ {
+  "name": "hoje-topo",
+  "width": 320,
+  "file": "320-hoje-topo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "hoje-completa",
+  "width": 320,
+  "file": "320-hoje-completa.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "hoje-topo",
+  "width": 390,
+  "file": "390-hoje-topo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "hoje-completa",
+  "width": 390,
+  "file": "390-hoje-completa.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "hoje-topo",
+  "width": 768,
+  "file": "768-hoje-topo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "hoje-completa",
+  "width": 768,
+  "file": "768-hoje-completa.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "hoje-topo",
+  "width": 1280,
+  "file": "1280-hoje-topo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "hoje-completa",
+  "width": 1280,
+  "file": "1280-hoje-completa.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "busca-leite",
+  "width": 320,
+  "file": "320-busca-leite.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-filtros",
+  "width": 320,
+  "file": "320-busca-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-sem-resultado",
+  "width": 320,
+  "file": "320-busca-sem-resultado.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "busca-leite",
+  "width": 390,
+  "file": "390-busca-leite.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-filtros",
+  "width": 390,
+  "file": "390-busca-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-sem-resultado",
+  "width": 390,
+  "file": "390-busca-sem-resultado.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "busca-leite",
+  "width": 768,
+  "file": "768-busca-leite.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-filtros",
+  "width": 768,
+  "file": "768-busca-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-sem-resultado",
+  "width": 768,
+  "file": "768-busca-sem-resultado.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "busca-leite",
+  "width": 1280,
+  "file": "1280-busca-leite.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-filtros",
+  "width": 1280,
+  "file": "1280-busca-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-sem-resultado",
+  "width": 1280,
+  "file": "1280-busca-sem-resultado.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "comparacao",
+  "width": 320,
+  "file": "320-comparacao.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-completa",
+  "width": 320,
+  "file": "320-comparacao-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-suspeita",
+  "width": 320,
+  "file": "320-comparacao-suspeita.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "comparacao",
+  "width": 390,
+  "file": "390-comparacao.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-completa",
+  "width": 390,
+  "file": "390-comparacao-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-suspeita",
+  "width": 390,
+  "file": "390-comparacao-suspeita.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "comparacao",
+  "width": 768,
+  "file": "768-comparacao.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-completa",
+  "width": 768,
+  "file": "768-comparacao-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-suspeita",
+  "width": 768,
+  "file": "768-comparacao-suspeita.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "comparacao",
+  "width": 1280,
+  "file": "1280-comparacao.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-completa",
+  "width": 1280,
+  "file": "1280-comparacao-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-suspeita",
+  "width": 1280,
+  "file": "1280-comparacao-suspeita.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "tamanhos-card",
+  "width": 390,
+  "file": "390-tamanhos-card.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "tamanhos-dialogo",
+  "width": 390,
+  "file": "390-tamanhos-dialogo.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "tamanhos-card",
+  "width": 1280,
+  "file": "1280-tamanhos-card.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "tamanhos-dialogo",
+  "width": 1280,
+  "file": "1280-tamanhos-dialogo.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "lista",
+  "width": 320,
+  "file": "320-lista.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-completa",
+  "width": 320,
+  "file": "320-lista-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-apos-recarregar",
+  "width": 320,
+  "items": 3,
+  "errors": []
+ },
+ {
+  "name": "lista",
+  "width": 390,
+  "file": "390-lista.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-completa",
+  "width": 390,
+  "file": "390-lista-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-apos-recarregar",
+  "width": 390,
+  "items": 3,
+  "errors": []
+ },
+ {
+  "name": "lista",
+  "width": 768,
+  "file": "768-lista.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-completa",
+  "width": 768,
+  "file": "768-lista-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-apos-recarregar",
+  "width": 768,
+  "items": 3,
+  "errors": []
+ },
+ {
+  "name": "lista",
+  "width": 1280,
+  "file": "1280-lista.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-completa",
+  "width": 1280,
+  "file": "1280-lista-completa.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-apos-recarregar",
+  "width": 1280,
+  "items": 3,
+  "errors": []
+ },
+ {
+  "name": "encartes",
+  "width": 320,
+  "file": "320-encartes.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "encarte-leitor",
+  "width": 320,
+  "file": "320-encarte-leitor.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "encartes",
+  "width": 390,
+  "file": "390-encartes.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "encarte-leitor",
+  "width": 390,
+  "file": "390-encarte-leitor.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "encartes",
+  "width": 768,
+  "file": "768-encartes.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "encarte-leitor",
+  "width": 768,
+  "file": "768-encarte-leitor.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "encartes",
+  "width": 1280,
+  "file": "1280-encartes.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "encarte-leitor",
+  "width": 1280,
+  "file": "1280-encarte-leitor.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "local-dialogo",
+  "width": 390,
+  "file": "390-local-dialogo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "ver-localizacao",
+  "width": 390,
+  "file": "390-ver-localizacao.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "local-dialogo",
+  "width": 1280,
+  "file": "1280-local-dialogo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "ver-localizacao",
+  "width": 1280,
+  "file": "1280-ver-localizacao.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "estado-carregando",
+  "width": 390,
+  "file": "390-estado-carregando.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-erro-503",
+  "width": 390,
+  "file": "390-estado-erro-503.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-erro-503-busca",
+  "width": 390,
+  "file": "390-estado-erro-503-busca.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-snapshot-vazio",
+  "width": 390,
+  "file": "390-estado-snapshot-vazio.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-offline",
+  "width": 390,
+  "file": "390-estado-offline.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-offline-lista",
+  "width": 390,
+  "file": "390-estado-offline-lista.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-carregando",
+  "width": 1280,
+  "file": "1280-estado-carregando.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-erro-503",
+  "width": 1280,
+  "file": "1280-estado-erro-503.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-erro-503-busca",
+  "width": 1280,
+  "file": "1280-estado-erro-503-busca.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-snapshot-vazio",
+  "width": 1280,
+  "file": "1280-estado-snapshot-vazio.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-offline",
+  "width": 1280,
+  "file": "1280-estado-offline.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-offline-lista",
+  "width": 1280,
+  "file": "1280-estado-offline-lista.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "demo-hoje",
+  "width": 390,
+  "file": "390-demo-hoje.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "demo-opcao-sem-preco-visivel",
+  "width": 390,
+  "visible": 1
+ },
+ {
+  "name": "demo-busca-preco-antigo",
+  "width": 390,
+  "file": "390-demo-busca-preco-antigo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "demo-preco-antigo",
+  "width": 390,
+  "file": "390-demo-preco-antigo.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "demo-hoje",
+  "width": 1280,
+  "file": "1280-demo-hoje.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "demo-opcao-sem-preco-visivel",
+  "width": 1280,
+  "visible": 1
+ },
+ {
+  "name": "demo-busca-preco-antigo",
+  "width": 1280,
+  "file": "1280-demo-busca-preco-antigo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "demo-preco-antigo",
+  "width": 1280,
+  "file": "1280-demo-preco-antigo.png",
+  "overflowPx": 0,
+  "errors": []
+ },
+ {
+  "name": "link-oferta",
+  "width": 390,
+  "file": "390-link-oferta.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "link-inexistente",
+  "width": 390,
+  "file": "390-link-inexistente.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "clube-incluido",
+  "width": 390,
+  "file": "390-clube-incluido.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "filtros-sem-resultado",
+  "width": 390,
+  "file": "390-filtros-sem-resultado.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "foco-teclado",
+  "width": 390,
+  "file": "390-foco-teclado.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "voltar-do-navegador",
+  "width": 390,
+  "url": "http://127.0.0.1:3000/",
+  "onProduct": 0
+ },
+ {
+  "name": "lista-armazenamento-ilegivel",
+  "width": 390,
+  "file": "390-lista-armazenamento-ilegivel.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-armazenamento-ilegivel",
+  "width": 390,
+  "stored": "[]"
+ },
+ {
+  "name": "offline-lista-com-itens",
+  "width": 390,
+  "file": "390-offline-lista-com-itens.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "offline-busca",
+  "width": 390,
+  "file": "390-offline-busca.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "gps-negado",
+  "width": 390,
+  "file": "390-gps-negado.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "endereco-sugestoes",
+  "width": 390,
+  "file": "390-endereco-sugestoes.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "hoje-com-referencia",
+  "width": 390,
+  "file": "390-hoje-com-referencia.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-com-referencia",
+  "width": 390,
+  "file": "390-busca-com-referencia.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-com-referencia",
+  "width": 390,
+  "file": "390-comparacao-com-referencia.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "extras",
+  "width": 390,
+  "errors": []
+ },
+ {
+  "name": "link-oferta",
+  "width": 1280,
+  "file": "1280-link-oferta.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "link-inexistente",
+  "width": 1280,
+  "file": "1280-link-inexistente.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "clube-incluido",
+  "width": 1280,
+  "file": "1280-clube-incluido.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "filtros-sem-resultado",
+  "width": 1280,
+  "file": "1280-filtros-sem-resultado.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "foco-teclado",
+  "width": 1280,
+  "file": "1280-foco-teclado.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "voltar-do-navegador",
+  "width": 1280,
+  "url": "http://127.0.0.1:3000/",
+  "onProduct": 0
+ },
+ {
+  "name": "lista-armazenamento-ilegivel",
+  "width": 1280,
+  "file": "1280-lista-armazenamento-ilegivel.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-armazenamento-ilegivel",
+  "width": 1280,
+  "stored": "[]"
+ },
+ {
+  "name": "offline-lista-com-itens",
+  "width": 1280,
+  "file": "1280-offline-lista-com-itens.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "offline-busca",
+  "width": 1280,
+  "file": "1280-offline-busca.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "gps-negado",
+  "width": 1280,
+  "file": "1280-gps-negado.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "endereco-sugestoes",
+  "width": 1280,
+  "file": "1280-endereco-sugestoes.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "hoje-com-referencia",
+  "width": 1280,
+  "file": "1280-hoje-com-referencia.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "busca-com-referencia",
+  "width": 1280,
+  "file": "1280-busca-com-referencia.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "comparacao-com-referencia",
+  "width": 1280,
+  "file": "1280-comparacao-com-referencia.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "extras",
+  "width": 1280,
+  "errors": []
+ },
+ {
+  "name": "admin",
+  "width": 390,
+  "file": "390-admin.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "vazio-termo",
+  "width": 390,
+  "file": "390-vazio-termo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "vazio-filtros",
+  "width": 390,
+  "file": "390-vazio-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "vazio-termo",
+  "width": 1280,
+  "file": "1280-vazio-termo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "vazio-filtros",
+  "width": 1280,
+  "file": "1280-vazio-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-apos-remover",
+  "width": 390,
+  "file": "390-lista-apos-remover.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-desfazer-disponivel",
+  "width": 390,
+  "available": 1
+ },
+ {
+  "name": "lista-apos-desfazer",
+  "width": 390,
+  "items": 2
+ },
+ {
+  "name": "estado-timeout",
+  "width": 390,
+  "file": "390-estado-timeout.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-timeout-texto",
+  "width": 390,
+  "text": "Não foi possível carregar as ofertas\n\nA consulta das ofertas demorou mais que o esperado. Nada foi perdido: sua lista continua salva neste aparelho.\n\nTentar novamente\nAbrir minha lista"
+ },
+ {
+  "name": "conexao-retomada",
+  "width": 390,
+  "file": "390-conexao-retomada.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "conexao",
+  "width": 390,
+  "offlineCards": 0,
+  "onlineCards": 12,
+  "notices": ""
+ },
+ {
+  "name": "vazio-termo",
+  "width": 390,
+  "file": "390-vazio-termo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "vazio-filtros",
+  "width": 390,
+  "file": "390-vazio-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "vazio-termo",
+  "width": 1280,
+  "file": "1280-vazio-termo.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "vazio-filtros",
+  "width": 1280,
+  "file": "1280-vazio-filtros.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-apos-remover",
+  "width": 390,
+  "file": "390-lista-apos-remover.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "lista-desfazer-disponivel",
+  "width": 390,
+  "available": 1
+ },
+ {
+  "name": "lista-apos-desfazer",
+  "width": 390,
+  "items": 2
+ },
+ {
+  "name": "estado-timeout",
+  "width": 390,
+  "file": "390-estado-timeout.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "estado-timeout-texto",
+  "width": 390,
+  "text": "Não foi possível carregar as ofertas\n\nA consulta das ofertas demorou mais que o esperado. Nada foi perdido: sua lista continua salva neste aparelho.\n\nTentar novamente\nAbrir minha lista"
+ },
+ {
+  "name": "conexao-retomada",
+  "width": 390,
+  "file": "390-conexao-retomada.png",
+  "overflowPx": 0
+ },
+ {
+  "name": "conexao",
+  "width": 390,
+  "offlineCards": 0,
+  "onlineCards": 12,
+  "notices": ""
+ }
+]

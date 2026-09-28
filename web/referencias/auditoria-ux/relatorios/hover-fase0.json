@@ -1,0 +1,494 @@
+[
+  {
+    "screen": "Hoje",
+    "sig": "a.skip-link",
+    "text": "Ir para o conteúdo",
+    "hover": false
+  },
+  {
+    "screen": "Hoje",
+    "sig": "a.brand",
+    "text": "mercadoem dia.",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button:selecionado",
+    "text": "Hoje",
+    "hover": false
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button",
+    "text": "Buscar",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.nearby-trigger",
+    "text": "Perto de vocêDefinir local",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "input",
+    "text": "Buscar produtos",
+    "hover": false
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.text-link",
+    "text": "Ver todas",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.product-open",
+    "text": "Whisky Old Parr 12 Anos 1l1 LR$ 109,90R$",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.product-compare",
+    "text": "R$ 40,00 a menos que no Pinheiro Superme",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.store-location-trigger",
+    "text": "Onde encontrar",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.share-offer-button",
+    "text": "Compartilhar",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.add-button",
+    "text": "Adicionar Whisky Old Parr 12 Anos 1l à l",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.icon-button",
+    "text": "Próximas ofertas",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "a.text-link",
+    "text": "Como ler os preços",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "button.flyer-open",
+    "text": "Ver encarte",
+    "hover": true
+  },
+  {
+    "screen": "Hoje",
+    "sig": "a",
+    "text": "Site oficial de Pão de Açúcar (abre em n",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "a.skip-link",
+    "text": "Ir para o conteúdo",
+    "hover": false
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "a.brand",
+    "text": "mercadoem dia.",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button",
+    "text": "Hoje",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button:selecionado",
+    "text": "Buscar",
+    "hover": false
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.nearby-trigger",
+    "text": "Perto de vocêDefinir local",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "input",
+    "text": "Buscar produtos",
+    "hover": false
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.searchbar-clear",
+    "text": "Limpar busca",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.secondary",
+    "text": "Filtros1",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "label.chip-check:selecionado",
+    "text": "Pão de Açúcar",
+    "hover": false
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "label.chip-check",
+    "text": "Sams Club",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "select",
+    "text": "QualquerSó com desconto10% ou mais20% ou",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.filter-chip",
+    "text": "Pão de Açúcar",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.text-link",
+    "text": "Limpar filtros",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.product-open",
+    "text": "Leite UHT Integral Quatá Caixa com Tampa",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.store-location-trigger",
+    "text": "Onde encontrar",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.share-offer-button",
+    "text": "Compartilhar",
+    "hover": true
+  },
+  {
+    "screen": "Buscar + filtros",
+    "sig": "button.add-button",
+    "text": "Adicionar Leite UHT Integral Quatá Caixa",
+    "hover": true
+  },
+  {
+    "screen": "Diálogo de tamanhos",
+    "sig": "button.icon-button",
+    "text": "Fechar",
+    "hover": true
+  },
+  {
+    "screen": "Diálogo de tamanhos",
+    "sig": "button.size-row-open",
+    "text": "600 mlR$ 4,29R$ 7,15/LMercadinho São Lui",
+    "hover": true
+  },
+  {
+    "screen": "Diálogo de tamanhos",
+    "sig": "button.size-row-add",
+    "text": "Adicionar Refrigerante Coca-Cola 600ml à",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "a.skip-link",
+    "text": "Ir para o conteúdo",
+    "hover": false
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "a.brand",
+    "text": "mercadoem dia.",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button",
+    "text": "Hoje",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button:selecionado",
+    "text": "Buscar",
+    "hover": false
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.nearby-trigger",
+    "text": "Perto de vocêDefinir local",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.back",
+    "text": "Voltar à busca",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "a.text-link",
+    "text": "Ver comparação",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.primary",
+    "text": "Adicionar mais 1",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.text-link",
+    "text": "Ver minha lista",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "a",
+    "text": "Ver no site da loja (abre em nova aba)",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.share-offer-button",
+    "text": "Compartilhar",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.store-location-trigger",
+    "text": "Onde encontrar",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.product-open",
+    "text": "Lasanha 4 Queijo Airfryer Seara 300g300 ",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.add-button",
+    "text": "Adicionar Lasanha 4 Queijo Airfryer Sear",
+    "hover": true
+  },
+  {
+    "screen": "Detalhe",
+    "sig": "button.product-compare",
+    "text": "2 preços · também R$ 9,98 no Sams Club",
+    "hover": true
+  },
+  {
+    "screen": "Onde encontrar",
+    "sig": "button.icon-button",
+    "text": "Fechar",
+    "hover": true
+  },
+  {
+    "screen": "Onde encontrar",
+    "sig": "a.secondary.location-map",
+    "text": "Procurar unidades no mapa (abre em nova ",
+    "hover": true
+  },
+  {
+    "screen": "Onde encontrar",
+    "sig": "button.share-offer-button",
+    "text": "Compartilhar",
+    "hover": true
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "a.skip-link",
+    "text": "Ir para o conteúdo",
+    "hover": false
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "a.brand",
+    "text": "mercadoem dia.",
+    "hover": true
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "button",
+    "text": "Hoje",
+    "hover": true
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "button:selecionado",
+    "text": "Minha lista1",
+    "hover": false
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "button.nearby-trigger",
+    "text": "Perto de vocêDefinir local",
+    "hover": true
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "input[role=combobox]",
+    "text": "Buscar um produto para adicionar à lista",
+    "hover": true
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "button.primary",
+    "text": "Adicionar",
+    "hover": true
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "button.icon-button",
+    "text": "Remover Lasanha Bolonhesa Sadia Pacote 6",
+    "hover": true
+  },
+  {
+    "screen": "Minha lista",
+    "sig": "summary",
+    "text": "Sams Club · FortalezaTodos os 1 itens co",
+    "hover": true
+  },
+  {
+    "screen": "Encartes",
+    "sig": "a.skip-link",
+    "text": "Ir para o conteúdo",
+    "hover": false
+  },
+  {
+    "screen": "Encartes",
+    "sig": "a.brand",
+    "text": "mercadoem dia.",
+    "hover": true
+  },
+  {
+    "screen": "Encartes",
+    "sig": "button",
+    "text": "Hoje",
+    "hover": true
+  },
+  {
+    "screen": "Encartes",
+    "sig": "button:selecionado",
+    "text": "Encartes",
+    "hover": false
+  },
+  {
+    "screen": "Encartes",
+    "sig": "button[role=tab]:selecionado",
+    "text": "•Todas as redes8 encartes",
+    "hover": false
+  },
+  {
+    "screen": "Encartes",
+    "sig": "button[role=tab]",
+    "text": "PAPão de Açúcar0 encartes",
+    "hover": true
+  },
+  {
+    "screen": "Encartes",
+    "sig": "button.flyer-open",
+    "text": "Ver encarte",
+    "hover": true
+  },
+  {
+    "screen": "Encartes",
+    "sig": "a.text-link",
+    "text": "Abrir no site oficial",
+    "hover": true
+  },
+  {
+    "screen": "Leitor de encarte",
+    "sig": "button.icon-button",
+    "text": "Fechar encarte",
+    "hover": true
+  },
+  {
+    "screen": "Leitor de encarte",
+    "sig": "button[role=tab]:selecionado",
+    "text": "CCometa8 encartes",
+    "hover": false
+  },
+  {
+    "screen": "Leitor de encarte",
+    "sig": "button.icon-button.story-play",
+    "text": "Reproduzir páginas",
+    "hover": true
+  },
+  {
+    "screen": "Leitor de encarte",
+    "sig": "button.secondary",
+    "text": "Baixar",
+    "hover": true
+  },
+  {
+    "screen": "Leitor de encarte",
+    "sig": "a.text-link",
+    "text": "Abrir arquivo original",
+    "hover": true
+  },
+  {
+    "screen": "Perto de você",
+    "sig": "button.icon-button",
+    "text": "Fechar localização",
+    "hover": true
+  },
+  {
+    "screen": "Perto de você",
+    "sig": "label",
+    "text": "2 km",
+    "hover": true
+  },
+  {
+    "screen": "Perto de você",
+    "sig": "label:selecionado",
+    "text": "5 km",
+    "hover": false
+  },
+  {
+    "screen": "Perto de você",
+    "sig": "button.secondary.nearby-device",
+    "text": "Usar minha localização",
+    "hover": true
+  },
+  {
+    "screen": "Perto de você",
+    "sig": "input",
+    "text": "Ex.: Rua Coronel Alexandrino, 405",
+    "hover": true
+  },
+  {
+    "screen": "Perto de você",
+    "sig": "a",
+    "text": "© OpenStreetMap",
+    "hover": true
+  }
+]
