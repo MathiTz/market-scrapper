@@ -3,6 +3,11 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Admin from "@/components/admin";
 import Market from "@/components/market";
+import Vitrine from "@/components/vitrine";
+// Archivo (variable: weight 100-900, width 62-125) is self-hosted from the package; the wdth file is the one
+// that carries the width axis the prices use. Tokens come before the stylesheet that consumes them.
+import "@fontsource-variable/archivo/wdth.css";
+import "./tokens.css";
 import "./globals.css";
 
 // Prices change when a scrape finishes (hours apart), so a fetched result stays fresh for a minute
@@ -23,6 +28,9 @@ const queryClient = new QueryClient({
 function Page() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (path === "/admin") return <Admin />;
+  // The components sheet lives behind the demo only: never on the real-data route.
+  if (path === "/demo" && new URLSearchParams(window.location.search).get("vitrine") === "1")
+    return <Vitrine />;
   return <Market demo={path === "/demo"} />;
 }
 

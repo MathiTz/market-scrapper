@@ -1,18 +1,38 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { ChevronRight, Plus, X } from "lucide-react";
 import { money, rankOffers, unitPrice, type Offer, type Product } from "@/lib/domain";
 import type { ProductGroup } from "@/lib/group";
-import { offerLocation, distanceLabel, FORTALEZA_CENTER, type LocationsByRetailer, type Nearby } from "@/lib/location";
+import { knownSize, packLabel, unitPriceText } from "@/lib/format";
+import { offerLocation, distanceLabel, type LocationsByRetailer, type Nearby } from "@/lib/location";
 import { ProductPhoto } from "./product-card";
+import { IconButton } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
+import { useDialog } from "@/components/ui/use-dialog";
+import { useSheetDrag } from "@/components/ui/use-sheet-drag";
 
 /** A group member's own best current offer, resolved once and shared by the card and its modal row. */
 function bestOfferOf(product: Product, offersByProduct: Map<string, Offer[]>, conditions: boolean) {
   return rankOffers(offersByProduct.get(product.id) ?? [], conditions)[0] ?? null;
 }
 
+const totalSize = (p: Product) => p.amount * p.pack_count;
+
+/**
+ * The member with the lowest price per kg/L/unit, when every priced member is measured the same way (all in
+ * grams, all in millilitres or all counted) - comparing a per-kg with a per-unit figure would mean nothing.
+ */
+function bestValue(priced: { product: Product; offer: Offer }[]) {
+  const measurable = priced.filter((m) => knownSize(m.product));
+  if (measurable.length < 2 || new Set(measurable.map((m) => m.product.unit)).size !== 1) return null;
+  return measurable.reduce((a, b) =>
+    unitPrice(b.product, b.offer.price_cents!).value < unitPrice(a.product, a.offer.price_cents!).value ? b : a,
+  );
+}
+
 function SizeRow({
   product,
   offer,
+  best,
   nearby,
   locationsByRetailer,
   onOpen,
@@ -20,33 +40,26 @@ function SizeRow({
 }: {
   product: Product;
   offer: Offer | null;
+  best: boolean;
   nearby: Nearby | null;
   locationsByRetailer: LocationsByRetailer;
   onOpen: () => void;
   onAdd: () => void;
 }) {
-  const found = offer ? offerLocation(offer, locationsByRetailer, nearby?.point ?? FORTALEZA_CENTER) : null;
-  const distance = nearby && found ? distanceLabel(found.distanceKm) : null;
-  const up = offer ? unitPrice(product, offer.price_cents!) : null;
+  const found = offer && nearby ? offerLocation(offer, locationsByRetailer, nearby.point) : null;
+  const unit = offer ? unitPriceText(product, offer.price_cents!, { repeat: true }) : null;
   return (
-    <li className="size-row">
+    <li className={`size-row${best ? " best-value" : ""}`}>
       <button type="button" className="size-row-open" onClick={onOpen}>
-        <span className="size-row-pack">
-          {product.variant && `${product.variant} · `}
-          {product.pack_count > 1 ? `${product.pack_count} × ` : ""}
-          {product.amount} {product.unit}
-        </span>
+        <span className="size-row-pack">{packLabel(product)}</span>
         {offer ? (
           <>
             <strong>{money(offer.price_cents!)}</strong>
-            {up && up.value !== offer.price_cents && (
-              <span className="muted unit-price">
-                {money(up.value)}/{up.unit}
-              </span>
-            )}
+            {unit && <span className="unit-price">{unit}</span>}
+            {best && <span className="badge green">Menor preço por {unitPrice(product, 1).unit}</span>}
             <span className="muted">
               {offer.retailer_name}
-              {distance && ` · ${distance}`}
+              {found && ` · ${distanceLabel(found.distanceKm)}`}
             </span>
           </>
         ) : (
@@ -55,7 +68,7 @@ function SizeRow({
       </button>
       {offer && (
         <button type="button" className="size-row-add" aria-label={`Adicionar ${product.name} à lista`} onClick={onAdd}>
-          <Plus size={16} />
+          <Plus size={16} aria-hidden="true" />
         </button>
       )}
     </li>
@@ -80,96 +93,115 @@ export function ProductRangeCard({
   onAdd: (product: Product) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<HTMLButtonElement>(null);
+  const { ref: dialogRef, requestClose } = useDialog(open, () => setOpen(false), openerRef);
+  useSheetDrag(dialogRef, requestClose);
   const titleId = useId();
 
-  const priced = group.members
-    .map((product) => ({ product, offer: bestOfferOf(product, offersByProduct, conditions) }))
-    .filter((m): m is { product: Product; offer: Offer } => m.offer !== null);
+  // Smallest pack first, in the dialog and in the card's list of sizes.
+  const members = [...group.members].sort((a, b) =>
+    a.unit === b.unit ? totalSize(a) - totalSize(b) : a.unit.localeCompare(b.unit),
+  );
+  const rows = members.map((product) => ({ product, offer: bestOfferOf(product, offersByProduct, conditions) }));
+  const priced = rows.filter((m): m is { product: Product; offer: Offer } => m.offer !== null);
   const cheapest = priced.length
     ? priced.reduce((a, b) => (b.offer.price_cents! < a.offer.price_cents! ? b : a))
     : null;
-  const prices = priced.map((m) => m.offer.price_cents!);
-  const min = prices.length ? Math.min(...prices) : null;
-  const max = prices.length ? Math.max(...prices) : null;
-  const photoProduct = cheapest?.product ?? group.members[0];
-
-  useEffect(() => {
-    if (!open) return;
-    const dialog = dialogRef.current!;
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    dialog.showModal();
-    return () => {
-      dialog.close();
-      document.body.style.overflow = overflow;
-      if (openerRef.current?.isConnected) openerRef.current.focus();
-    };
-  }, [open]);
+  const value = bestValue(priced);
+  const photoProduct = cheapest?.product ?? members[0];
+  const sizes = members.map((p) => packLabel(p)).join(", ");
 
   return (
-    <article className="product-card compact-product product-range-card">
-      <button className="product-open" aria-label={`${group.name}, ${group.members.length} tamanhos`} onClick={() => setOpen(true)} ref={openerRef}>
+    <article
+      className="product-card compact-product product-range-card"
+      data-product-id={members.map((p) => p.id).join(" ")}
+    >
+      <button
+        className="product-open"
+        aria-label={`${group.name}, ${members.length} tamanhos: ${sizes}.${cheapest ? ` A partir de ${money(cheapest.offer.price_cents!)}, na embalagem de ${packLabel(cheapest.product)}.` : " Sem preço atual."} Comparar tamanhos`}
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+        ref={openerRef}
+      >
         <ProductPhoto product={photoProduct} />
         <div className="product-summary">
           <h3>{group.name}</h3>
-          <span className="product-pack">{group.members.length} tamanhos disponíveis</span>
-          {min !== null && max !== null ? (
+          <span className="product-pack">
+            {members.length} tamanhos: {sizes}
+          </span>
+          {cheapest ? (
             <div className="product-price-line">
-              <strong className="price range-price">
-                {min === max ? money(min) : `${money(min)} – ${money(max)}`}
-              </strong>
+              <span className="range-from">a partir de</span>
+              <strong className="price range-price">{money(cheapest.offer.price_cents!)}</strong>
+              <span className="muted unit-price">na embalagem de {packLabel(cheapest.product)}</span>
             </div>
           ) : (
             <span className="no-price">Sem preço atual</span>
           )}
         </div>
       </button>
-      <button type="button" className="product-compare" onClick={() => setOpen(true)}>
-        <span>Comparar tamanhos</span>
-        <span>
-          Ver os {group.members.length} <ChevronRight size={14} />
-        </span>
+      {value && (
+        <p className="range-value">
+          Menor preço por {unitPrice(value.product, 1).unit}: {unitPriceText(value.product, value.offer.price_cents!, { repeat: true })}{" "}
+          ({packLabel(value.product)}, {value.offer.retailer_name})
+        </p>
+      )}
+      <button type="button" className="product-compare" onClick={() => setOpen(true)} aria-haspopup="dialog">
+        <span>Comparar os {members.length} tamanhos</span>
+        <ChevronRight size={14} aria-hidden="true" />
       </button>
       {open && (
         <dialog
           ref={dialogRef}
           className="location-dialog range-dialog"
+          data-sheet=""
           aria-labelledby={titleId}
           onCancel={(event) => {
             event.preventDefault();
-            setOpen(false);
+            requestClose();
           }}
           onClick={(event) => {
-            if (event.target === dialogRef.current) setOpen(false);
+            if (event.target === dialogRef.current) requestClose();
           }}
         >
-          <div className="location-dialog-heading">
+          <div className="location-dialog-heading" data-sheet-grip="">
             <div>
-              <span className="eyebrow green-text">TAMANHOS DE {group.name.toUpperCase()}</span>
-              <h2 id={titleId}>Escolha o tamanho</h2>
+              <p className="overline">Tamanhos diferentes</p>
+              <h2 id={titleId}>{group.name}</h2>
             </div>
-            <button className="icon-button" onClick={() => setOpen(false)} aria-label="Fechar">
-              <X size={21} />
-            </button>
+            <Tooltip label="Fechar">
+              <IconButton label="Fechar" onClick={() => requestClose()}>
+                <X size={21} aria-hidden="true" />
+              </IconButton>
+            </Tooltip>
           </div>
+          <div className="sheet-body" data-scroll="">
+          <p className="range-note">
+            Embalagens diferentes do mesmo produto, com o menor preço atual de cada uma. Compare pelo preço por
+            kg, litro ou unidade.
+          </p>
           <ul className="size-rows">
-            {group.members.map((product) => (
+            {rows.map(({ product, offer }) => (
               <SizeRow
                 key={product.id}
                 product={product}
-                offer={bestOfferOf(product, offersByProduct, conditions)}
+                offer={offer}
+                best={!!value && value.product.id === product.id}
                 nearby={nearby}
                 locationsByRetailer={locationsByRetailer}
                 onOpen={() => {
-                  setOpen(false);
+                  requestClose();
                   onOpen(product);
                 }}
-                onAdd={() => onAdd(product)}
+                // The toast lives outside the top layer: the dialog closes first so the confirmation is seen.
+                onAdd={() => {
+                  requestClose();
+                  onAdd(product);
+                }}
               />
             ))}
           </ul>
+          </div>
         </dialog>
       )}
     </article>

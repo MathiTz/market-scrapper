@@ -43,7 +43,8 @@ export function flyerCountdown(flyer: Flyer, now = new Date()) {
   const state = flyerState(flyer, now);
   if (state === "unknown") return "Validade a confirmar";
   if (state === "expired") return "Encerrado";
-  if (state === "current" && !flyer.valid_until) return "Em vigor";
+  // Still listed by the chain, so still shown as current - but the source gives no end date to promise.
+  if (state === "current" && !flyer.valid_until) return "Data final não informada";
   const end = Date.parse(
     (state === "future" ? flyer.valid_from : flyer.valid_until)!,
   );
@@ -64,6 +65,13 @@ export const flyerStates = {
   expired: "Vencido",
   unknown: "Validade não confirmada",
 };
+
+/** The badge of a flyer: "Dentro da validade" only when the source says until when. */
+export function flyerStateLabel(flyer: Flyer, now = new Date()) {
+  const state = flyerState(flyer, now);
+  if (state === "current" && !flyer.valid_until) return "Publicado, sem data final";
+  return flyerStates[state];
+}
 
 export function flyerDateRange(f: Flyer) {
   if (flyerState(f) === "unknown") return "Período a confirmar";

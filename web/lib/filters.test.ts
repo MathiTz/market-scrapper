@@ -203,3 +203,20 @@ describe("alternativesOf", () => {
     expect(alternativesOf(list, hidratante, new Set(["hidratante-ype"]))).toEqual([]);
   });
 });
+
+describe("relevance order", () => {
+  const leite = ["Leite de Coco Sococo Integral Vidro 500ml", "Leite Integral Italac 1l", "Leite Condensado Integral Moça 395g"].map(
+    (name, i) => ({ id: `p${i}`, name }) as unknown as Product,
+  );
+  const leiteOffers = byProduct([offer("p0", "A", 2290, 3300), offer("p1", "A", 549), offer("p2", "B", 879, 1249)]);
+  const sorted = (query?: string) =>
+    names(filterProducts(leite, leiteOffers, { ...noFilters, sort: "relevance" }, { conditions: false, includeUnpriced: false, query }));
+
+  it("answers the typed search first instead of the biggest discount", () => {
+    expect(sorted("leite integral")).toEqual(["p1", "p2", "p0"]);
+  });
+
+  it("falls back to the default order when nothing is typed", () => {
+    expect(sorted("")).toEqual(["p0", "p2", "p1"]); // 31% off, 30% off, no discount
+  });
+});

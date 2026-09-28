@@ -84,13 +84,20 @@ export const ordinary = (): Conditions => ({
 });
 export const isConditional = (c: Conditions) =>
   !!(c.club || c.coupon || c.min_quantity > 1 || c.payment);
+/** "Só para membros do PinClube": a club price is never what everyone pays, so the label says who pays it.
+ * The data may carry the club's own name ("PinClube"), a bare "Clube" (the chain did not name it) or a name
+ * without the word ("Exemplo" in the demo). */
+function clubCondition(club: string) {
+  if (clean(club) === "clube") return "Só para membros do clube da loja";
+  return `Só para membros do ${/clube/i.test(club) ? club : `Clube ${club}`}`;
+}
 export function conditionLabel(c: Conditions) {
   return (
     [
-      c.club && `Clube ${c.club}`,
-      c.coupon && `Cupom ${c.coupon}`,
-      c.min_quantity > 1 && `Mínimo ${c.min_quantity} un.`,
-      c.limit_per_customer && `Limite ${c.limit_per_customer} por cliente`,
+      c.club && clubCondition(c.club),
+      c.coupon && `Exige cupom ${c.coupon}`,
+      c.min_quantity > 1 && `Levando ${c.min_quantity} un. ou mais`,
+      c.limit_per_customer && `Limite de ${c.limit_per_customer} por cliente`,
       c.payment && `Pagamento: ${c.payment}`,
       c.region_note,
     ]

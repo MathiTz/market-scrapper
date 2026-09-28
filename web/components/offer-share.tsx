@@ -7,6 +7,9 @@ import {
   money,
   type Offer,
 } from "@/lib/domain";
+import { channelLabel } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 
 type OfferShareProps = {
   offer: Offer;
@@ -59,13 +62,10 @@ function ShareAction({
         demo ? "Dados fictícios — demonstração." : "",
         `${productName} · ${money(offer.price_cents!)} · ${offer.retailer_name}`,
         offer.context_label,
-        offer.channel === "catalog"
-          ? "Preço online"
-          : offer.channel === "physical"
-            ? "Preço de loja física"
-            : "Preço de encarte",
+        // The same scope and conditions as on screen, so the message cannot promise more than the offer.
+        `${channelLabel(offer.channel)}${offer.channel === "catalog" ? " (confirme na loja)" : ""}`,
         conditionLabel(offer.conditions),
-        `Observado em ${localTime(offer.price_observed_at)}`,
+        `Visto em ${localTime(offer.price_observed_at)}`,
       ]
         .filter(Boolean)
         .join("\n"),
@@ -95,16 +95,32 @@ function ShareAction({
 
   return (
     <div className={`offer-share${compact ? " compact-share" : ""}`}>
-      <button
-        className="share-offer-button"
-        aria-label="Compartilhar oferta"
-        title="Compartilhar oferta"
-        onClick={share}
-        disabled={busy}
-      >
-        <Share2 size={18} aria-hidden="true" />
-        <span className={compact ? "sr-only" : undefined}>Compartilhar</span>
-      </button>
+      {compact ? (
+        // Icon only on cards: the tooltip (components/ui/tooltip.tsx) shows the name a sighted person needs.
+        <Tooltip label="Compartilhar">
+          <Button
+            variant="secondary"
+            iconOnly
+            className="share-offer-button"
+            aria-label="Compartilhar oferta"
+            icon={<Share2 size={18} aria-hidden="true" />}
+            onClick={share}
+            loading={busy}
+          />
+        </Tooltip>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="share-offer-button"
+          aria-label="Compartilhar oferta"
+          icon={<Share2 size={18} aria-hidden="true" />}
+          onClick={share}
+          loading={busy}
+        >
+          Compartilhar
+        </Button>
+      )}
       {status && (
         <p className="offer-share-status" role="status">
           {status}

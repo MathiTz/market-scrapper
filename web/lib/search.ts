@@ -68,6 +68,22 @@ export function searchIndexed<T extends { name: string }>(
     .map(({ item }) => item);
 }
 
+/**
+ * How well a name answers what was typed, lower is better - for ordering results that already match:
+ * 0 the name starts with the typed words, in order ("leite integral" -> "Leite Integral Italac 1l");
+ * 1 those words appear in order somewhere else in it; 2 its first word starts with the first typed word
+ * ("Leite de Coco ... Integral"); 3 any other match. Same token-prefix rule as the match itself.
+ */
+export function relevance(text: string, query: string): number {
+  const typed = words(query);
+  if (!typed.length) return 3;
+  const own = words(text);
+  const phraseAt = (start: number) => typed.every((word, k) => own[start + k]?.startsWith(word));
+  if (phraseAt(0)) return 0;
+  for (let start = 1; start + typed.length <= own.length; start++) if (phraseAt(start)) return 1;
+  return own[0]?.startsWith(typed[0]) ? 2 : 3;
+}
+
 /** Convenience for a one-off search against a small, already-in-hand list (tests; short lists that are not
  * searched repeatedly). Anything searched on every keystroke should build a {@link SearchIndex} once with
  * {@link buildIndex} and call {@link searchIndexed} instead. */

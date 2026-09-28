@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T22:40:00-03:00",
+  "title": "Design System: Mercado em Dia",
+  "extensions": {
+    "colorMeta": {
+      "ice-canvas": { "role": "neutral", "displayName": "Canvas gelo", "canonical": "oklch(98.8% 0.003 240)", "tonalRamp": ["#131c20", "#212a2f", "#303d43", "#4a585e", "#66747b", "#7f8b92", "#cbd2d7", "#e0e5e9", "#f1f4f6", "#f9fbfd"] },
+      "brand-green": { "role": "primary", "displayName": "Verde da marca", "canonical": "#116249", "tonalRamp": ["#173d30", "#003824", "#004a31", "#116249", "#007651", "#2b9c71", "#6fcea3", "#a7e9c8", "#d1f5e3", "#eafaf1"] },
+      "condition-amber": { "role": "secondary", "displayName": "Âmbar de condição", "canonical": "oklch(96% 0.04 80)", "tonalRamp": ["#5e3900", "#774a00", "#f9d280", "#fde0b0", "#fff0d7"] },
+      "deal-lime": { "role": "secondary", "displayName": "Lima de desconto", "canonical": "oklch(92% 0.14 120)", "tonalRamp": ["#203501", "#d9f283"] },
+      "error-red": { "role": "tertiary", "displayName": "Vermelho de erro", "canonical": "oklch(42% 0.16 25)", "tonalRamp": ["#90101a", "#b32228", "#ffedeb"] },
+      "info-blue": { "role": "tertiary", "displayName": "Azul informativo", "canonical": "oklch(40% 0.12 255)", "tonalRamp": ["#0e4786", "#e8f3ff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Preço em destaque", "purpose": "Preço no detalhe do produto: Archivo largura 90, tabular." },
+      "headline": { "displayName": "Título de vista e preço do cartão", "purpose": "h1 das vistas; o preço do cartão usa o mesmo passo com largura 90." },
+      "title": { "displayName": "Título de seção", "purpose": "h2; o nome do produto no cartão fica um passo abaixo (1.125rem/600)." },
+      "body": { "displayName": "Corpo", "purpose": "Parágrafos, campos e botões; 65ch de medida." },
+      "label": { "displayName": "Rótulo", "purpose": "Overlines em caixa normal, metadados, chips; nunca abaixo de 0.75rem." }
+    },
+    "shadows": [
+      { "name": "elevation-1", "value": "0 1px 2px oklch(22% 0.015 230 / 6%), 0 8px 24px oklch(22% 0.015 230 / 6%)", "purpose": "Cartão em hover; barra de busca em foco." },
+      { "name": "elevation-2", "value": "0 2px 6px oklch(22% 0.015 230 / 8%), 0 12px 32px oklch(22% 0.015 230 / 10%)", "purpose": "Popover, tooltip, sugestões." },
+      { "name": "elevation-3", "value": "0 8px 24px oklch(22% 0.015 230 / 12%), 0 24px 64px oklch(22% 0.015 230 / 16%)", "purpose": "Diálogo e bottom sheet." },
+      { "name": "elevation-inverse", "value": "0 8px 30px oklch(22% 0.015 230 / 25%)", "purpose": "Toast." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Entradas e saídas de UI." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.77, 0, 0.175, 1)", "purpose": "Movimento de algo já na tela (pílula, zoom)." },
+      { "name": "ease-drawer", "value": "cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "Bottom sheet (500 ms)." },
+      { "name": "dur-press", "value": "160ms", "purpose": "Retorno ao pressionar (scale 0.97)." },
+      { "name": "dur-tooltip", "value": "125ms", "purpose": "Tooltip." },
+      { "name": "dur-menu", "value": "180ms", "purpose": "Select, popover, pílula de aba." },
+      { "name": "dur-state", "value": "200ms", "purpose": "Fades de estado, colapso de linha, véu da busca." },
+      { "name": "dur-modal", "value": "250ms", "purpose": "Entrada de diálogo; saída em 190 ms." },
+      { "name": "dur-toast", "value": "400ms", "purpose": "Toast (curva ease)." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "460px" },
+      { "name": "sm", "value": "760px" },
+      { "name": "md", "value": "1024px" },
+      { "name": "lg", "value": "1200px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A ação principal da tela: verde da marca, 44px, texto 600, encolhe ao pressionar.",
+      "html": "<button class=\"ds-btn-primary\">Adicionar à lista</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1px solid var(--md-interactive-primary-fill-default, #116249); border-radius: var(--md-radius-sm, 10px); background: var(--md-interactive-primary-fill-default, #116249); color: #fff; font: 600 1rem/1.4 'Archivo Variable', system-ui, sans-serif; transition: background-color 120ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-btn-primary:hover { background: var(--md-interactive-primary-fill-hover, #004a31); } .ds-btn-primary:active { background: var(--md-interactive-primary-fill-pressed, #003824); transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 3px solid var(--md-focus-ring, #173d30); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ação secundária: papel com borda de campo; hover para o painel.",
+      "html": "<button class=\"ds-btn-secondary\">Onde encontrar</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1px solid var(--md-interactive-secondary-border, #cbd2d7); border-radius: var(--md-radius-sm, 10px); background: #fff; color: var(--md-text-primary, #131c20); font: 600 1rem/1.4 'Archivo Variable', system-ui, sans-serif; transition: background-color 120ms ease, border-color 120ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-btn-secondary:hover { background: var(--md-interactive-secondary-fill-hover, #f1f4f6); border-color: var(--md-border-strong, #66747b); } .ds-btn-secondary:active { background: var(--md-interactive-secondary-fill-pressed, #e0e5e9); transform: scale(0.97); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--md-focus-ring, #173d30); outline-offset: 2px; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pílula de categoria ou rede; selecionada ganha a névoa verde e a borda da marca.",
+      "html": "<span class=\"ds-chip\">Bebidas</span> <span class=\"ds-chip ds-chip--selected\">✓ Mercearia</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border: 1px solid var(--md-border-default, #7f8b92); border-radius: 999px; background: #fff; color: var(--md-text-primary, #131c20); font: 500 0.875rem/1.4 'Archivo Variable', system-ui, sans-serif; transition: background-color 120ms ease, border-color 120ms ease; } .ds-chip:hover { background: var(--md-interactive-secondary-fill-hover, #f1f4f6); } .ds-chip--selected { background: var(--md-selected-fill, #eafaf1); border-color: var(--md-selected-border, #116249); color: var(--md-selected-text, #003824); font-weight: 600; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de busca: papel, borda de campo, halo verde no foco.",
+      "html": "<input class=\"ds-input\" placeholder=\"Buscar produtos\">",
+      "css": ".ds-input { min-height: 44px; padding: 0 12px; border: 1px solid var(--md-border-default, #7f8b92); border-radius: var(--md-radius-sm, 10px); background: #fff; color: var(--md-text-primary, #131c20); font: 400 1rem/1.4 'Archivo Variable', system-ui, sans-serif; transition: border-color 120ms ease, box-shadow 120ms ease; } .ds-input:hover { border-color: var(--md-border-strong, #66747b); } .ds-input:focus-visible { outline: none; border-color: var(--md-border-selected, #116249); box-shadow: 0 0 0 3px var(--md-selected-fill, #eafaf1); }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "O cartão de oferta: papel com fio; preço em largura 90; condição em âmbar logo abaixo do preço.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card__name\">Café torrado e moído 500 g</h3><p class=\"ds-card__pack\">500 g</p><p class=\"ds-card__price\">R$ 15,90 <span class=\"ds-card__unit\">R$ 31,80/kg</span></p><span class=\"ds-card__deal\">20% OFF</span> <span class=\"ds-card__condition\">Só para membros do clube da loja</span></article>",
+      "css": ".ds-card { width: 260px; padding: 12px; border: 1px solid var(--md-border-subtle, #e0e5e9); border-radius: var(--md-radius-md, 14px); background: #fff; font-family: 'Archivo Variable', system-ui, sans-serif; color: var(--md-text-primary, #131c20); transition: box-shadow 120ms ease, border-color 120ms ease; } .ds-card:hover { border-color: var(--md-border-default, #7f8b92); box-shadow: 0 1px 2px rgba(19, 28, 32, 0.06), 0 8px 24px rgba(19, 28, 32, 0.06); } .ds-card__name { margin: 0 0 4px; font-size: 1.125rem; font-weight: 600; line-height: 1.3; } .ds-card__pack { margin: 0; font-size: 0.8125rem; color: var(--md-text-secondary, #4a585e); } .ds-card__price { margin: 6px 0 4px; font-size: 1.75rem; font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; font-variation-settings: 'wdth' 90; font-variant-numeric: tabular-nums; } .ds-card__unit { font-size: 0.8125rem; font-weight: 400; letter-spacing: 0; font-variation-settings: normal; color: var(--md-text-secondary, #4a585e); } .ds-card__deal { display: inline-block; padding: 1px 7px; border-radius: 999px; background: var(--md-deal-fill, #d9f283); color: var(--md-deal-text, #203501); font-size: 0.75rem; font-weight: 700; } .ds-card__condition { display: inline-block; padding: 4px 8px; border-radius: 6px; background: var(--md-condition-fill, #fff0d7); color: var(--md-condition-text, #5e3900); font-size: 0.75rem; font-weight: 600; }"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "button-secondary",
+      "description": "As quatro vistas no desktop; a ativa recebe a pílula na névoa de seleção.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav__item ds-nav__item--selected\">Hoje</button><button class=\"ds-nav__item\">Buscar</button><button class=\"ds-nav__item\">Encartes</button><button class=\"ds-nav__item\">Minha lista</button></nav>",
+      "css": ".ds-nav { display: flex; gap: 10px; font-family: 'Archivo Variable', system-ui, sans-serif; } .ds-nav__item { border: 0; padding: 12px 18px; border-radius: 999px; background: transparent; color: var(--md-text-primary, #131c20); font: 600 1rem/1.4 inherit; transition: background-color 120ms ease, color 120ms ease; } .ds-nav__item:hover { background: var(--md-interactive-ghost-fill-hover, #f1f4f6); color: var(--md-text-brand, #004a31); } .ds-nav__item--selected { background: var(--md-selected-fill, #eafaf1); color: var(--md-selected-text, #003824); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A etiqueta de gôndola",
+    "overview": "Tudo o que a interface faz cabe no gesto de ler uma etiqueta de preço no supermercado: o número domina, a unidade e a condição vêm pequenas mas legíveis, o resto do mundo fica em segundo plano. Uma UI de utilidade: neutros frios quase brancos, uma só família tipográfica com o preço em largura semicondensada, um acento verde reservado à ação e à seleção.",
+    "keyCharacteristics": [
+      "Canvas branco-gelo (#f9fbfd) e papel branco com fio de 1 px; nenhum fundo tingido de verde.",
+      "Archivo Variable em uma escala fixa de nove passos; o preço é a única licença tipográfica (largura 90, peso 700, numerais tabulares).",
+      "Verde em ≤ 10% da tela: botão primário, pílula de seleção, marca, links de ação.",
+      "Âmbar significa condição ou alerta; lima significa desconto informado pela loja; nada além disso.",
+      "Movimento curto (≤ 300 ms) que conta abertura, fechamento e carregamento; hover só com ponteiro real; reduced motion reduz, não zera."
+    ],
+    "rules": [
+      { "name": "The No Green Surface Rule", "body": "Nenhuma superfície (página, painel, cartão, hover) leva verde. O verde é ação, seleção e marca; a névoa #eafaf1 só existe sob um elemento selecionado.", "section": "colors" },
+      { "name": "The Pairs Rule", "body": "Todo par texto/fundo do sistema está declarado em tokens/tokens.json > pairs e npm run tokens:check reprova qualquer par abaixo de 4,5:1 (texto) ou 3:1 (foco, borda de campo).", "section": "colors" },
+      { "name": "The Price Licence Rule", "body": "Só o preço usa \"wdth\" 90; todo o resto fica na largura 100.", "section": "typography" },
+      { "name": "The No Eyebrow Rule", "body": "Não existem rótulos em caixa alta com tracking acima de títulos. A frase acima do h1 é uma overline em caixa normal, 13 px, tinta secundária, ou não existe.", "section": "typography" },
+      { "name": "The Flat-At-Rest Rule", "body": "Nada tem sombra parado. Se um cartão parece flutuar sem o ponteiro sobre ele, a sombra está errada.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do consumir apenas var(--md-*) e os tokens de motion; npm run tokens:check reprova hex, rgb() e oklch() fora de app/tokens.css.",
+      "Do reservar o verde a botão primário, seleção, marca e links de ação (≤ 10% da tela).",
+      "Do dar a todo pressionável :active { transform: scale(0.97) } em 160 ms e hover só sob (hover: hover) and (pointer: fine).",
+      "Do usar a escala de nove tamanhos e a de cinco raios; um valor fora delas é um bug de sistema.",
+      "Do escrever preços com tabular-nums e largura 90; unidades e condições ao lado, legíveis, nunca em tooltip."
+    ],
+    "donts": [
+      "Don't pintar fundo de página, painel, cartão ou hover de verde.",
+      "Don't usar controles nativos sem desenho (select, checkbox com accent-color, title= como tooltip) nem cortes secos ao abrir, fechar ou carregar.",
+      "Don't colocar eyebrows em caixa alta com tracking acima de seções, cartões idênticos em grade como resposta padrão, gradiente em texto, vidro decorativo, número gigante + rótulo de SaaS.",
+      "Don't usar bounce, elástico, coreografia de carregamento, parallax ou animação em ações de teclado; nada de UI acima de 300 ms fora da sheet (500 ms).",
+      "Don't apresentar exemplos fictícios como ofertas reais nem usar linguagem de checkout."
+    ]
+  }
+}
