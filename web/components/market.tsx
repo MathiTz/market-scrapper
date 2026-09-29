@@ -380,14 +380,18 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       returnTo.current = null;
     }, "product");
   };
-  const navigate = (v: View) => {
+  // `filters` starts the destination with something other than a clean slate (the store picker below uses
+  // this to land on Buscar already narrowed to one network) - set in the same update as the reset, since
+  // withViewTransition's flushSync means a setPf() call made just after navigate() returns can lose a race
+  // with this one and never take effect.
+  const navigate = (v: View, filters?: Partial<ProductFilters>) => {
     // A cross-fade of 150 ms between views; the pill of the navigation slides on its own.
     withViewTransition(() => {
       clearShared();
       setView(v);
       setActive(null);
       returnTo.current = null;
-      setPf(noFilters);
+      setPf({ ...noFilters, ...filters });
       setSortChosen(false);
       setChannel("");
       setCategory("");
@@ -411,7 +415,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
               ? { ...x, quantity: Math.min(x.quantity + 1, MAX_QUANTITY) }
               : x,
           )
-        : [...l, { product_id: p.id, name: listName(p), quantity: 1 }],
+        : [...l, { product_id: p.id, name: listName(p), quantity: 1, checked: false }],
     );
     setUndo(null);
     notify(
@@ -420,6 +424,10 @@ export default function Market({ demo = false }: { demo?: boolean }) {
         : `“${short(p.name)}” adicionado à lista`,
     );
   };
+  // Stays on the list (a trip half done isn't lost) but drops out of the per-store estimate below and is
+  // shown apart from what is still needed - see the Line type in lib/list-storage.ts.
+  const toggleChecked = (id: string) =>
+    setLines((l) => l.map((x) => (x.product_id === id ? { ...x, checked: !x.checked } : x)));
   const remove = (ids: string[], message: string) => {
     const previous = lines;
     setUndo({ lines: previous, message });
@@ -646,9 +654,16 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   const activeQuantity =
     lines.find((l) => l.product_id === active?.id)?.quantity || 0;
   const showSearch = !active && (view === "today" || view === "search");
+  // An item already picked up no longer costs anything to plan for.
+  const neededLines = useMemo(() => lines.filter((l) => !l.checked), [lines]);
+  // Checked items sink to the bottom, in a stable order, instead of vanishing from the list entirely.
+  const sortedLines = useMemo(
+    () => [...lines].sort((a, b) => Number(a.checked) - Number(b.checked)),
+    [lines],
+  );
   const estimates = useMemo(
-    () => (offline || error ? [] : storeEstimates(lines, offers, nearby, locationsByRetailer)),
-    [lines, offers, offline, error, clock, nearby, locationsByRetailer],
+    () => (offline || error ? [] : storeEstimates(neededLines, offers, nearby, locationsByRetailer)),
+    [neededLines, offers, offline, error, clock, nearby, locationsByRetailer],
   );
   // Cheapest current price of each product, for the suggestions of the list's add box.
   const listProducts = useMemo(
@@ -697,7 +712,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     setConditions(false);
     setOld(false);
   };
-  const unpricedLines = lines.filter((l) => !priceIndex.has(l.product_id));
+  const unpricedLines = neededLines.filter((l) => !priceIndex.has(l.product_id));
   function SearchBox(className = "") {
     return (
       <form
@@ -1193,6 +1208,20 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             )}
             {view === "today" && (
               <>
+                {!!data?.retailers.length && (
+                  // A friendlier way to see one chain's own catalog than digging into "Filtros" on Buscar -
+                  // sets the same network filter that panel uses, so clearing it later works the same way.
+                  <div className="store-picker">
+                    <p className="overline">Em {dataRegion}, temos estas redes monitoradas</p>
+                    <div className="chip-row" role="group" aria-label="Ver só as ofertas de uma rede">
+                      {data.retailers.map((r) => (
+                        <Chip key={r.id} onClick={() => navigate("search", { networks: [r.id] })}>
+                          {r.name}
+                        </Chip>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="section-heading daily-heading">
                   <div>
                     <h1>
@@ -1633,7 +1662,10 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                   <h1>Minha lista.</h1>
                   <p>
                     {lines.length} {lines.length === 1 ? "item" : "itens"} para
-                    seu planejamento de preços.
+                    seu planejamento de preços
+                    {neededLines.length < lines.length &&
+                      ` · ${lines.length - neededLines.length} já ${lines.length - neededLines.length === 1 ? "pego" : "pegos"}`}
+                    .
                   </p>
                   <p className="list-purpose">
                     Aqui você consulta e compara preços. A compra é feita
@@ -1706,7 +1738,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                   </div>
                 )}
                 <div className="shopping-list">
-                  {lines.map((l) => {
+                  {sortedLines.map((l) => {
                     const o =
                       offline || error
                         ? null
@@ -1719,25 +1751,53 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     const product = productById.get(l.product_id);
                     const unit = o && product ? unitPriceText(product, o.price_cents!) : null;
                     const name = lineName(l);
+                    const priceLine = (
+                      <p>
+                        {offline
+                          ? "Preço oculto sem conexão"
+                          : error
+                            ? "Preço indisponível no momento"
+                            : loading
+                              ? "Carregando preço…"
+                              : !product
+                                ? "Este produto não está mais entre as ofertas monitoradas"
+                                : o
+                                  ? `Menor preço atual: ${money(o.price_cents!)}${unit ? ` (${unit})` : ""} no ${o.retailer_name} · visto ${whenLabel(o.price_observed_at)}`
+                                  : `Sem preço atual nas lojas monitoradas${nearby ? " neste raio" : ""}`}
+                      </p>
+                    );
                     return (
-                      <article className="list-item" key={l.product_id}>
+                      <article
+                        className={`list-item${l.checked ? " list-item-checked" : ""}`}
+                        key={l.product_id}
+                        data-checked={l.checked || undefined}
+                      >
+                        <CheckboxField
+                          className="list-check"
+                          checked={l.checked}
+                          onChange={() => toggleChecked(l.product_id)}
+                          label={<span className="sr-only">Marcar “{short(name)}” como já pego</span>}
+                        />
                         <div className="list-product">
                           <Package size={23} aria-hidden="true" />
                           <div>
-                            <h3>{name}</h3>
-                            <p>
-                              {offline
-                                ? "Preço oculto sem conexão"
-                                : error
-                                  ? "Preço indisponível no momento"
-                                  : loading
-                                    ? "Carregando preço…"
-                                    : !product
-                                      ? "Este produto não está mais entre as ofertas monitoradas"
-                                      : o
-                                        ? `Menor preço atual: ${money(o.price_cents!)}${unit ? ` (${unit})` : ""} no ${o.retailer_name} · visto ${whenLabel(o.price_observed_at)}`
-                                        : `Sem preço atual nas lojas monitoradas${nearby ? " neste raio" : ""}`}
-                            </p>
+                            {product ? (
+                              // Only the name and price line open the product - StoreContact below can hold
+                              // its own tel: link, and a link inside a button is invalid HTML.
+                              <button
+                                className="list-open"
+                                onClick={() => openProduct(product)}
+                                aria-label={`${name}. Ver detalhes, alternativas e comparação de preços`}
+                              >
+                                <h3>{name}</h3>
+                                {priceLine}
+                              </button>
+                            ) : (
+                              <>
+                                <h3>{name}</h3>
+                                {priceLine}
+                              </>
+                            )}
                             {o && (
                               <StoreContact
                                 offer={o}

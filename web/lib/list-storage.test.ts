@@ -13,7 +13,21 @@ function memory(initial: Record<string, string> = {}) {
 describe("readList", () => {
   it("reads a saved list", () => {
     const s = memory({ list: JSON.stringify([{ product_id: "324", name: "Lasanha", quantity: 2 }]) });
-    expect(readList(s, "list")).toEqual({ lines: [{ product_id: "324", name: "Lasanha", quantity: 2 }], issue: null });
+    expect(readList(s, "list")).toEqual({
+      lines: [{ product_id: "324", name: "Lasanha", quantity: 2, checked: false }],
+      issue: null,
+    });
+  });
+
+  it("defaults checked to false for a list saved before that field existed, and reads a real one back", () => {
+    const s = memory({
+      list: JSON.stringify([
+        { product_id: "1", name: "Arroz", quantity: 1 },
+        { product_id: "2", name: "Feijão", quantity: 1, checked: true },
+        { product_id: "3", name: "Água", quantity: 1, checked: "yes" }, // not a real boolean
+      ]),
+    });
+    expect(readList(s, "list").lines.map((l) => l.checked)).toEqual([false, true, false]);
   });
 
   it("starts empty when nothing was saved", () => {
@@ -33,7 +47,10 @@ describe("readList", () => {
   it("keeps the valid lines, and a copy of the original, when some are invalid", () => {
     const raw = JSON.stringify([{ product_id: "1", name: "A", quantity: 1 }, { product_id: "", quantity: 0 }]);
     const s = memory({ list: raw });
-    expect(readList(s, "list")).toEqual({ lines: [{ product_id: "1", name: "A", quantity: 1 }], issue: "partial" });
+    expect(readList(s, "list")).toEqual({
+      lines: [{ product_id: "1", name: "A", quantity: 1, checked: false }],
+      issue: "partial",
+    });
     expect(s.data.get(copyKey("list", raw))).toBe(raw);
   });
 

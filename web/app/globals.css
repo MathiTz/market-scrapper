@@ -1183,12 +1183,26 @@ footer a {
 .list-item:last-child {
   border: 0;
 }
+.list-check {
+  flex-shrink: 0;
+}
+/* Already picked up: stays on the list, but reads as done rather than as still needed. */
+.list-item-checked .list-product { opacity: 0.55; }
+.list-item-checked .list-product h3 { text-decoration: line-through; }
 .list-product {
   flex: 1;
   display: flex;
   align-items: center;
   gap: 16px;
 }
+.list-open {
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.list-open:hover h3 { color: var(--md-text-link); }
 .list-product > svg {
   color: var(--md-text-secondary);
   flex-shrink: 0;
@@ -2006,7 +2020,7 @@ footer a {
   /* Fewer and gentler animations, not zero: fades stay, movement and scaling collapse to nothing. */
   :root { --motion-scale-in: 1; --motion-lift: 0px; --dur-sheet: 200ms; }
   html { scroll-behavior: auto; }
-  .skeleton::after, .nearby-skeleton span, .nearby-spinner { animation: none; }
+  .skeleton::after, .nearby-skeleton span, .nearby-spinner, .product-photo::before, .product-hero::before { animation: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: 0.01ms; }
 }
 
@@ -2817,8 +2831,11 @@ footer a {
 
 /* Compact, image-led price advice cards and a single horizontal row on Hoje. */
 .compact-product { display: flex; flex-direction: column; min-width: 0; padding: 10px; border-radius: var(--md-radius-sm); }
-.compact-product .product-open { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 10px; align-items: center; }
-.product-photo { display: grid; place-items: center; width: 62px; height: 78px; background: var(--md-surface-level-1); border-radius: var(--md-radius-xs); overflow: hidden; }
+.compact-product .product-open { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 10px; align-items: center; }
+/* Square: every source photo we've captured (300x300 to 500x500) is itself square, so a non-square box
+   here used to letterbox it with visible grey bars top and bottom (object-fit: contain keeps the whole
+   photo, it doesn't crop to fill an odd ratio). */
+.product-photo { display: grid; place-items: center; width: 66px; height: 66px; background: var(--md-surface-level-1); border-radius: var(--md-radius-xs); overflow: hidden; }
 .product-photo img { width: 100%; height: 100%; object-fit: contain; }
 .product-photo-empty { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--md-text-secondary); }
 .product-photo-empty > span { font-size: var(--md-text-xs); }
@@ -4126,14 +4143,33 @@ dialog.flyer-dialog[open]:not([data-closing])::backdrop {
 @keyframes skeleton-wave {
   to { transform: translateX(100%); }
 }
-.skeleton-photo { width: 62px; height: 78px; }
+.skeleton-photo { width: 66px; height: 66px; }
 .skeleton-cover { aspect-ratio: 4 / 5; width: 100%; border-radius: 0; }
 .skeleton-card { pointer-events: none; }
 .skeleton-card .product-open { cursor: default; }
 .skeleton-card .product-actions { display: flex; gap: 4px; margin-top: auto; padding-top: 12px; }
-/* Photos: a grey block first, the image fading in over it once it has decoded (cached images are marked on mount). */
-.product-photo, .product-hero { background: var(--md-surface-level-2); }
+/* Photos: a grey block first, the image fading in over it once it has decoded (cached images are marked on
+   mount). A plain flat grey box reads as broken, not loading (this matters here: `loading="lazy"` means a
+   card several rows down sits in that state for a while), so a shimmer runs on the box until the photo
+   covers it; :has() stops it once the photo is in (no need to touch it from JS, and nothing to clean up). */
+.product-photo, .product-hero { position: relative; background: var(--md-surface-level-2); }
+.product-photo::before, .product-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--md-neutral-0) 50%, transparent 100%);
+  opacity: 0.7;
+  transform: translateX(-100%);
+  animation: skeleton-wave 1.5s linear infinite;
+}
+.product-photo:has(img[data-loaded="true"])::before,
+.product-hero:has(img[data-loaded="true"])::before,
+.product-photo:has(.product-photo-empty)::before {
+  animation-play-state: paused;
+  opacity: 0;
+}
 .product-photo img, .product-hero img, .flyer-cover img {
+  position: relative; /* paints over the shimmer's ::before */
   opacity: 0;
   transition: opacity var(--dur-state) var(--ease-out);
 }

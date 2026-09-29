@@ -1,5 +1,7 @@
-/** One line of the shopping list, as kept in this browser's localStorage (keys med-list-real / med-list-demo). */
-export type Line = { product_id: string; name: string; quantity: number };
+/** One line of the shopping list, as kept in this browser's localStorage (keys med-list-real / med-list-demo).
+ * `checked` marks an item already picked up: it stays on the list (so a trip half done isn't lost) but is
+ * left out of the per-store cost estimate and shown apart from what is still needed. */
+export type Line = { product_id: string; name: string; quantity: number; checked: boolean };
 
 /**
  * What went wrong with the saved list, if anything:
@@ -81,6 +83,7 @@ export function readList(storage: Store | null, key: string): { lines: Line[]; i
     product_id: l.product_id,
     name: typeof l.name === "string" && l.name.trim() ? l.name : "Item salvo",
     quantity: l.quantity,
+    checked: (l as { checked?: unknown }).checked === true, // absent (older saves) reads as not yet picked up
   }));
   if (lines.length < parsed.length) {
     keepCopy(storage, key, raw);

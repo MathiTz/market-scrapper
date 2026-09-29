@@ -20,9 +20,11 @@ export function withViewTransition(update: () => void, name?: string) {
   }
   if (name) document.documentElement.dataset.vt = name;
   const transition = doc.startViewTransition(() => flushSync(update));
-  transition.finished.finally(() => {
-    if (name) delete document.documentElement.dataset.vt;
-  });
+  transition.finished
+    .catch(() => {}) // a transition superseded by a newer one rejects with InvalidStateError - expected, not a bug
+    .finally(() => {
+      if (name) delete document.documentElement.dataset.vt;
+    });
 }
 
 /** Marks the photo of one product card as the origin of the next morph; any earlier mark is cleared. */
