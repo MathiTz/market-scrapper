@@ -1204,24 +1204,37 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     })}
                   </div>
                 )}
+                {!!data?.retailers.length && (
+                  // A friendlier way to see one chain's own catalog than digging into "Filtros" - the same
+                  // spot on both Hoje and Buscar, so it isn't only reachable from one of them. On Hoje this
+                  // jumps to Buscar already narrowed; on Buscar it narrows in place, keeping any other
+                  // filter set, and taps the same chip again to go back to every store.
+                  <div className="store-picker">
+                    <p className="overline">Em {dataRegion}, temos estas redes monitoradas</p>
+                    <div className="chip-row" role="group" aria-label="Ver só as ofertas de uma rede">
+                      {data.retailers.map((r) => {
+                        const sole = pf.networks.length === 1 && pf.networks[0] === r.id;
+                        return (
+                          <Chip
+                            key={r.id}
+                            selected={sole}
+                            onClick={() =>
+                              view === "today"
+                                ? navigate("search", { networks: [r.id] })
+                                : setPf((f) => ({ ...f, networks: sole ? [] : [r.id] }))
+                            }
+                          >
+                            {r.name}
+                          </Chip>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </>
             )}
             {view === "today" && (
               <>
-                {!!data?.retailers.length && (
-                  // A friendlier way to see one chain's own catalog than digging into "Filtros" on Buscar -
-                  // sets the same network filter that panel uses, so clearing it later works the same way.
-                  <div className="store-picker">
-                    <p className="overline">Em {dataRegion}, temos estas redes monitoradas</p>
-                    <div className="chip-row" role="group" aria-label="Ver só as ofertas de uma rede">
-                      {data.retailers.map((r) => (
-                        <Chip key={r.id} onClick={() => navigate("search", { networks: [r.id] })}>
-                          {r.name}
-                        </Chip>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 <div className="section-heading daily-heading">
                   <div>
                     <h1>
