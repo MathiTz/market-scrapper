@@ -83,6 +83,23 @@ class TestMatchProducts(unittest.TestCase):
         self.assertEqual(match_tokens("Leite Condensado Moça Lata 395g Grátis 15%"),
                          match_tokens("LEITE CONDENSADO MOÇA CAIXA 395G"))
 
+    def test_a_sources_own_wrapping_and_formula_words_do_not_block_a_match(self):
+        # Real case: Centerbox names this bar soap with words no other chain's shorter name for the same
+        # bar uses at all ("Barra", "Glicerinado", "Envoltório" - the wrapping and the formula, not the
+        # product). "Barra" is stripped as identity-neutral here specifically because it never creates a
+        # false match against the rest of the catalog (checked directly, not assumed) - unlike, say, a
+        # cereal or protein bar, where "barra" is the product's own identity, not packaging.
+        self.assertEqual(
+            matched(
+                "Sabonete Barra Glicerinado Flor de Verbena Lux Botanicals Envoltório 85g",
+                "Sabonete Lux Botanicals Flor de Verbena 85g",
+            ),
+            [[
+                "Sabonete Barra Glicerinado Flor de Verbena Lux Botanicals Envoltório 85g",
+                "Sabonete Lux Botanicals Flor de Verbena 85g",
+            ]],
+        )
+
     def test_different_brand_or_size_never_matches(self):
         self.assertEqual(matched("Filé de Tilápia Bomar Congelado 500g", "Filé De Tilapia Congelado Qualitá 500g"), [])
         self.assertEqual(matched("Arroz Branco Tio João 1kg", "Arroz Branco Tio João 5kg"), [])

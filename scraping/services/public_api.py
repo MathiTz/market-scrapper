@@ -384,6 +384,12 @@ _NOT_IDENTITY = {
     "de", "da", "do", "das", "dos", "em", "e", "com", "sem", "para", "o", "a", "ao", "por", "tipo",
     "lata", "caixa", "pacote", "pct", "frasco", "garrafa", "pote", "sache", "tp", "unidade", "unidades",
     "un", "embalagem", "pack", "bandeja", "saco", "refil", "tubo", "vidro", "long", "neck", "cada", "gratis",
+    # A source's own wrapping/formula words, not the product itself: Centerbox's soap names carry these
+    # ("Sabonete Barra Glicerinado X Lux Botanicals Envoltório 85g") where every other chain's shorter name
+    # for the same bar ("Sabonete Lux Botanicals X 85g") has none of them. Checked against the whole catalog
+    # before adding "barra" here specifically (it can be a product's actual identity elsewhere, e.g. a
+    # cereal or protein bar): today it only ever creates new bar-soap matches, no unrelated collisions.
+    "barra", "envoltorio", "glicerinado", "glicerina",
 }
 
 
