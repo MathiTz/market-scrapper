@@ -138,13 +138,18 @@ export function productsWithPrice<T extends { id: string }>(products: T[], offer
  * to every other product loosely filed under "Higiene e beleza" - fralda, absorvente, shampoo...) and
  * only falls back to the coarse category when the ETL found nothing specific enough to name one (see
  * subcategorize() in services/public_api.py) - a product without a subcategory still gets *some*
- * alternatives, just less precise ones, rather than none.
+ * alternatives, just less precise ones, rather than none. "Outros" is the one exception: it is the ETL's
+ * catch-all for a name none of its category keywords recognised, not a real kind of product, so two
+ * "Outros" products sharing it in common (a plastic basin and a tub of whey protein, say) are not
+ * alternatives to each other - falling back to it the way every other category does produced exactly that,
+ * so a product filed there with no subcategory gets no alternatives at all rather than a false "same kind".
  *
  * `pricedIds` excludes anything with no current offer: a same-kind product nobody is currently selling is
  * not something to compare against, and showing it as an unpriced card ("Sem preço atual") only made the
  * list longer without making it more useful.
  */
 export function alternativesOf(products: Product[], active: Product, pricedIds: ReadonlySet<string>): Product[] {
+  if (!active.subcategory && active.category === "Outros") return [];
   const sameKind = active.subcategory
     ? (p: Product) => p.subcategory === active.subcategory
     : (p: Product) => p.category === active.category;

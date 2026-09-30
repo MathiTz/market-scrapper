@@ -397,6 +397,7 @@ class TestCategorize(unittest.TestCase):
             "BISTECA SUÍNO SADIA CONGELADO FATIADO KG": "Carnes e peixes",
             "Mamão Formosa Granel 2kg": "Hortifruti",
             "Alho Frito Garlic Foods 90g": "Hortifruti",
+            "Abobrinha Italiana Kg": "Hortifruti",  # real case: fell into "Outros" - not a prefix of "abobora"
             "Biscoito Recheado Sabor Chocolate 140g": "Padaria e biscoitos",
             "Cerveja Sabor Limão 350ml": "Bebidas",
             "Cadeira de praia": "Outros",

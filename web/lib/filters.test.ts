@@ -182,13 +182,22 @@ describe("alternativesOf", () => {
   });
 
   it("falls back to category when the active product has no subcategory", () => {
-    const noKind = withKind("cadeira-praia", "Outros", "");
+    const noKind = withKind("cadeira-praia", "Casa e lazer", "");
     const list = [
       noKind,
-      withKind("guarda-sol", "Outros", ""), // same category: still an alternative, since neither has a kind
+      withKind("guarda-sol", "Casa e lazer", ""), // same category: still an alternative, since neither has a kind
       withKind("hidratante-ype", "Higiene e beleza", "Hidratante"), // different category: not one
     ];
     expect(alternativesOf(list, noKind, allPriced).map((p) => p.id)).toEqual(["guarda-sol"]);
+  });
+
+  it("never treats two 'Outros' products as alternatives, unlike every other category", () => {
+    // Real case: a plastic basin and a tub of whey protein both fell through every category keyword and
+    // landed in "Outros" - the ETL's catch-all, not a real kind of product - so they are not "the same
+    // kind" the way two uncategorized beach chairs of an actual category would be.
+    const basin = withKind("bacia", "Outros", "");
+    const list = [basin, withKind("whey", "Outros", ""), withKind("zucchini", "Outros", "")];
+    expect(alternativesOf(list, basin, allPriced)).toEqual([]);
   });
 
   it("never includes the active product itself", () => {
