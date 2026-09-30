@@ -13,6 +13,8 @@ import { Segmented } from "@/components/ui/segmented";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useDialog } from "@/components/ui/use-dialog";
 import { useSheetDrag } from "@/components/ui/use-sheet-drag";
+import { capture } from "@/app/posthog";
+import { posthogLog } from "@/app/posthog-logs";
 
 /** The street address at a GPS position, or null when it cannot be found (the position is rounded first). */
 async function addressAt(latitude: number, longitude: number): Promise<string | null> {
@@ -87,9 +89,19 @@ export function NearbyFilter({
     setMessage("");
     setOpened(true);
   }
-  function apply(point: LocationPoint) {
-    onChange({ point, radiusKm: radius });
-    close();
+  function apply(point: LocationPoint, selectedRadius = radius, shouldClose = true) {
+    capture("nearby_filter_applied", {
+      location_source: point.source,
+      radius_km: selectedRadius,
+      is_demo: demo,
+    });
+    posthogLog.info("nearby filter applied", {
+      location_source: point.source,
+      radius_km: selectedRadius,
+      is_demo: demo,
+    });
+    onChange({ point, radiusKm: selectedRadius });
+    if (shouldClose) close();
   }
   // `auto` is the search-as-you-type call: it keeps the suggestions on screen and leaves the form enabled.
   async function search(auto = false) {
@@ -291,8 +303,7 @@ export function NearbyFilter({
             // the dialog; arrowing through the options does not.
             onPick={(r, byPointer) => {
               if (!value) return;
-              onChange({ point: value.point, radiusKm: r });
-              if (byPointer) close();
+              apply(value.point, r, byPointer);
             }}
           />
           <Button

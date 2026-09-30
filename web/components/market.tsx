@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { capture } from "@/app/posthog";
+import { posthogLog } from "@/app/posthog-logs";
 import {
   ShoppingBasket,
   Search,
@@ -353,6 +355,12 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     resetUrl();
   }
   const openProduct = (product: Product) => {
+    capture("product_viewed", {
+      product_id: product.id,
+      product_category: product.category,
+      source_view: view,
+      is_demo: demo,
+    });
     if (!active) returnTo.current = { scroll: window.scrollY, productId: product.id };
     setSharedNotice("");
     window.history.pushState(
@@ -408,6 +416,10 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       notify(`“${short(p.name)}” já está com a quantidade máxima`);
       return;
     }
+    capture("shopping_list_item_added", {
+      product_id: p.id,
+      was_already_in_list: Boolean(existing),
+    });
     setLines((l) =>
       l.some((x) => x.product_id === p.id)
         ? l.map((x) =>
@@ -426,9 +438,16 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   };
   // Stays on the list (a trip half done isn't lost) but drops out of the per-store estimate below and is
   // shown apart from what is still needed - see the Line type in lib/list-storage.ts.
-  const toggleChecked = (id: string) =>
+  const toggleChecked = (id: string) => {
+    const line = lines.find((item) => item.product_id === id);
+    capture("shopping_list_item_checked", {
+      product_id: id,
+      is_checked: !line?.checked,
+    });
     setLines((l) => l.map((x) => (x.product_id === id ? { ...x, checked: !x.checked } : x)));
+  };
   const remove = (ids: string[], message: string) => {
+    capture("shopping_list_item_removed", { item_count: ids.length });
     const previous = lines;
     setUndo({ lines: previous, message });
     setLines((l) => l.filter((x) => !ids.includes(x.product_id)));
@@ -722,6 +741,9 @@ export default function Market({ demo = false }: { demo?: boolean }) {
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
+          const hasSearchQuery = Boolean(query.trim());
+          capture("product_search_submitted", { has_search_query: hasSearchQuery });
+          posthogLog.info("catalog search submitted", { has_search_query: hasSearchQuery });
           setView("search");
           setActive(null);
           clearShared();

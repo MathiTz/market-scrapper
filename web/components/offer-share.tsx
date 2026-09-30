@@ -10,6 +10,7 @@ import {
 import { channelLabel } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
+import { capture } from "@/app/posthog";
 
 type OfferShareProps = {
   offer: Offer;
@@ -44,6 +45,14 @@ function ShareAction({
   const inFlight = useRef(false);
 
   async function share() {
+    const captureShare = (shareMethod: "native" | "clipboard") =>
+      capture("offer_shared", {
+        product_id: offer.product_id,
+        offer_id: offer.id,
+        retailer_id: offer.retailer_id,
+        offer_channel: offer.channel,
+        share_method: shareMethod,
+      });
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
@@ -75,6 +84,7 @@ function ShareAction({
       if (navigator.share) {
         try {
           await navigator.share(data);
+          captureShare("native");
           return;
         } catch (error) {
           if ((error as { name?: string })?.name === "AbortError") return;
@@ -82,6 +92,7 @@ function ShareAction({
       }
       try {
         await navigator.clipboard.writeText(url.href);
+        captureShare("clipboard");
         setStatus("Link copiado para compartilhar.");
       } catch {
         setManualLink(url.href);

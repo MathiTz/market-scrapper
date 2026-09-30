@@ -20,6 +20,8 @@ import {
   useFlyerPlayer,
   useInView,
 } from "./flyer-player";
+import { capture } from "@/app/posthog";
+import { posthogLog } from "@/app/posthog-logs";
 
 export function FlyerCard({ f, flyers = [f] }: { f: Flyer; flyers?: Flyer[] }) {
   const opener = useRef<HTMLButtonElement>(null);
@@ -69,6 +71,18 @@ export function FlyerCard({ f, flyers = [f] }: { f: Flyer; flyers?: Flyer[] }) {
               swiped.current = false;
               return;
             }
+            capture("flyer_opened", {
+              flyer_id: f.id,
+              retailer_id: f.retailer_id,
+              page_count: pages.length,
+              is_demo: demo,
+            });
+            posthogLog.info("flyer viewer opened", {
+              flyer_id: f.id,
+              retailer_id: f.retailer_id,
+              page_count: pages.length,
+              is_demo: demo,
+            });
             setOpen(true);
           }}
           aria-label={"Ver encarte " + f.title + " de " + f.retailer_name}
