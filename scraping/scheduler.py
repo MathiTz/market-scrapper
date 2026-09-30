@@ -38,7 +38,19 @@ def scrape_all() -> None:
 def main() -> None:
     scheduler = BlockingScheduler(timezone="America/Sao_Paulo")
     trigger = CronTrigger(hour=SCRAPE_HOURS, minute=0)
-    scheduler.add_job(scrape_all, trigger, id="scrape_all", replace_existing=True)
+    scheduler.add_job(
+        scrape_all,
+        trigger,
+        id="scrape_all",
+        replace_existing=True,
+        # A laptop asleep through 06:00/12:00 used to just skip that run silently: APScheduler's default
+        # misfire grace is ~1s, so by the time the machine wakes it has long since decided the run "cannot
+        # be helped" and drops it, with nothing else scheduled until the next fixed hour. A wide grace window
+        # (most of the 6h gap between runs) means a run missed by sleep still fires as soon as the machine is
+        # back; coalesce=True keeps that to one run, not one per missed hour, if it slept through more than one.
+        misfire_grace_time=6 * 3600 - 60,
+        coalesce=True,
+    )
     logger.info("Scheduler started (daily at %s:00). Press Ctrl+C to stop.", SCRAPE_HOURS.replace(",", ":00 and "))
     try:
         scheduler.start()

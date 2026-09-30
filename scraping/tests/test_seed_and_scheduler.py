@@ -82,6 +82,16 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(fields["minute"], "0")
         mock_sched.start.assert_called_once()
 
+    @patch("scheduler.BlockingScheduler")
+    def test_a_missed_run_still_fires_once_the_machine_wakes(self, mock_cls):
+        # A laptop asleep through 06:00 or 12:00 used to just lose that run: APScheduler's own default
+        # misfire grace is ~1s, nowhere near long enough to survive normal sleep. coalesce=True keeps a
+        # machine asleep through more than one fixed hour to a single catch-up run, not one per hour missed.
+        scheduler.main()
+        kwargs = mock_cls.return_value.add_job.call_args.kwargs
+        self.assertGreaterEqual(kwargs["misfire_grace_time"], 3600)
+        self.assertTrue(kwargs["coalesce"])
+
 
 if __name__ == "__main__":
     unittest.main()
