@@ -492,6 +492,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     offersByProduct,
     pricedIds,
     coverageNow,
+    retailersInReach,
   } = useMemo(() => {
     const products = (data?.products || []).filter(
       (p) =>
@@ -540,8 +541,9 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     // What the coverage box counts: current prices (any condition) of the offers in reach, not the raw
     // snapshot size, which also counts club variants and prices that are no longer current.
     const currentAll = rankOffers(offers, true);
+    const retailersInReach = new Set(currentAll.map((o) => o.retailer_id));
     const coverageNow = {
-      networks: new Set(currentAll.map((o) => o.retailer_id)).size,
+      networks: retailersInReach.size,
       products: new Set(currentAll.map((o) => o.product_id)).size,
       offers: currentAll.length,
     };
@@ -554,6 +556,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       offersByProduct,
       pricedIds,
       coverageNow,
+      retailersInReach,
     };
   }, [
     data,
@@ -705,6 +708,8 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     return product ? listName(product) : l.name;
   };
   const retailerName = (id: string) => result.data?.retailers.find((r) => r.id === id)?.name ?? id;
+  // Only chains with a current price in reach - see the store-picker's own comment below.
+  const pickerRetailers = (data?.retailers ?? []).filter((r) => retailersInReach.has(r.id));
   const filterChips: { key: string; label: string; clear: () => void }[] = [
     ...(category ? [{ key: "category", label: `Categoria: ${category}`, clear: () => setCategory("") }] : []),
     ...pf.networks.map((id) => ({
@@ -1226,15 +1231,21 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     })}
                   </div>
                 )}
-                {!!data?.retailers.length && (
+                {!!pickerRetailers.length && (
                   // A friendlier way to see one chain's own catalog than digging into "Filtros" - the same
                   // spot on both Hoje and Buscar, so it isn't only reachable from one of them. On Hoje this
                   // jumps to Buscar already narrowed; on Buscar it narrows in place, keeping any other
-                  // filter set, and taps the same chip again to go back to every store.
+                  // filter set, and taps the same chip again to go back to every store. Only chains with a
+                  // current price in reach are offered - with "Perto de você" set, filtering by a chain with
+                  // no branch in that radius would just show a chain name and no way to go buy from it.
                   <div className="store-picker">
-                    <p className="overline">Em {dataRegion}, temos estas redes monitoradas</p>
+                    <p className="overline">
+                      {nearby
+                        ? `Redes com preço atual até ${nearby.radiusKm} km da sua referência`
+                        : `Em ${dataRegion}, temos estas redes monitoradas`}
+                    </p>
                     <div className="chip-row" role="group" aria-label="Ver só as ofertas de uma rede">
-                      {data.retailers.map((r) => {
+                      {pickerRetailers.map((r) => {
                         const sole = pf.networks.length === 1 && pf.networks[0] === r.id;
                         return (
                           <Chip
