@@ -1,9 +1,13 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Admin from "@/components/admin";
 import Market from "@/components/market";
-import Vitrine from "@/components/vitrine";
+
+// Admin and the demo vitrine are alternate entry points that a given visitor
+// never loads alongside the main market view, so they are split into their own
+// chunks and fetched only when the route actually asks for them.
+const Admin = lazy(() => import("@/components/admin"));
+const Vitrine = lazy(() => import("@/components/vitrine"));
 import "./posthog";
 // Archivo (variable: weight 100-900, width 62-125) is self-hosted from the package; the wdth file is the one
 // that carries the width axis the prices use. Tokens come before the stylesheet that consumes them.
@@ -38,7 +42,9 @@ function Page() {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <Page />
+      <Suspense fallback={null}>
+        <Page />
+      </Suspense>
     </QueryClientProvider>
   </StrictMode>,
 );
