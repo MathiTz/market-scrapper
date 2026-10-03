@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "buffer-api-explorer",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /Users/user/Documents/interviews/buffer/buffer-api-explorer && pnpm dev"],
+      "port": 3000
+    }
+  ]
+}
