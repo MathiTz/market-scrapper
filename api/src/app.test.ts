@@ -207,6 +207,14 @@ describe("other routes", () => {
     expect((await app.request("/api/session", { method: "POST" }, env)).status).toBe(501);
   });
 
+  it("says plainly that receipt reading is not available here, instead of a bare 404", async () => {
+    const { app } = appWith(null);
+    const response = await app.request("/api/receipt/ocr", { method: "POST" }, env);
+    expect(response.status).toBe(501);
+    expect(response.headers.get("Content-Type")).toContain("application/json");
+    expect(await response.json()).toEqual({ error: "A leitura de cupons ainda não está disponível nesta versão." });
+  });
+
   it("has a health check and a JSON 404 for unknown API paths", async () => {
     const { app } = appWith(null);
     expect(await (await app.request("/api/health", {}, env)).json()).toEqual({ ok: true });

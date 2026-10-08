@@ -97,6 +97,13 @@ export function createApp({ store, fetchImpl = fetch }: Deps) {
   app.delete("/api/session", (c) => c.json({ ok: true }));
   app.post("/api/session", (c) => c.json({ error: "Login depende da integração com o backend." }, 501));
 
+  // Reading a receipt photo runs in the Python local API (scraping/local_api/app.py: OpenCV and a provider key),
+  // which a Worker cannot host. Until it has a production home, say so (the UI is off in production builds
+  // too, see receiptOcrEnabled in web/lib/receipt-api.ts) rather than answering a bare 404.
+  app.post("/api/receipt/ocr", (c) =>
+    c.json({ error: "A leitura de cupons ainda não está disponível nesta versão." }, 501),
+  );
+
   app.all("/api/*", (c) => c.json({ error: "Não encontrado." }, 404));
   app.onError((error, c) => {
     console.error("Request failed", error instanceof Error ? error.message : error);

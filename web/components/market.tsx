@@ -40,6 +40,8 @@ import { groupBySize } from "@/lib/group";
 import { OfferRail } from "@/components/offer-rail";
 import { LoadMore, useIncremental } from "@/components/infinite";
 import { ListAdder } from "@/components/list-adder";
+import { ReceiptCheck } from "@/components/receipt-check";
+import { receiptOcrEnabled } from "@/lib/receipt-api";
 import { StoreEstimates } from "@/components/store-estimates";
 import { storeEstimates } from "@/lib/estimates";
 import { buildIndex, filterIndexed } from "@/lib/search";
@@ -1888,6 +1890,22 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     );
                   })}
                 </div>
+                {receiptOcrEnabled && !demo && lines.length > 0 && (
+                  // Compared with every price we have, not the nearby-filtered ones: the receipt does not say
+                  // which store it came from, so there is no radius to apply to it.
+                  <ReceiptCheck
+                    lines={lines}
+                    productById={productById}
+                    offers={allOffers}
+                    disabledReason={
+                      offline
+                        ? "Sem conexão: envie o cupom quando a conexão voltar."
+                        : loading || error
+                          ? "Os preços ainda não foram carregados."
+                          : undefined
+                    }
+                  />
+                )}
                 {lines.length > 0 && (
                   <>
                     <h2 className="spaced">Estimativa por rede</h2>

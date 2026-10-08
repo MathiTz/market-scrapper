@@ -17,6 +17,11 @@ A Vite + React + TypeScript single-page app. There is no Next.js here.
   Segmented, skeletons, NumberFlow wrappers, `useDialog`, `useSheetDrag`, `useIndicator`). Base UI is imported
   only by `select.tsx` and `tooltip.tsx`; Sonner only by `lib/notify.tsx`; the sheet's spring in `use-sheet-drag.ts` is hand-written (no `motion`).
   Dialogs stay native `<dialog>` elements opened through `useDialog`.
+- The shopping list's "Conferir com o cupom" (`components/receipt-check.tsx`) sends a receipt photo to
+  `POST /api/receipt/ocr` and compares what it reads with the prices of the list's items (`lib/receipt.ts`,
+  `lib/receipt-api.ts`). That route exists only in the Flask API (`../scraping/local_api/app.py`: OpenCV and an
+  `OLLAMA_API_KEY`), which a Worker cannot host, so the Worker answers 501 and the UI is on only under `npm run dev`
+  or a build with `VITE_RECEIPT_OCR=1`. Do not enable it in a production build before the route has a host.
 - Run `npm run dev` (port 3000), `npm run typecheck`, `npm test` and `npm run build`.
 
 ## Contribution guidelines
