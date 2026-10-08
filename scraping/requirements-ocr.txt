@@ -5,3 +5,4 @@ easyocr
 # requests is already in requirements.txt; numpy comes in with opencv/easyocr.
 opencv-python-headless>=4.7
 rapidfuzz>=3.0
+pillow>=10  # reads an upload's size from its header, so a decompression bomb is refused before it is decoded

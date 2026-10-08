@@ -13,9 +13,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import hashlib
+import io
 import json
 import logging
 import math
+import os
 import tempfile
 import threading
 import time
@@ -38,30 +40,17 @@ from services.scraper_service import run_and_store, run_all_products, run_all_of
 from diagnose_sites import run_diagnosis
 
 # Receipt OCR (scraping/receiptocr/) is optional like Cometa's easyocr: without it the
-# API still serves everything else, and /api/receipt/ocr explains itself with a 503.
+# API still serves everything else, and /api/receipt/ocr explains itself with a 503. The
+# imports are all-or-nothing (opencv, rapidfuzz and Pillow all come with requirements-ocr.txt),
+# so a partial install reads as "not installed" rather than failing mid-request.
 _receipt_ocr_import_error = None
 try:
+    from PIL import Image
     from receiptocr import ReceiptExtractor
+    from receiptocr import schemas as receipt_errors
 except ImportError as _err:
-    ReceiptExtractor = None
+    Image = ReceiptExtractor = receipt_errors = None
     _receipt_ocr_import_error = str(_err)
-
-try:
-    from receiptocr.schemas import (
-        AuthenticationError, BadReplyError, BadRequestError, ModelNotFoundError,
-        ProviderUnavailableError, QuotaError, RateLimitedError, ReceiptOcrError,
-    )
-except ImportError:
-    # Stub the hierarchy so the route's except-clauses still name valid types when
-    # the optional package (or cv2) is missing; the route returns 503 before using them.
-    ReceiptOcrError = type("ReceiptOcrError", (Exception,), {})  # type: ignore[misc]
-    AuthenticationError = type("AuthenticationError", (ReceiptOcrError,), {})  # type: ignore[misc]
-    QuotaError = type("QuotaError", (ReceiptOcrError,), {})  # type: ignore[misc]
-    RateLimitedError = type("RateLimitedError", (ReceiptOcrError,), {})  # type: ignore[misc]
-    ProviderUnavailableError = type("ProviderUnavailableError", (ReceiptOcrError,), {})  # type: ignore[misc]
-    BadReplyError = type("BadReplyError", (ReceiptOcrError,), {})  # type: ignore[misc]
-    ModelNotFoundError = type("ModelNotFoundError", (ReceiptOcrError,), {})  # type: ignore[misc]
-    BadRequestError = type("BadRequestError", (ReceiptOcrError,), {})  # type: ignore[misc]
 
 
 # Configure logging to see what's happening during scraping
@@ -316,17 +305,46 @@ def api_session():
 # A receipt photo is a phone camera shot; 10 MB is generous for a JPEG that only
 # needs to stay legible after the OCR tiles are cut from it.
 RECEIPT_MAX_BYTES = 10 * 1024 * 1024
+# Bytes are not the only size that matters: a 17 KB PNG can declare 144 megapixels and make a full decode
+# allocate ~860 MB. 50 MP is above any phone photo of a receipt worth reading.
+RECEIPT_MAX_PIXELS = 50_000_000
+RECEIPT_FORMATS = frozenset({"PNG", "JPEG", "WEBP", "BMP"})  # what cv2.imread (the extractor) reads
+
+# Refuse an oversized upload while it is still being received, not after the whole body is in memory
+# (the route's own length check below only sees a body Flask has already buffered). The slack covers the
+# multipart envelope around the file.
+app.config["MAX_CONTENT_LENGTH"] = RECEIPT_MAX_BYTES + 256 * 1024
 
 
-def _is_valid_image(blob: bytes) -> bool:
-    """Check if the provided bytes represent a decodable image.
+@app.errorhandler(413)
+def _upload_too_large(_error):
+    return jsonify({"error": "A imagem do cupom é grande demais (máximo 10 MB)."}), 413
 
-    cv2 is guaranteed importable here: the route already returned 503 when the
-    optional OCR dependencies are missing, and importing receiptocr imports cv2.
+
+def _receipt_image_problem(blob: bytes):
+    """``(status, message)`` for why ``blob`` cannot be a receipt photo, or ``None`` when it can.
+
+    The size is read from the file header first, so a decompression bomb is refused before anything
+    allocates its pixels. Only then is it fully decoded - once, here - so the extractor, which re-reads
+    the file, can never fail on a caller's corrupt upload (that used to need string-matching its error).
     """
-    import cv2
+    invalid = (400, "Envie uma imagem válida do cupom (PNG ou JPEG).")
+    try:
+        with Image.open(io.BytesIO(blob)) as image:
+            image_format, (width, height) = image.format, image.size
+    except Image.DecompressionBombError:
+        return 413, "A imagem do cupom tem resolução alta demais."
+    except Exception:  # Pillow raises UnidentifiedImageError, but also OSError/SyntaxError for odd files
+        return invalid
+    if image_format not in RECEIPT_FORMATS:
+        return invalid
+    if width * height > RECEIPT_MAX_PIXELS:
+        return 413, "A imagem do cupom tem resolução alta demais."
+    import cv2  # importable: receiptocr, imported above, imports it
     import numpy as np
-    return cv2.imdecode(np.frombuffer(blob, np.uint8), cv2.IMREAD_COLOR) is not None
+    if cv2.imdecode(np.frombuffer(blob, np.uint8), cv2.IMREAD_COLOR) is None:
+        return invalid
+    return None
 
 
 @app.route("/api/receipt/ocr", methods=["POST"])
@@ -342,6 +360,13 @@ def api_receipt_ocr():
         logger.warning("Receipt OCR unavailable (missing optional dependency): %s", _receipt_ocr_import_error)
         return jsonify({"error": "O OCR de cupons não está instalado. Instale requirements-ocr.txt."}), 503
 
+    # A missing key is this server's misconfiguration, not the caller's: say so (503) before reading the
+    # upload, rather than letting the extractor raise a plain error that used to be matched by its text and
+    # answered as if the photo were at fault. (config.py has already loaded scraping/.env into the environment.)
+    if not os.environ.get("OLLAMA_API_KEY"):
+        logger.warning("Receipt OCR is not configured: OLLAMA_API_KEY is not set")
+        return jsonify({"error": "A leitura de cupons não está configurada neste servidor."}), 503
+
     file = request.files.get("image")
     if not file or not file.filename:
         return jsonify({"error": "Envie uma imagem do cupom no campo 'image'."}), 400
@@ -350,8 +375,10 @@ def api_receipt_ocr():
         return jsonify({"error": "Envie uma imagem do cupom no campo 'image'."}), 400
     if len(blob) > RECEIPT_MAX_BYTES:
         return jsonify({"error": "A imagem do cupom é grande demais (máximo 10 MB)."}), 413
-    if not _is_valid_image(blob):
-        return jsonify({"error": "Envie uma imagem válida do cupom (PNG ou JPEG)."}), 400
+    problem = _receipt_image_problem(blob)
+    if problem:
+        status, message = problem
+        return jsonify({"error": message}), status
 
     path = ""
     suffix = Path(file.filename).suffix.lower()
@@ -362,23 +389,21 @@ def api_receipt_ocr():
             tmp.write(blob)
             path = tmp.name
         receipt = ReceiptExtractor().extract(path)
-    except ReceiptOcrError as exc:
+    except receipt_errors.ReceiptOcrError as exc:
         logger.warning("Receipt OCR failed: %s", exc)
-        if isinstance(exc, RateLimitedError):
+        if isinstance(exc, receipt_errors.RateLimitedError):
             headers = {}
             if getattr(exc, "retry_after", None) is not None:
                 headers["Retry-After"] = str(int(exc.retry_after))
             return jsonify({"error": "Muitas leituras de cupom agora. Tente de novo em instantes."}), 429, headers
-        if isinstance(exc, BadRequestError):
+        if isinstance(exc, receipt_errors.BadRequestError):
             return jsonify({"error": "A leitura do cupom falhou. Verifique a imagem e tente de novo."}), 400
-        # Two plain ReceiptOcrError messages are the caller's fault, not the provider's;
-        # they are raised verbatim by receiptocr/__init__.py (extract()) - keep in sync.
-        # The API key is never echoed: the message stays generic on purpose.
-        if isinstance(exc, ReceiptOcrError) and exc.__class__ is ReceiptOcrError:
-            message = str(exc)
-            if message.startswith("Missing Ollama API key") or message.startswith("Unreadable image"):
-                return jsonify({"error": "A leitura do cupom falhou. Verifique a imagem e tente de novo."}), 400
-        if isinstance(exc, (AuthenticationError, QuotaError, BadReplyError, ProviderUnavailableError, ModelNotFoundError)):
+        # Everything else (credentials, quota, unknown model, a garbled reply, the provider down, every tile
+        # failed) is the provider's side. The message stays generic on purpose: nothing about the account
+        # or the key is echoed back.
+        if isinstance(exc, (receipt_errors.AuthenticationError, receipt_errors.QuotaError,
+                            receipt_errors.BadReplyError, receipt_errors.ProviderUnavailableError,
+                            receipt_errors.ModelNotFoundError)):
             return jsonify({"error": "O serviço de leitura de cupons está indisponível agora."}), 502
         return jsonify({"error": "Não foi possível ler o cupom agora."}), 502
     except Exception:
