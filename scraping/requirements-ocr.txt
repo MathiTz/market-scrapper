@@ -1,2 +1,7 @@
 # Optional: lets the Cometa scraper read prices from its flyer images (installs PyTorch; the first run downloads the OCR model).
 easyocr
+
+# Optional: lets POST /api/receipt/ocr read NFC-e receipt photos (scraping/receiptocr/).
+# requests is already in requirements.txt; numpy comes in with opencv/easyocr.
+opencv-python-headless>=4.7
+rapidfuzz>=3.0

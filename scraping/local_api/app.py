@@ -16,9 +16,12 @@ import hashlib
 import json
 import logging
 import math
+import tempfile
 import threading
 import time
 from collections import OrderedDict
+from dataclasses import asdict
+from pathlib import Path
 
 from flask import Flask, Response, jsonify, request
 from sqlalchemy import text
@@ -33,6 +36,33 @@ from services.address_search import (
 from services.public_api import build_public
 from services.scraper_service import run_and_store, run_all_products, run_all_offers
 from diagnose_sites import run_diagnosis
+
+# Receipt OCR (scraping/receiptocr/) is optional like Cometa's easyocr: without it the
+# API still serves everything else, and /api/receipt/ocr explains itself with a 503.
+_receipt_ocr_import_error = None
+try:
+    from receiptocr import ReceiptExtractor
+except ImportError as _err:
+    ReceiptExtractor = None
+    _receipt_ocr_import_error = str(_err)
+
+try:
+    from receiptocr.schemas import (
+        AuthenticationError, BadReplyError, BadRequestError, ModelNotFoundError,
+        ProviderUnavailableError, QuotaError, RateLimitedError, ReceiptOcrError,
+    )
+except ImportError:
+    # Stub the hierarchy so the route's except-clauses still name valid types when
+    # the optional package (or cv2) is missing; the route returns 503 before using them.
+    ReceiptOcrError = type("ReceiptOcrError", (Exception,), {})  # type: ignore[misc]
+    AuthenticationError = type("AuthenticationError", (ReceiptOcrError,), {})  # type: ignore[misc]
+    QuotaError = type("QuotaError", (ReceiptOcrError,), {})  # type: ignore[misc]
+    RateLimitedError = type("RateLimitedError", (ReceiptOcrError,), {})  # type: ignore[misc]
+    ProviderUnavailableError = type("ProviderUnavailableError", (ReceiptOcrError,), {})  # type: ignore[misc]
+    BadReplyError = type("BadReplyError", (ReceiptOcrError,), {})  # type: ignore[misc]
+    ModelNotFoundError = type("ModelNotFoundError", (ReceiptOcrError,), {})  # type: ignore[misc]
+    BadRequestError = type("BadRequestError", (ReceiptOcrError,), {})  # type: ignore[misc]
+
 
 # Configure logging to see what's happening during scraping
 logging.basicConfig(
@@ -281,6 +311,86 @@ def api_session():
     if request.method == "DELETE":
         return jsonify({"ok": True})
     return jsonify({"error": "Login depende da integração com o backend."}), 501
+
+
+# A receipt photo is a phone camera shot; 10 MB is generous for a JPEG that only
+# needs to stay legible after the OCR tiles are cut from it.
+RECEIPT_MAX_BYTES = 10 * 1024 * 1024
+
+
+def _is_valid_image(blob: bytes) -> bool:
+    """Check if the provided bytes represent a decodable image.
+
+    cv2 is guaranteed importable here: the route already returned 503 when the
+    optional OCR dependencies are missing, and importing receiptocr imports cv2.
+    """
+    import cv2
+    import numpy as np
+    return cv2.imdecode(np.frombuffer(blob, np.uint8), cv2.IMREAD_COLOR) is not None
+
+
+@app.route("/api/receipt/ocr", methods=["POST"])
+def api_receipt_ocr():
+    """Read a Brazilian NFC-e receipt photo (scraping/receiptocr/) and return its items.
+
+    ``multipart/form-data`` with the file in the ``image`` field. The
+    extractor calls the ollama.com cloud vision API, so this needs
+    ``OLLAMA_API_KEY`` in the environment (or scraping/.env) and the optional
+    OCR dependencies from requirements-ocr.txt.
+    """
+    if ReceiptExtractor is None:
+        logger.warning("Receipt OCR unavailable (missing optional dependency): %s", _receipt_ocr_import_error)
+        return jsonify({"error": "O OCR de cupons não está instalado. Instale requirements-ocr.txt."}), 503
+
+    file = request.files.get("image")
+    if not file or not file.filename:
+        return jsonify({"error": "Envie uma imagem do cupom no campo 'image'."}), 400
+    blob = file.read()
+    if not blob:
+        return jsonify({"error": "Envie uma imagem do cupom no campo 'image'."}), 400
+    if len(blob) > RECEIPT_MAX_BYTES:
+        return jsonify({"error": "A imagem do cupom é grande demais (máximo 10 MB)."}), 413
+    if not _is_valid_image(blob):
+        return jsonify({"error": "Envie uma imagem válida do cupom (PNG ou JPEG)."}), 400
+
+    path = ""
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in (".jpg", ".jpeg", ".png", ".webp", ".bmp"):
+        suffix = ".jpg"
+    try:
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(blob)
+            path = tmp.name
+        receipt = ReceiptExtractor().extract(path)
+    except ReceiptOcrError as exc:
+        logger.warning("Receipt OCR failed: %s", exc)
+        if isinstance(exc, RateLimitedError):
+            headers = {}
+            if getattr(exc, "retry_after", None) is not None:
+                headers["Retry-After"] = str(int(exc.retry_after))
+            return jsonify({"error": "Muitas leituras de cupom agora. Tente de novo em instantes."}), 429, headers
+        if isinstance(exc, BadRequestError):
+            return jsonify({"error": "A leitura do cupom falhou. Verifique a imagem e tente de novo."}), 400
+        # Two plain ReceiptOcrError messages are the caller's fault, not the provider's;
+        # they are raised verbatim by receiptocr/__init__.py (extract()) - keep in sync.
+        # The API key is never echoed: the message stays generic on purpose.
+        if isinstance(exc, ReceiptOcrError) and exc.__class__ is ReceiptOcrError:
+            message = str(exc)
+            if message.startswith("Missing Ollama API key") or message.startswith("Unreadable image"):
+                return jsonify({"error": "A leitura do cupom falhou. Verifique a imagem e tente de novo."}), 400
+        if isinstance(exc, (AuthenticationError, QuotaError, BadReplyError, ProviderUnavailableError, ModelNotFoundError)):
+            return jsonify({"error": "O serviço de leitura de cupons está indisponível agora."}), 502
+        return jsonify({"error": "Não foi possível ler o cupom agora."}), 502
+    except Exception:
+        logger.exception("Receipt OCR failed unexpectedly")
+        return jsonify({"error": "Não foi possível ler o cupom agora."}), 502
+    finally:
+        if path:
+            Path(path).unlink(missing_ok=True)
+
+    data = asdict(receipt)
+    data["degraded"] = receipt.degraded
+    return jsonify(data)
 
 
 if __name__ == "__main__":
