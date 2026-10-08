@@ -13,12 +13,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import hashlib
+import io
 import json
 import logging
 import math
+import os
+import tempfile
 import threading
 import time
 from collections import OrderedDict
+from dataclasses import asdict
+from pathlib import Path
 
 from flask import Flask, Response, jsonify, request
 from sqlalchemy import text
@@ -33,6 +38,20 @@ from services.address_search import (
 from services.public_api import build_public
 from services.scraper_service import run_and_store, run_all_products, run_all_offers
 from diagnose_sites import run_diagnosis
+
+# Receipt OCR (scraping/receiptocr/) is optional like Cometa's easyocr: without it the
+# API still serves everything else, and /api/receipt/ocr explains itself with a 503. The
+# imports are all-or-nothing (opencv, rapidfuzz and Pillow all come with requirements-ocr.txt),
+# so a partial install reads as "not installed" rather than failing mid-request.
+_receipt_ocr_import_error = None
+try:
+    from PIL import Image
+    from receiptocr import ReceiptExtractor
+    from receiptocr import schemas as receipt_errors
+except ImportError as _err:
+    Image = ReceiptExtractor = receipt_errors = None
+    _receipt_ocr_import_error = str(_err)
+
 
 # Configure logging to see what's happening during scraping
 logging.basicConfig(
@@ -281,6 +300,122 @@ def api_session():
     if request.method == "DELETE":
         return jsonify({"ok": True})
     return jsonify({"error": "Login depende da integração com o backend."}), 501
+
+
+# A receipt photo is a phone camera shot; 10 MB is generous for a JPEG that only
+# needs to stay legible after the OCR tiles are cut from it.
+RECEIPT_MAX_BYTES = 10 * 1024 * 1024
+# Bytes are not the only size that matters: a 17 KB PNG can declare 144 megapixels and make a full decode
+# allocate ~860 MB. 50 MP is above any phone photo of a receipt worth reading.
+RECEIPT_MAX_PIXELS = 50_000_000
+RECEIPT_FORMATS = frozenset({"PNG", "JPEG", "WEBP", "BMP"})  # what cv2.imread (the extractor) reads
+
+# Refuse an oversized upload while it is still being received, not after the whole body is in memory
+# (the route's own length check below only sees a body Flask has already buffered). The slack covers the
+# multipart envelope around the file.
+app.config["MAX_CONTENT_LENGTH"] = RECEIPT_MAX_BYTES + 256 * 1024
+
+
+@app.errorhandler(413)
+def _upload_too_large(_error):
+    return jsonify({"error": "A imagem do cupom é grande demais (máximo 10 MB)."}), 413
+
+
+def _receipt_image_problem(blob: bytes):
+    """``(status, message)`` for why ``blob`` cannot be a receipt photo, or ``None`` when it can.
+
+    The size is read from the file header first, so a decompression bomb is refused before anything
+    allocates its pixels. Only then is it fully decoded - once, here - so the extractor, which re-reads
+    the file, can never fail on a caller's corrupt upload (that used to need string-matching its error).
+    """
+    invalid = (400, "Envie uma imagem válida do cupom (PNG ou JPEG).")
+    try:
+        with Image.open(io.BytesIO(blob)) as image:
+            image_format, (width, height) = image.format, image.size
+    except Image.DecompressionBombError:
+        return 413, "A imagem do cupom tem resolução alta demais."
+    except Exception:  # Pillow raises UnidentifiedImageError, but also OSError/SyntaxError for odd files
+        return invalid
+    if image_format not in RECEIPT_FORMATS:
+        return invalid
+    if width * height > RECEIPT_MAX_PIXELS:
+        return 413, "A imagem do cupom tem resolução alta demais."
+    import cv2  # importable: receiptocr, imported above, imports it
+    import numpy as np
+    if cv2.imdecode(np.frombuffer(blob, np.uint8), cv2.IMREAD_COLOR) is None:
+        return invalid
+    return None
+
+
+@app.route("/api/receipt/ocr", methods=["POST"])
+def api_receipt_ocr():
+    """Read a Brazilian NFC-e receipt photo (scraping/receiptocr/) and return its items.
+
+    ``multipart/form-data`` with the file in the ``image`` field. The
+    extractor calls the ollama.com cloud vision API, so this needs
+    ``OLLAMA_API_KEY`` in the environment (or scraping/.env) and the optional
+    OCR dependencies from requirements-ocr.txt.
+    """
+    if ReceiptExtractor is None:
+        logger.warning("Receipt OCR unavailable (missing optional dependency): %s", _receipt_ocr_import_error)
+        return jsonify({"error": "O OCR de cupons não está instalado. Instale requirements-ocr.txt."}), 503
+
+    # A missing key is this server's misconfiguration, not the caller's: say so (503) before reading the
+    # upload, rather than letting the extractor raise a plain error that used to be matched by its text and
+    # answered as if the photo were at fault. (config.py has already loaded scraping/.env into the environment.)
+    if not os.environ.get("OLLAMA_API_KEY"):
+        logger.warning("Receipt OCR is not configured: OLLAMA_API_KEY is not set")
+        return jsonify({"error": "A leitura de cupons não está configurada neste servidor."}), 503
+
+    file = request.files.get("image")
+    if not file or not file.filename:
+        return jsonify({"error": "Envie uma imagem do cupom no campo 'image'."}), 400
+    blob = file.read()
+    if not blob:
+        return jsonify({"error": "Envie uma imagem do cupom no campo 'image'."}), 400
+    if len(blob) > RECEIPT_MAX_BYTES:
+        return jsonify({"error": "A imagem do cupom é grande demais (máximo 10 MB)."}), 413
+    problem = _receipt_image_problem(blob)
+    if problem:
+        status, message = problem
+        return jsonify({"error": message}), status
+
+    path = ""
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in (".jpg", ".jpeg", ".png", ".webp", ".bmp"):
+        suffix = ".jpg"
+    try:
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(blob)
+            path = tmp.name
+        receipt = ReceiptExtractor().extract(path)
+    except receipt_errors.ReceiptOcrError as exc:
+        logger.warning("Receipt OCR failed: %s", exc)
+        if isinstance(exc, receipt_errors.RateLimitedError):
+            headers = {}
+            if getattr(exc, "retry_after", None) is not None:
+                headers["Retry-After"] = str(int(exc.retry_after))
+            return jsonify({"error": "Muitas leituras de cupom agora. Tente de novo em instantes."}), 429, headers
+        if isinstance(exc, receipt_errors.BadRequestError):
+            return jsonify({"error": "A leitura do cupom falhou. Verifique a imagem e tente de novo."}), 400
+        # Everything else (credentials, quota, unknown model, a garbled reply, the provider down, every tile
+        # failed) is the provider's side. The message stays generic on purpose: nothing about the account
+        # or the key is echoed back.
+        if isinstance(exc, (receipt_errors.AuthenticationError, receipt_errors.QuotaError,
+                            receipt_errors.BadReplyError, receipt_errors.ProviderUnavailableError,
+                            receipt_errors.ModelNotFoundError)):
+            return jsonify({"error": "O serviço de leitura de cupons está indisponível agora."}), 502
+        return jsonify({"error": "Não foi possível ler o cupom agora."}), 502
+    except Exception:
+        logger.exception("Receipt OCR failed unexpectedly")
+        return jsonify({"error": "Não foi possível ler o cupom agora."}), 502
+    finally:
+        if path:
+            Path(path).unlink(missing_ok=True)
+
+    data = asdict(receipt)
+    data["degraded"] = receipt.degraded
+    return jsonify(data)
 
 
 if __name__ == "__main__":
