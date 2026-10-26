@@ -4391,3 +4391,15 @@ html[data-vt="product"] .product-hero img {
 @media (max-width: 760px) {
   .receipt-row-price { align-items: flex-start; text-align: left; }
 }
+
+/* A price its store has not confirmed lately (components/stale-flag.tsx, lib/domain.ts lastKnownOffers): shown,
+   but visibly not the fresh figure, and never part of a ranking. */
+.stale-flag { display: inline-flex; align-items: center; vertical-align: middle; margin-left: var(--md-space-1); color: var(--md-text-warning); cursor: help; }
+.price.price-stale, .offer-row-stale .offer-price strong { color: var(--md-text-secondary); }
+.stale-text, .compact-product .product-seen.stale-text { color: var(--md-text-warning); }
+.price-stale-row { display: inline-flex; align-items: baseline; gap: var(--md-space-1); }
+.price-stale-row .stale-flag { margin-left: 0; }
+.stale-offers { margin-top: var(--md-space-6); }
+.stale-offers h3 { margin: 0 0 var(--md-space-1); font-size: var(--md-text-lg); }
+.stale-offers > p { margin: 0 0 var(--md-space-3); }
+.offer-row-stale { background: var(--md-surface-level-2); }

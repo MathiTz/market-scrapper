@@ -28,6 +28,7 @@ import {
   rankOffers,
   isConditional,
   conditionLabel,
+  lastKnownOffers,
   type Product,
   type Offer,
   type Flyer,
@@ -41,6 +42,7 @@ import { OfferRail } from "@/components/offer-rail";
 import { LoadMore, useIncremental } from "@/components/infinite";
 import { ListAdder } from "@/components/list-adder";
 import { ReceiptCheck } from "@/components/receipt-check";
+import { StaleFlag } from "@/components/stale-flag";
 import { receiptOcrEnabled } from "@/lib/receipt-api";
 import { StoreEstimates } from "@/components/store-estimates";
 import { storeEstimates } from "@/lib/estimates";
@@ -49,6 +51,7 @@ import { PriceInput } from "@/components/price-input";
 import {
   alternativesOf,
   filterProducts,
+  hasLastKnownPrice,
   noFilters,
   productsWithPrice,
   sortLabels,
@@ -73,7 +76,8 @@ import { markHero, withViewTransition } from "@/lib/view-transition";
 import { useIndicator } from "@/components/ui/use-indicator";
 import { Count } from "@/components/ui/number";
 import { dailyDeals } from "@/lib/deals";
-import { lowestPriceLabel, outOfComparison, priceSpread, suspiciousSpread } from "@/lib/comparison";
+import { lowestPriceLabel,
+  staleNotice, outOfComparison, priceSpread, suspiciousSpread } from "@/lib/comparison";
 import { count, listName, packLabel, unitPriceText, whenLabel } from "@/lib/format";
 import { loadErrorMessage, loadSnapshot } from "@/lib/snapshot";
 import {
@@ -612,7 +616,10 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   );
   const hasConditional = offers.some((o) => isConditional(o.conditions));
   // Products the search found that have no current price (an outdated or expired one only, or none).
-  const hasUnpriced = shown.some((p) => !pricedIds.has(p.id));
+  // (A last-known price is not "none": those are already in the results, flagged - see filterProducts.)
+  const hasUnpriced = shown.some(
+    (p) => !pricedIds.has(p.id) && !hasLastKnownPrice(p, offersByProduct, noFilters, conditions),
+  );
   // With no result: would the text alone have found priced products? Then the filters removed them all.
   const matchedWithoutFilters = useMemo(() => {
     if (view !== "search" || searchResults.length || !data) return 0;
@@ -636,13 +643,24 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     () => rankOffers(productOffers, conditions),
     [productOffers, conditions],
   );
+  // Prices the store has not confirmed lately, shown below the ranked ones as the last known - flagged and
+  // never part of the comparison, the lowest-price notes or anything that totals.
+  const staleProductOffers = useMemo(
+    () => lastKnownOffers(productOffers, conditions),
+    [productOffers, conditions, clock],
+  );
   const comparison = useIncremental(rankedProductOffers.length, 10, detailResetKey);
   const comparisonFiltered = Boolean(nearby || networks.length || channel);
   const suspect = suspiciousSpread(rankedProductOffers);
   // Published offers of this product left out of the comparison, each with its reason.
   const inactiveOffers = useMemo(
-    () => productOffers.filter((o) => o.published === 1 && outOfComparison(o) !== null),
-    [productOffers, clock],
+    () => {
+      const shownAsLastKnown = new Set(staleProductOffers.map((o) => o.id));
+      return productOffers.filter(
+        (o) => o.published === 1 && outOfComparison(o) !== null && !shownAsLastKnown.has(o.id),
+      );
+    },
+    [productOffers, staleProductOffers, clock],
   );
   const conditionalCount = useMemo(
     () => rankOffers(productOffers, true).filter((o) => isConditional(o.conditions)).length,
@@ -972,6 +990,13 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                         Ver comparação
                       </a>
                     </>
+                  ) : staleProductOffers.length ? (
+                    <>
+                      Último preço conhecido: <strong>{money(staleProductOffers[0].price_cents!)}</strong> no{" "}
+                      {staleProductOffers[0].retailer_name}
+                      <StaleFlag offer={staleProductOffers[0]} />{" "}
+                      <span className="stale-text">· {staleNotice(staleProductOffers[0])}</span>
+                    </>
                   ) : (
                     "Sem preço atual nas lojas monitoradas."
                   )}
@@ -1094,7 +1119,34 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     </Button>
                   </div>
                 )}
-                {rankedProductOffers.length === 0 && (
+                {staleProductOffers.length > 0 && (
+                  <div className="stale-offers">
+                    <h3>{rankedProductOffers.length ? "Sem confirmação recente" : "Último preço conhecido"}</h3>
+                    <p className="muted">
+                      {rankedProductOffers.length
+                        ? "As lojas abaixo não confirmaram estes preços recentemente e eles podem ter mudado. Não entram na comparação acima."
+                        : "Nenhuma loja confirmou um preço recentemente. Estes são os últimos que conhecemos e podem ter mudado."}
+                    </p>
+                    <div className="comparison-list">
+                      {staleProductOffers.map((o) => (
+                        <OfferRow
+                          key={o.id}
+                          offer={o}
+                          product={active}
+                          note={null}
+                          shared={sharedTarget?.offerId === o.id}
+                          demo={demo}
+                          region={dataRegion}
+                          nearby={nearby}
+                          locationsByRetailer={locationsByRetailer}
+                          hideUnitPrice={suspect}
+                          stale
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {rankedProductOffers.length === 0 && staleProductOffers.length === 0 && (
                   <div className="empty compact">
                     <Clock aria-hidden="true" />
                     <h3>Sem preço atual para este produto</h3>
@@ -1106,7 +1158,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                   </div>
                 )}
                 {inactiveOffers.length > 0 && (
-                  <details className="inactive-offers" open={rankedProductOffers.length === 0}>
+                  <details className="inactive-offers" open={rankedProductOffers.length === 0 && staleProductOffers.length === 0}>
                     <summary>
                       {inactiveOffers.length}{" "}
                       {inactiveOffers.length === 1 ? "preço fora da comparação" : "preços fora da comparação"}
@@ -1798,6 +1850,12 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     // the pack is already exactly one kg/L/unit and it would just repeat the price.
                     const product = productById.get(l.product_id);
                     const unit = o && product ? unitPriceText(product, o.price_cents!) : null;
+                    // No fresh price: the last one known, flagged - and, like any stale price, outside the
+                    // estimates below (its item is counted among those "sem preço atual").
+                    const stale =
+                      o || offline || error || !product
+                        ? undefined
+                        : lastKnownOffers(offers.filter((x) => x.product_id === l.product_id))[0];
                     const name = lineName(l);
                     const priceLine = (
                       <p>
@@ -1811,7 +1869,15 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                                 ? "Este produto não está mais entre as ofertas monitoradas"
                                 : o
                                   ? `Menor preço atual: ${money(o.price_cents!)}${unit ? ` (${unit})` : ""} no ${o.retailer_name} · visto ${whenLabel(o.price_observed_at)}`
-                                  : `Sem preço atual nas lojas monitoradas${nearby ? " neste raio" : ""}`}
+                                  : stale
+                                    ? (
+                                        <>
+                                          Último preço conhecido: {money(stale.price_cents!)} no {stale.retailer_name}
+                                          <StaleFlag offer={stale} />{" "}
+                                          <span className="stale-text">· {staleNotice(stale)}</span>
+                                        </>
+                                      )
+                                    : `Sem preço atual nas lojas monitoradas${nearby ? " neste raio" : ""}`}
                       </p>
                     );
                     return (

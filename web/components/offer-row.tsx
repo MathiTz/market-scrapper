@@ -1,10 +1,12 @@
 import { ArrowUpRight, Store } from "lucide-react";
 import { conditionLabel, isConditional, localTime, money, type Offer, type Product } from "@/lib/domain";
 import { channelLabel, unitPriceText, whenLabel } from "@/lib/format";
+import { staleNotice } from "@/lib/comparison";
 import { stockNote } from "@/lib/stock";
 import { distanceLabel, offerLocation, type LocationsByRetailer, type Nearby } from "@/lib/location";
 import { DealNote } from "./deal-note";
 import { OfferShare } from "./offer-share";
+import { StaleFlag } from "./stale-flag";
 import { StoreLocation } from "./store-location";
 
 const methods: Record<Offer["method"], string> = {
@@ -24,6 +26,7 @@ export function OfferRow({
   nearby,
   locationsByRetailer,
   hideUnitPrice,
+  stale = false,
 }: {
   offer: Offer;
   product: Product;
@@ -36,6 +39,8 @@ export function OfferRow({
   locationsByRetailer: LocationsByRetailer;
   /** True when the comparison's prices are too far apart for a per-kg/L figure to be trusted. */
   hideUnitPrice: boolean;
+  /** The store has not confirmed this price lately: shown as the last one known, flagged, outside the ranking. */
+  stale?: boolean;
 }) {
   const found = nearby ? offerLocation(o, locationsByRetailer, nearby.point) : null;
   const unit = hideUnitPrice ? null : unitPriceText(product, o.price_cents!);
@@ -43,7 +48,7 @@ export function OfferRow({
   const city = o.context_label.split(" · ").slice(1).join(" · ");
   const stock = stockNote(o);
   return (
-    <article className={`offer-row${shared ? " shared-offer" : ""}`} id={`offer-${o.id}`}>
+    <article className={`offer-row${shared ? " shared-offer" : ""}${stale ? " offer-row-stale" : ""}`} id={`offer-${o.id}`}>
       <div className="store-mark" aria-hidden="true">
         <Store size={23} />
       </div>
@@ -62,9 +67,13 @@ export function OfferRow({
           {found && ` · unidade mais próxima ${distanceLabel(found.distanceKm)}`}
         </p>
         <span className={`badge ${conditional ? "amber" : "green"}`}>{conditionLabel(o.conditions)}</span>
-        <p className="small">
-          {o.channel === "flyer" ? "Preço anunciado no encarte" : "Preço visto no site"}{" "}
-          {whenLabel(o.price_observed_at)}
+        <p className={`small${stale ? " stale-text" : ""}`}>
+          {stale ? staleNotice(o) : (
+            <>
+              {o.channel === "flyer" ? "Preço anunciado no encarte" : "Preço visto no site"}{" "}
+              {whenLabel(o.price_observed_at)}
+            </>
+          )}
           {o.valid_until && ` · válido até ${localTime(o.valid_until)}`}
         </p>
         <p className="small">
@@ -80,7 +89,7 @@ export function OfferRow({
       <div className="offer-value">
         <div className="offer-price">
           <strong>{money(o.price_cents!)}</strong>
-          <DealNote offer={o} />
+          {stale ? <StaleFlag offer={o} /> : <DealNote offer={o} />}
           {unit && <span>{unit}</span>}
         </div>
         <div className="offer-actions">

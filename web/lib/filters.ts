@@ -1,4 +1,4 @@
-import { rankOffers, type Offer, type Product } from "@/lib/domain";
+import { lastKnownOffers, rankOffers, type Offer, type Product } from "@/lib/domain";
 import { nearestLocation, type Coordinates, type LocationsByRetailer } from "@/lib/location";
 import { relevance } from "@/lib/search";
 
@@ -65,6 +65,23 @@ export function parseReais(text: string): number | null {
  * price, so what is sorted matches what is on screen) - a chain with no known branch there sorts last, not
  * first, since "closest" cannot mean "distance unknown".
  */
+/**
+ * Whether a product with no fresh price still has one worth showing: an out-of-date price from a chain the
+ * person has not filtered out. A price or discount filter is a claim about what a product costs now, which a
+ * price nobody has confirmed lately cannot satisfy, so it keeps those out.
+ */
+export function hasLastKnownPrice(
+  product: Product,
+  offersByProduct: Map<string, Offer[]>,
+  f: ProductFilters,
+  conditions: boolean,
+): boolean {
+  if (f.minPrice !== null || f.maxPrice !== null || f.minDiscount > 0) return false;
+  return lastKnownOffers(offersByProduct.get(product.id) ?? [], conditions).some(
+    (o) => !f.networks.length || f.networks.includes(o.retailer_id),
+  );
+}
+
 export function filterProducts(
   products: Product[],
   offersByProduct: Map<string, Offer[]>,
@@ -102,6 +119,10 @@ export function filterProducts(
         distanceKm,
       });
     } else if (options.includeUnpriced && !restricted) {
+      rows.push({ product, price: null, discount: 0, distanceKm: null });
+    } else if (hasLastKnownPrice(product, offersByProduct, f, options.conditions)) {
+      // No fresh price, but a store's last known one (flagged by the card): kept in the results rather than
+      // hidden, and unranked - no price, no discount - so it sorts after every priced product.
       rows.push({ product, price: null, discount: 0, distanceKm: null });
     }
   }

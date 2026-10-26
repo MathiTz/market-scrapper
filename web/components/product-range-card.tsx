@@ -1,10 +1,11 @@
 import { useId, useRef, useState } from "react";
 import { ChevronRight, Plus, X } from "lucide-react";
-import { money, rankOffers, unitPrice, type Offer, type Product } from "@/lib/domain";
+import { lastKnownOffers, money, rankOffers, unitPrice, type Offer, type Product } from "@/lib/domain";
 import type { ProductGroup } from "@/lib/group";
 import { knownSize, packLabel, unitPriceText } from "@/lib/format";
 import { offerLocation, distanceLabel, type LocationsByRetailer, type Nearby } from "@/lib/location";
 import { ProductPhoto } from "./product-card";
+import { StaleFlag } from "./stale-flag";
 import { IconButton } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useDialog } from "@/components/ui/use-dialog";
@@ -32,6 +33,7 @@ function bestValue(priced: { product: Product; offer: Offer }[]) {
 function SizeRow({
   product,
   offer,
+  stale,
   best,
   nearby,
   locationsByRetailer,
@@ -40,6 +42,8 @@ function SizeRow({
 }: {
   product: Product;
   offer: Offer | null;
+  /** With no fresh offer, the last known one: shown flagged, never the card's "a partir de" or the best value. */
+  stale: Offer | null;
   best: boolean;
   nearby: Nearby | null;
   locationsByRetailer: LocationsByRetailer;
@@ -61,6 +65,12 @@ function SizeRow({
               {offer.retailer_name}
               {found && ` · ${distanceLabel(found.distanceKm)}`}
             </span>
+          </>
+        ) : stale ? (
+          <>
+            <strong className="price-stale">{money(stale.price_cents!)}</strong>
+            <StaleFlag offer={stale} />
+            <span className="muted">{stale.retailer_name}</span>
           </>
         ) : (
           <span className="no-price">Sem preço atual</span>
@@ -186,6 +196,7 @@ export function ProductRangeCard({
                 key={product.id}
                 product={product}
                 offer={offer}
+                stale={offer ? null : (lastKnownOffers(offersByProduct.get(product.id) ?? [])[0] ?? null)}
                 best={!!value && value.product.id === product.id}
                 nearby={nearby}
                 locationsByRetailer={locationsByRetailer}

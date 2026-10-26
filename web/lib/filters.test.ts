@@ -32,6 +32,49 @@ const names = (list: Product[]) => list.map((p) => p.id);
 const run = (f = {}, o = {}) =>
   names(filterProducts(products, byProduct(offers), { ...noFilters, ...f }, { conditions: false, includeUnpriced: false, ...o }));
 
+describe("filterProducts: a product with only an out-of-date price", () => {
+  // Ten days old against a 48 h window: the store has not confirmed it lately, but it is the last price known.
+  const aged = (o: Offer, extra: Partial<Offer> = {}): Offer =>
+    ({ ...o, price_observed_at: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(), ...extra }) as Offer;
+  const withStale = (...extra: Offer[]) => byProduct([...offers, ...extra]);
+  const list = (stale: Offer[], f = {}, o = {}) =>
+    names(filterProducts(products, withStale(...stale), { ...noFilters, ...f }, { conditions: false, includeUnpriced: false, ...o }));
+
+  it("stays in the results, after every product that has a fresh price", () => {
+    // without a last known price "sal" would not be listed at all (see the existing test above)
+    expect(list([aged(offer("sal", "A", 300))])).toEqual(["cafe", "arroz", "feijao", "sal"]);
+  });
+
+  it("is never ranked: sorting by lowest price still puts it last, however cheap it is", () => {
+    const result = list([aged(offer("sal", "A", 1))], { sort: "price-asc" });
+    expect(result[result.length - 1]).toBe("sal");
+    expect(result.indexOf("sal")).toBeGreaterThan(result.indexOf("feijao"));
+  });
+
+  it("is kept out by a price or discount filter, which are claims about what it costs now", () => {
+    const stale = [aged(offer("sal", "A", 300, 600))];
+    expect(list(stale, { minPrice: 100 })).not.toContain("sal");
+    expect(list(stale, { maxPrice: 500 })).not.toContain("sal");
+    expect(list(stale, { minDiscount: 10 })).not.toContain("sal");
+  });
+
+  it("follows the chain filter: listed for the chain whose price it is, not for another", () => {
+    const stale = [aged(offer("sal", "A", 300))];
+    expect(list(stale, { networks: ["A"] })).toContain("sal");
+    expect(list(stale, { networks: ["B"] })).not.toContain("sal");
+  });
+
+  it("does not list a product whose old price is no price at all: expired, unavailable or unpublished", () => {
+    expect(list([aged(offer("sal", "A", 300), { valid_until: new Date(Date.now() - 24 * 3600 * 1000).toISOString() })])).not.toContain("sal");
+    expect(list([aged(offer("sal", "A", 300), { availability: "unavailable" })])).not.toContain("sal");
+    expect(list([aged(offer("sal", "A", 300), { published: 0 })])).not.toContain("sal");
+  });
+
+  it("does not change a product that has a fresh price: that one ranks, the old one is ignored", () => {
+    expect(list([aged(offer("cafe", "A", 100))], { sort: "price-asc" })).toEqual(run({ sort: "price-asc" }));
+  });
+});
+
 describe("discountPercent", () => {
   it("is the share taken off the regular price, and 0 without one", () => {
     expect(discountPercent(offer("x", "A", 750, 1000))).toBe(25);

@@ -215,6 +215,24 @@ export function rankOffers(
     )
     .sort((a, b) => a.price_cents! - b.price_cents!);
 }
+/**
+ * Published prices their store has not confirmed within their freshness window (state "stale"), cheapest
+ * first: the last price we know, to be shown flagged where nothing fresher exists - never ranked as a current
+ * price, so it cannot win "menor preço", a deal or a total. An expired or not-yet-valid promotion, a flyer, or
+ * an item the store reported unavailable is not one: those are not "an old price", they are not a price.
+ */
+export function lastKnownOffers(offers: Offer[], includeConditions = false, now = new Date()) {
+  return offers
+    .filter(
+      (o) =>
+        o.published === 1 &&
+        o.price_cents !== null &&
+        offerState(o, now) === "stale" &&
+        o.availability !== "unavailable" &&
+        (includeConditions || !isConditional(o.conditions)),
+    )
+    .sort((a, b) => a.price_cents! - b.price_cents!);
+}
 export function unitPrice(p: Product, price: number) {
   return {
     value: Math.round(

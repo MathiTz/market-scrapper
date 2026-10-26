@@ -38,6 +38,10 @@ export function lowestPriceLabel(
     : `Menor preço entre as ofertas monitoradas${scope}`;
 }
 
+/** The warning on a price its store has not confirmed lately, with when it was last seen. */
+export const staleNotice = (o: Pick<Offer, "price_observed_at">) =>
+  `Não atualizado desde ${localTime(o.price_observed_at)}`;
+
 /**
  * Why a published offer of a product is left out of its comparison, in words, or null when it is current.
  * An expired offer (its validity ended) and an outdated one (not seen again recently) are different things.

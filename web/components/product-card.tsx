@@ -1,14 +1,15 @@
 import { useState, type CSSProperties } from "react";
 import { Check, ChevronRight, Leaf, Navigation, Package, Plus, TriangleAlert } from "lucide-react";
-import { money, rankOffers, type Product, type Offer } from "@/lib/domain";
+import { lastKnownOffers, money, rankOffers, type Product, type Offer } from "@/lib/domain";
 import { productCardConditions } from "@/lib/product-presentation";
 import { channelLabel, count, packLabel, unitPriceText, whenLabel } from "@/lib/format";
-import { suspiciousSpread } from "@/lib/comparison";
+import { staleNotice, suspiciousSpread } from "@/lib/comparison";
 import { offerLocation, distanceLabel, type LocationsByRetailer, type Nearby } from "@/lib/location";
 import type { dailyDeals } from "@/lib/deals";
 import { StoreLocation } from "./store-location";
 import { OfferShare } from "./offer-share";
 import { DealNote } from "./deal-note";
+import { StaleFlag } from "./stale-flag";
 import { Tooltip } from "@/components/ui/tooltip";
 
 /** Marks an image as loaded once decoded; a cached image fires no load event, so the mount checks `complete`. */
@@ -121,6 +122,11 @@ export function ProductCard({
     conditions,
   );
   const o = priceHidden ? null : os[0];
+  // No fresh price: the last one a store gave, if any - shown flagged, outside everything that ranks (the
+  // compare line, deals, "menor preço"). Only an unconditional price, so a club price is never passed off as
+  // what anyone pays.
+  const stale = o || priceHidden ? undefined : lastKnownOffers(offers.filter((offer) => offer.product_id === p.id))[0];
+  const shown = o ?? stale;
   // Two chains 3x apart for "the same" product has so far meant a different unit of sale behind one name:
   // the card then shows no per-kg/L price (it would be computed from the wrong pack) and says to check.
   const suspect = suspiciousSpread(os);
@@ -135,7 +141,9 @@ export function ProductCard({
   const pack = packLabel(p);
   const priceText = o
     ? `${money(o.price_cents!)} no ${o.retailer_name}${condition !== "Sem condição especial" ? `, ${condition[0].toLowerCase()}${condition.slice(1)}` : ""}`
-    : priceHidden || "sem preço atual";
+    : stale
+      ? `${money(stale.price_cents!)} no ${stale.retailer_name}, ${staleNotice(stale).replace(/^N/, "n")}`
+      : priceHidden || "sem preço atual";
   return (
     <article
       className={`product-card compact-product${featured ? " daily-deal" : ""}`}
@@ -160,6 +168,16 @@ export function ProductCard({
               {unit && <span className="muted unit-price">{unit}</span>}
               <DealNote offer={o} />
             </div>
+          ) : stale ? (
+            <div className="product-price-line">
+              <span className="price-stale-row">
+                <strong className="price price-stale">{money(stale.price_cents!)}</strong>
+                <StaleFlag offer={stale} />
+              </span>
+              {unitPriceText(p, stale.price_cents!) && (
+                <span className="muted unit-price">{unitPriceText(p, stale.price_cents!)}</span>
+              )}
+            </div>
           ) : (
             <span className="no-price">{priceHidden || "Sem preço atual"}</span>
           )}
@@ -168,15 +186,19 @@ export function ProductCard({
       {o && condition !== "Sem condição especial" && (
         <span className="badge amber card-condition">{condition}</span>
       )}
-      {o && (
+      {shown && (
         <div className="product-store">
-          <strong>{o.retailer_name}</strong>
-          <span className="product-seen">
-            {channelLabel(o.channel)} · visto {whenLabel(o.price_observed_at)}
-          </span>
+          <strong>{shown.retailer_name}</strong>
+          {o ? (
+            <span className="product-seen">
+              {channelLabel(o.channel)} · visto {whenLabel(o.price_observed_at)}
+            </span>
+          ) : (
+            <span className="product-seen stale-text">{staleNotice(shown)}</span>
+          )}
           <span className="store-distance">
             <Navigation size={12} aria-hidden="true" />
-            {locationText(o, nearby, locationsByRetailer)}
+            {locationText(shown, nearby, locationsByRetailer)}
           </span>
         </div>
       )}
@@ -204,22 +226,22 @@ export function ProductCard({
         </button>
       )}
       <div className="product-actions">
+        {shown && (
+          <StoreLocation
+            offer={shown}
+            productName={p.name}
+            region={region}
+            nearby={nearby}
+            locations={locationsByRetailer[shown.retailer_id] ?? []}
+          />
+        )}
         {o && (
-          <>
-            <StoreLocation
-              offer={o}
-              productName={p.name}
-              region={region}
-              nearby={nearby}
-              locations={locationsByRetailer[o.retailer_id] ?? []}
-            />
-            <OfferShare
-              offer={o}
-              productName={p.name}
-              region={region}
-              compact
-            />
-          </>
+          <OfferShare
+            offer={o}
+            productName={p.name}
+            region={region}
+            compact
+          />
         )}
         <Tooltip label={listQuantity ? "Adicionar mais 1" : "Adicionar à lista"}>
           <button

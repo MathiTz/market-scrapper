@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ordinary, type Offer } from "./domain";
-import { lowestPriceLabel, outOfComparison, priceSpread, suspiciousSpread } from "./comparison";
+import { lowestPriceLabel, outOfComparison, priceSpread, staleNotice, suspiciousSpread } from "./comparison";
 
 const now = new Date("2026-09-27T18:00:00-03:00");
 const offer = (cents: number | null, extra: Partial<Offer> = {}) =>
@@ -73,5 +73,11 @@ describe("outOfComparison", () => {
     expect(outOfComparison(offer(100, { valid_from: "2026-09-30T00:00:00-03:00" }), now)).toMatch(/^Oferta futura/);
     expect(outOfComparison(offer(100, { availability: "unavailable" }), now)).toBe("Indisponível na última consulta à fonte");
     expect(outOfComparison(offer(null), now)).toBe("Sem preço informado pela fonte");
+  });
+});
+
+describe("staleNotice", () => {
+  it("says since when a price has not been confirmed, in Fortaleza time", () => {
+    expect(staleNotice({ price_observed_at: "2026-09-25T15:00:00Z" })).toBe("Não atualizado desde 25/09/2026, 12:00");
   });
 });
