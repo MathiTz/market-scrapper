@@ -164,6 +164,116 @@ class TestPriceUpsert(unittest.TestCase):
             db.close()
 
 
+class TestSameStoreListingsOfOneProduct(unittest.TestCase):
+    """A store that lists one product name several times (Centerbox keeps a sandal under three listings, at
+    9,99, 14,99 and 9,99) is still one (product, store). The session does not autoflush, so a second upsert of
+    the same key used to miss the first one's pending rows: a second `prices` row, or a second `price_history`
+    row - a primary-key error that aborted the whole save."""
+
+    def listings(self, name, *prices, store="Centerbox", **kw):
+        from services.scraper_service import save_scraped_results
+
+        return save_scraped_results([
+            ProductPrice(store_name=store, product_name=name, price=price, url=f"http://example.com/{index}", **kw)
+            for index, price in enumerate(prices)
+        ])
+
+    def stored(self, name):
+        from models import Price, PriceHistory, Product, SessionLocal
+
+        db = SessionLocal()
+        try:
+            ids = [p.id for p in db.query(Product).filter(Product.name == name)]
+            prices = db.query(Price).filter(Price.product_id.in_(ids)).all() if ids else []
+            history = db.query(PriceHistory).filter(PriceHistory.product_id.in_(ids)).all() if ids else []
+            return ids, prices, history
+        finally:
+            db.close()
+
+    def test_a_new_product_listed_three_times_is_one_row_at_the_lowest_price(self):
+        saved = self.listings("Chinelo Aloha Teste A", 9.99, 14.99, 9.99)
+        _, prices, _ = self.stored("Chinelo Aloha Teste A")
+        self.assertEqual([p.price for p in prices], [9.99])
+        self.assertEqual(saved, 1)  # distinct prices saved, not listings read
+
+    def test_the_price_kept_does_not_depend_on_the_order_the_store_returns_them_in(self):
+        self.listings("Chinelo Aloha Teste B", 14.99, 9.99)
+        self.listings("Chinelo Aloha Teste C", 9.99, 14.99)
+        for name in ("Chinelo Aloha Teste B", "Chinelo Aloha Teste C"):
+            _, prices, _ = self.stored(name)
+            self.assertEqual([p.price for p in prices], [9.99], name)
+
+    def test_a_known_product_listed_twice_at_changed_prices_no_longer_aborts_the_save(self):
+        # The exact failure: the stored price differs from both listings, so each wanted a history row.
+        self.listings("Chinelo Aloha Teste D", 20.00)
+        self.listings("Chinelo Aloha Teste D", 9.99, 14.99)  # raised IntegrityError before
+        _, prices, history = self.stored("Chinelo Aloha Teste D")
+        self.assertEqual([p.price for p in prices], [9.99])
+        self.assertEqual(len(history), 1)
+        self.assertEqual([cents for cents, _ in unpack_history(history[0].blob)], [2000])  # the old price, once
+
+    def test_the_kept_listing_brings_its_own_regular_price_offer_and_url(self):
+        from services.scraper_service import save_scraped_results
+
+        save_scraped_results([
+            ProductPrice(store_name="Centerbox", product_name="Chinelo Aloha Teste E", price=14.99,
+                         regular_price=21.99, offer="32% OFF", url="http://example.com/dear"),
+            ProductPrice(store_name="Centerbox", product_name="Chinelo Aloha Teste E", price=9.99,
+                         regular_price=12.99, offer="23% OFF", url="http://example.com/cheap"),
+        ])
+        [price] = self.stored("Chinelo Aloha Teste E")[1]
+        self.assertEqual((price.price, price.regular_price, price.offer, price.url),
+                         (9.99, 12.99, "23% OFF", "http://example.com/cheap"))
+
+    def test_the_same_name_at_two_stores_stays_two_rows(self):
+        self.listings("Chinelo Aloha Teste F", 9.99, store="Centerbox")
+        self.listings("Chinelo Aloha Teste F", 12.50, store="Atacadão")
+        _, prices, _ = self.stored("Chinelo Aloha Teste F")
+        self.assertEqual(sorted(p.price for p in prices), [9.99, 12.5])
+
+    def test_duplicate_rows_left_by_the_old_behaviour_are_collapsed_on_the_next_save(self):
+        from models import Price, Product, SessionLocal, Store
+
+        self.listings("Chinelo Aloha Teste G", 9.99)
+        ids, [row], _ = self.stored("Chinelo Aloha Teste G")
+        db = SessionLocal()
+        try:  # what a run before this fix could leave: a second row for the same (product, store)
+            db.add(Price(product_id=row.product_id, store_id=row.store_id, price=14.99, url="http://example.com/old"))
+            db.commit()
+        finally:
+            db.close()
+        self.assertEqual(len(self.stored("Chinelo Aloha Teste G")[1]), 2)
+        self.listings("Chinelo Aloha Teste G", 9.49)
+        _, prices, _ = self.stored("Chinelo Aloha Teste G")
+        self.assertEqual([p.price for p in prices], [9.49])
+
+    def test_percent_signs_in_a_name_do_not_merge_it_with_a_different_product(self):
+        # "%" is a LIKE wildcard: looking up "...0% Gordura..." used to match the existing "...0,5% Gordura...",
+        # so one product swallowed the other (and took its price). The longer name has to exist first.
+        self.listings("Iogurte Natural 0,5% Gordura 170g Teste", 3.90)
+        self.listings("Iogurte Natural 0% Gordura 170g Teste", 3.50)
+        first, second = (self.stored(n) for n in ("Iogurte Natural 0% Gordura 170g Teste",
+                                                  "Iogurte Natural 0,5% Gordura 170g Teste"))
+        self.assertEqual([p.price for p in first[1]], [3.50])
+        self.assertEqual([p.price for p in second[1]], [3.90])
+        self.assertNotEqual(first[0], second[0])
+
+    def test_a_name_still_resolves_case_insensitively_and_an_underscore_is_not_a_wildcard(self):
+        self.listings("paoXde_forma teste 500g", 3.00)  # exists first...
+        self.listings("pao_de_forma teste 500g", 1.00)  # ..."_" would have matched its X: a different product
+        self.listings("PAO_DE_FORMA TESTE 500G", 2.00)  # the same product as the line above, in capitals
+        from models import Product, SessionLocal
+
+        db = SessionLocal()
+        try:
+            names = sorted(p.name for p in db.query(Product).filter(Product.name.ilike("pao%de%forma teste 500g")))
+        finally:
+            db.close()
+        self.assertEqual(set(names), {"pao_de_forma teste 500g", "paoXde_forma teste 500g"})
+        self.assertEqual(len(names), 2)
+        self.assertEqual([p.price for p in self.stored("pao_de_forma teste 500g")[1]], [2.00])
+
+
 class TestScraperService(unittest.TestCase):
     @patch("services.scraper_service.save_scraped_results")
     @patch("services.scraper_service.ALL_SCRAPERS")

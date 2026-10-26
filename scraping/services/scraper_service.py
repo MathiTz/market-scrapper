@@ -69,6 +69,13 @@ def _get_or_create_store(db: Session, store_name: str, website: Optional[str] = 
     return store
 
 
+def _like_literal(text: str) -> str:
+    """``text`` for a LIKE/ILIKE pattern that must match only itself (case aside): "%" and "_" are wildcards
+    there, and product names are full of them ("Iogurte Natural 0% Gordura"), so unescaped, that name also
+    matched "Iogurte Natural 0,5% Gordura" - two products silently becoming one."""
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def _get_or_create_product(db: Session, entry: ProductPrice) -> Product:
     """Return an existing product by name (case-insensitive) or create a new one.
 
@@ -76,7 +83,7 @@ def _get_or_create_product(db: Session, entry: ProductPrice) -> Product:
     so a later scrape of the same product from a source that does not is never allowed to erase a value an
     earlier, better-informed scrape already found.
     """
-    product = db.query(Product).filter(Product.name.ilike(entry.product_name)).first()
+    product = db.query(Product).filter(Product.name.ilike(_like_literal(entry.product_name), escape="\\")).first()
     if product is None:
         product = Product(name=entry.product_name, brand=entry.brand, gtin=entry.gtin, image_url=entry.image_url)
         db.add(product)
@@ -98,7 +105,10 @@ def _upsert_price(db: Session, product_id: int, store_id: int, entry: ProductPri
     that is merely reconfirmed unchanged just refreshes this row's own `scraped_at` ("last seen at") and
     does not need a history entry of its own for that.
     """
-    existing = db.query(Price).filter(Price.product_id == product_id, Price.store_id == store_id).first()
+    rows = db.query(Price).filter(Price.product_id == product_id, Price.store_id == store_id).order_by(Price.id).all()
+    existing = rows[-1] if rows else None
+    for duplicate in rows[:-1]:
+        db.delete(duplicate)  # the invariant is one row per (product, store); older code could leave two
     if existing is None:
         db.add(Price(product_id=product_id, store_id=store_id, price=entry.price, url=entry.url,
                      regular_price=entry.regular_price, offer=entry.offer, stock=entry.stock, run_id=run_id))
@@ -128,9 +138,17 @@ def save_scraped_results(results: List[ProductPrice], run_id: Optional[str] = No
     """
     init_db()
     db = SessionLocal()
-    saved = 0
     skipped = 0
     try:
+        # A store can list one product name more than once (Centerbox keeps a sandal under three listings,
+        # at 9,99, 14,99 and 9,99): they resolve to the same (product, store). The session does not autoflush,
+        # so a second upsert of a key cannot see the first one's pending rows and would add a second `prices`
+        # row - or a second `price_history` row, which is a primary-key error that used to abort the whole
+        # save. So each entry is first resolved to its key, the cheapest listing of a key is kept (the lowest
+        # price the store lists under that name; the same whatever order the store returns them in, where
+        # "last wins" would flip between runs), and each key is then upserted exactly once.
+        chosen: Dict[Tuple[int, int], ProductPrice] = {}
+        listings = 0
         for entry in results:
             # A 0.0 price means the parser found no price; storing it would
             # make the item look free and win every cheapest-store comparison.
@@ -139,9 +157,17 @@ def save_scraped_results(results: List[ProductPrice], run_id: Optional[str] = No
                 continue
             store = _get_or_create_store(db, entry.store_name)
             product = _get_or_create_product(db, entry)
-            _upsert_price(db, product.id, store.id, entry, run_id)
-            saved += 1
+            key = (product.id, store.id)
+            listings += 1
+            if key not in chosen or entry.price < chosen[key].price:
+                chosen[key] = entry
+        for (product_id, store_id), entry in chosen.items():
+            _upsert_price(db, product_id, store_id, entry, run_id)
+        saved = len(chosen)
         db.commit()
+        if listings > saved:
+            logger.info("%d listing(s) repeated a product already listed by the same store; kept the lowest price.",
+                        listings - saved)
         logger.info("Saved %d price record(s), skipped %d without a valid price.", saved, skipped)
     except Exception:
         db.rollback()
