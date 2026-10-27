@@ -82,11 +82,12 @@ class TestRun(unittest.TestCase):
         self.scrape = MagicMock(side_effect=lambda key: ok(key, key))
         self.live = MagicMock(return_value=3)
         self.sync_locations = MagicMock(return_value={})
+        self.sync_points = MagicMock(return_value=7)
         self.data = snapshot_data()
         self.snapshot = {"payload": json.dumps(self.data), "etag": "e", "generated_at": "now"}
         for target, replacement in [
             ("scrape_chain", self.scrape), ("publish", self.publish), ("published_offer_count", self.live),
-            ("build_snapshot", MagicMock(return_value=self.snapshot)), ("sync_store_locations", self.sync_locations),
+            ("build_snapshot", MagicMock(return_value=self.snapshot)), ("sync_price_points", self.sync_points), ("sync_store_locations", self.sync_locations),
         ]:
             patcher = patch.object(refresh, target, replacement)
             patcher.start()
@@ -185,6 +186,22 @@ class TestRun(unittest.TestCase):
         self.assertEqual(self.run_refresh(only=["nope"]), 2)
         self.scrape.assert_not_called()
         self.assertIn("Unknown chain: nope", self.text())
+
+    def test_the_price_history_is_saved_after_the_publish(self):
+        self.assertEqual(self.run_refresh(), 0)
+        self.sync_points.assert_called_once()
+        self.assertIn("7 new point(s) saved", self.text())
+
+    def test_a_price_history_failure_does_not_fail_the_release(self):
+        self.sync_points.side_effect = RuntimeError("neon is down")
+        self.assertEqual(self.run_refresh(), 0)
+        self.assertIn("price history NOT saved", self.text())
+
+    def test_nothing_is_saved_to_the_history_when_the_publish_is_blocked_or_skipped(self):
+        self.live.return_value = 10_000
+        self.run_refresh()
+        self.run_refresh(publish_data=False)
+        self.sync_points.assert_not_called()
 
     def test_a_publish_failure_is_reported_with_status_1(self):
         self.publish.side_effect = RuntimeError("connection refused")

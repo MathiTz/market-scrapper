@@ -9,3 +9,15 @@ CREATE TABLE IF NOT EXISTS snapshots (
     etag         TEXT        NOT NULL,  -- hash of the payload without its generated_at
     payload      TEXT        NOT NULL
 );
+
+-- One row each time a product is seen at a price at a chain: the history behind the price chart. Append-only
+-- and written by services/price_points.py after a publish; a price that did not change adds nothing.
+-- product_key is md5 of the lower-cased product name (stable across rebuilds of the local database).
+CREATE TABLE IF NOT EXISTS price_points (
+    product_key         TEXT        NOT NULL,
+    store               TEXT        NOT NULL,  -- chain name
+    observed_at         TIMESTAMPTZ NOT NULL,  -- when the chain was seen at this price
+    price_cents         INTEGER     NOT NULL CHECK (price_cents > 0),
+    regular_price_cents INTEGER,
+    PRIMARY KEY (product_key, store, observed_at)
+);

@@ -75,8 +75,11 @@ History in Neon covers prices, not the rest (products, store locations, scrape a
 
 ## Order of work, each step useful on its own
 
-1. The `price_points` table and the idempotent sync in the publisher, with the backfill. Verify the row count
-   against `price_history` and that a second run adds nothing. *(Writes to the production Neon: needs a go.)*
+1. **Done (27/10/2026).** The `price_points` table (`db/schema.sql`) and the idempotent sync
+   (`services/price_points.py`, run by `refresh.py` after every publish, so by `release.sh` and the scheduler). Backfilled:
+   23,173 rows for 12,628 product/chain pairs, 6/9/2026 on; a second run sent 0. A failed sync is reported, never fails
+   the release, and the next run catches up. Everything stored is kept, including products a chain stopped listing.
+   Archived points mean "last seen at this price", new ones "first seen", so a backfilled step is drawn up to a scrape late.
 2. `price_key` on offers, and the Worker/Flask route with a test.
 3. The chart on the product page, then the "mudou" line on cards.
 4. The `market.db` backup.

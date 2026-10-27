@@ -30,6 +30,7 @@ import config
 from models import ScrapeAttempt, SessionLocal, init_db
 from scraper.sites import SCRAPER_MAP
 from services.public_api import _listed_runs
+from services.price_points import sync as sync_price_points
 from services.publish import Finding, build_snapshot, check_snapshot, publish, published_offer_count
 from services.scraper_service import run_all_offers
 from services.store_locations import sync_store_locations
@@ -160,6 +161,15 @@ def run(only: Optional[List[str]] = None, skip_scrape: bool = False, publish_dat
         return 1
     out(("Published." if wrote else "Nothing new: the live snapshot is already identical.")
         + f" ({time.monotonic() - started:.0f}s)")
+    # The price history is a side record: a failure here is reported, not a failed release, and the next
+    # run catches up (it sends whatever Neon is missing).
+    db = SessionLocal()
+    try:
+        out(f"    price history: {sync_price_points(dsn, db)} new point(s) saved.")
+    except Exception as exc:
+        out(f"    price history NOT saved this time ({exc}); the next run will catch up.")
+    finally:
+        db.close()
     return 0
 
 

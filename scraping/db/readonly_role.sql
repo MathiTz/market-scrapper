@@ -3,3 +3,4 @@
 CREATE ROLE api_reader LOGIN PASSWORD 'change-me';
 GRANT USAGE ON SCHEMA public TO api_reader;
 GRANT SELECT ON snapshots TO api_reader;
+GRANT SELECT ON price_points TO api_reader;
