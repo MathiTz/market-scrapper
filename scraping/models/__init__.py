@@ -6,6 +6,7 @@ from models.store import Store
 from models.store_location import StoreLocation
 from models.price import Price
 from models.price_history import PriceHistory
+from models.product_image import ProductImage
 from models.scrape_attempt import ScrapeAttempt
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     "StoreLocation",
     "Price",
     "PriceHistory",
+    "ProductImage",
     "ScrapeAttempt",
 ]

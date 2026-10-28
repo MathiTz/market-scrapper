@@ -1,0 +1,5903 @@
+{
+ "/categorias/alimentos-e-bebidas": {
+  "href": "/categorias/alimentos-e-bebidas",
+  "slug": "alimentos-e-bebidas",
+  "name": "Alimentos e Bebidas",
+  "path": [
+   "Alimentos e Bebidas"
+  ],
+  "children": [
+   "/categorias/bebidas",
+   "/categorias/hortifruti",
+   "/categorias/lanches-e-doces",
+   "/categorias/matinais",
+   "/categorias/mercearia-alto-giro",
+   "/categorias/mercearia-doce",
+   "/categorias/pereciveis-lacteos",
+   "/categorias/pereciveis-congelados-e-resfriados"
+  ],
+  "parent": ""
+ },
+ "/categorias/bebidas": {
+  "href": "/categorias/bebidas",
+  "slug": "bebidas",
+  "name": "Bebidas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas"
+  ],
+  "children": [
+   "/categorias/aromatizantes-e-misturas-de-bebidas",
+   "/categorias/bebida-energetica",
+   "/categorias/bebida-a-base-de-soja",
+   "/categorias/bebidas-alcoolicas",
+   "/categorias/bebidas-ice",
+   "/categorias/cerveja-sem-alcool",
+   "/categorias/cha-pronto-para-beber",
+   "/categorias/isotonicos",
+   "/categorias/refresco-em-po",
+   "/categorias/refrigerantes",
+   "/categorias/sucos",
+   "/categorias/vinhos",
+   "/categorias/agua",
+   "/categorias/agua-de-coco"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/hortifruti": {
+  "href": "/categorias/hortifruti",
+  "slug": "hortifruti",
+  "name": "Hortifruti",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti"
+  ],
+  "children": [
+   "/categorias/frutas-legumes-e-verduras",
+   "/categorias/ovos"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/lanches-e-doces": {
+  "href": "/categorias/lanches-e-doces",
+  "slug": "lanches-e-doces",
+  "name": "Lanches e Doces",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces"
+  ],
+  "children": [
+   "/categorias/cereal-em-barra",
+   "/categorias/biscoito",
+   "/categorias/castanhas",
+   "/categorias/balas",
+   "/categorias/vegetais-desidratados-e-frutas-secas",
+   "/categorias/pipoca",
+   "/categorias/batatas-e-salgadinhos"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/matinais": {
+  "href": "/categorias/matinais",
+  "slug": "matinais",
+  "name": "Matinais",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais"
+  ],
+  "children": [
+   "/categorias/achocolatados",
+   "/categorias/adocante",
+   "/categorias/bebida-lactea-pronta-para-o-consumo",
+   "/categorias/bolo-industrializado",
+   "/categorias/cereal-matinal",
+   "/categorias/leites",
+   "/categorias/padaria-e-confeitaria",
+   "/categorias/pasta-de-amendoim-ou-novez",
+   "/categorias/pao-de-forma",
+   "/categorias/torrada"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/mercearia-alto-giro": {
+  "href": "/categorias/mercearia-alto-giro",
+  "slug": "mercearia-alto-giro",
+  "name": "Mercearia Alto Giro",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro"
+  ],
+  "children": [
+   "/categorias/arroz",
+   "/categorias/azeite",
+   "/categorias/acucar",
+   "/categorias/cafe",
+   "/categorias/caldo-em-tablet-e-po",
+   "/categorias/aveia-e-mingau",
+   "/categorias/cereais-graos-e-farinhas",
+   "/categorias/cha",
+   "/categorias/temperos",
+   "/categorias/maionese",
+   "/categorias/massa-e-macarrao",
+   "/categorias/milho-e-canjica",
+   "/categorias/molhos-e-condimentos",
+   "/categorias/peixes-enlatados",
+   "/categorias/sal",
+   "/categorias/sopas",
+   "/categorias/vegetais-em-conserva",
+   "/categorias/vinagre",
+   "/categorias/oleos"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/mercearia-doce": {
+  "href": "/categorias/mercearia-doce",
+  "slug": "mercearia-doce",
+  "name": "Mercearia Doce",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce"
+  ],
+  "children": [
+   "/categorias/coco-ralado-e-leite-de-coco",
+   "/categorias/creme-de-avela",
+   "/categorias/creme-de-chocolate",
+   "/categorias/creme-de-leite",
+   "/categorias/fermento-em-po",
+   "/categorias/gelatina-em-po",
+   "/categorias/geleias-e-mel",
+   "/categorias/leite-condensado",
+   "/categorias/mistura-para-paes-bolos-e-sobremesas",
+   "/categorias/nutricao-infantil",
+   "/categorias/panetone"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/pereciveis-lacteos": {
+  "href": "/categorias/pereciveis-lacteos",
+  "slug": "pereciveis-lacteos",
+  "name": "Perecíveis Lácteos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos"
+  ],
+  "children": [
+   "/categorias/bebida-lactea",
+   "/categorias/cream-cheese",
+   "/categorias/iogurte",
+   "/categorias/leite-fermentado",
+   "/categorias/manteiga",
+   "/categorias/queijos",
+   "/categorias/requeijao"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/pereciveis-congelados-e-resfriados": {
+  "href": "/categorias/pereciveis-congelados-e-resfriados",
+  "slug": "pereciveis-congelados-e-resfriados",
+  "name": "Perecíveis, resfriados e congelados",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados"
+  ],
+  "children": [
+   "/categorias/batata-congelada",
+   "/categorias/carnes",
+   "/categorias/empanados",
+   "/categorias/frios",
+   "/categorias/gelo-em-cubos-ou-triturado",
+   "/categorias/hamburguer",
+   "/categorias/linguica",
+   "/categorias/massas-frescas",
+   "/categorias/pizza-congelada",
+   "/categorias/prato-pronto-congelado",
+   "/categorias/salsicha",
+   "/categorias/sorvetes-e-cremes-de-frutas-gelados"
+  ],
+  "parent": "/categorias/alimentos-e-bebidas"
+ },
+ "/categorias/agua": {
+  "href": "/categorias/agua",
+  "slug": "agua",
+  "name": "Água",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Água"
+  ],
+  "children": [
+   "/categorias/agua-mineral-com-gas",
+   "/categorias/agua-mineral-sem-gas",
+   "/categorias/agua-com-sabor"
+  ],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/agua-de-coco": {
+  "href": "/categorias/agua-de-coco",
+  "slug": "agua-de-coco",
+  "name": "Água de Coco",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Água de Coco"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/aromatizantes-e-misturas-de-bebidas": {
+  "href": "/categorias/aromatizantes-e-misturas-de-bebidas",
+  "slug": "aromatizantes-e-misturas-de-bebidas",
+  "name": "Aromatizantes, Xarópes e Misturas de Bebidas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Aromatizantes, Xarópes e Misturas de Bebidas"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/bebida-a-base-de-soja": {
+  "href": "/categorias/bebida-a-base-de-soja",
+  "slug": "bebida-a-base-de-soja",
+  "name": "Bebida à base de soja",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebida à base de soja"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/bebida-energetica": {
+  "href": "/categorias/bebida-energetica",
+  "slug": "bebida-energetica",
+  "name": "Bebida energética",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebida energética"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/bebidas-alcoolicas": {
+  "href": "/categorias/bebidas-alcoolicas",
+  "slug": "bebidas-alcoolicas",
+  "name": "Bebidas Alcoólicas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas"
+  ],
+  "children": [
+   "/categorias/aperitivos",
+   "/categorias/cervejas-74f08a6d-d6a6-4f1d-a60c-c07059945db0",
+   "/categorias/destilados",
+   "/categorias/espumante-e-champanhe",
+   "/categorias/licor",
+   "/categorias/saque-e-bebidas-a-base-de-arroz",
+   "/categorias/sidra"
+  ],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/bebidas-ice": {
+  "href": "/categorias/bebidas-ice",
+  "slug": "bebidas-ice",
+  "name": "Bebidas ice",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas ice"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/cerveja-sem-alcool": {
+  "href": "/categorias/cerveja-sem-alcool",
+  "slug": "cerveja-sem-alcool",
+  "name": "Cerveja sem Alcóol",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Cerveja sem Alcóol"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/cha-pronto-para-beber": {
+  "href": "/categorias/cha-pronto-para-beber",
+  "slug": "cha-pronto-para-beber",
+  "name": "Chá Pronto para Beber",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Chá Pronto para Beber"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/isotonicos": {
+  "href": "/categorias/isotonicos",
+  "slug": "isotonicos",
+  "name": "Isotônicos e Bebidas Esportivas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Isotônicos e Bebidas Esportivas"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/refresco-em-po": {
+  "href": "/categorias/refresco-em-po",
+  "slug": "refresco-em-po",
+  "name": "Refresco em pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Refresco em pó"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/refrigerantes": {
+  "href": "/categorias/refrigerantes",
+  "slug": "refrigerantes",
+  "name": "Refrigerantes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Refrigerantes"
+  ],
+  "children": [
+   "/categorias/refrigerantes-pet",
+   "/categorias/agua-tonica"
+  ],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/sucos": {
+  "href": "/categorias/sucos",
+  "slug": "sucos",
+  "name": "Sucos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Sucos"
+  ],
+  "children": [
+   "/categorias/suco-concentrado",
+   "/categorias/suco-pronto"
+  ],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/vinhos": {
+  "href": "/categorias/vinhos",
+  "slug": "vinhos",
+  "name": "Vinhos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Vinhos"
+  ],
+  "children": [
+   "/categorias/vinho-branco",
+   "/categorias/vinho-rose",
+   "/categorias/vinho-tinto",
+   "/categorias/vinhos-brasileiros"
+  ],
+  "parent": "/categorias/bebidas"
+ },
+ "/categorias/frutas-legumes-e-verduras": {
+  "href": "/categorias/frutas-legumes-e-verduras",
+  "slug": "frutas-legumes-e-verduras",
+  "name": "Frutas, Legumes e Verduras",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras"
+  ],
+  "children": [
+   "/categorias/abobora",
+   "/categorias/alho",
+   "/categorias/frutas",
+   "/categorias/legumes",
+   "/categorias/pepinos",
+   "/categorias/pimentas-frescas",
+   "/categorias/pimentao",
+   "/categorias/tomates",
+   "/categorias/verduras"
+  ],
+  "parent": "/categorias/hortifruti"
+ },
+ "/categorias/ovos": {
+  "href": "/categorias/ovos",
+  "slug": "ovos",
+  "name": "Ovos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Ovos"
+  ],
+  "children": [],
+  "parent": "/categorias/hortifruti"
+ },
+ "/categorias/cereal-em-barra": {
+  "href": "/categorias/cereal-em-barra",
+  "slug": "cereal-em-barra",
+  "name": "Barra de Cereais, Frutas e Nozes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Barra de Cereais, Frutas e Nozes"
+  ],
+  "children": [],
+  "parent": "/categorias/lanches-e-doces"
+ },
+ "/categorias/biscoito": {
+  "href": "/categorias/biscoito",
+  "slug": "biscoito",
+  "name": "Biscoito",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito"
+  ],
+  "children": [
+   "/categorias/biscoito-amanteigado",
+   "/categorias/biscoito-salgado",
+   "/categorias/biscoito-de-polvilho",
+   "/categorias/biscoitos-doces"
+  ],
+  "parent": "/categorias/lanches-e-doces"
+ },
+ "/categorias/castanhas": {
+  "href": "/categorias/castanhas",
+  "slug": "castanhas",
+  "name": "Castanhas, Nozes e Sementes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Castanhas, Nozes e Sementes"
+  ],
+  "children": [
+   "/categorias/castanha-de-caju",
+   "/categorias/pistache",
+   "/categorias/sementes"
+  ],
+  "parent": "/categorias/lanches-e-doces"
+ },
+ "/categorias/balas": {
+  "href": "/categorias/balas",
+  "slug": "balas",
+  "name": "Doces",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces"
+  ],
+  "children": [
+   "/categorias/balas-de-gelatina",
+   "/categorias/balas-e-pirulitos",
+   "/categorias/caramelo-dropes-goma-de-mascar-e-pastilha",
+   "/categorias/chiq",
+   "/categorias/chocolate",
+   "/categorias/chocolate-granulado",
+   "/categorias/doce-de-amendoim",
+   "/categorias/doce-de-leite",
+   "/categorias/ovo-de-pascoa",
+   "/categorias/torrones"
+  ],
+  "parent": "/categorias/lanches-e-doces"
+ },
+ "/categorias/vegetais-desidratados-e-frutas-secas": {
+  "href": "/categorias/vegetais-desidratados-e-frutas-secas",
+  "slug": "vegetais-desidratados-e-frutas-secas",
+  "name": "Frutas Secas e Vegetais Desidratados",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Frutas Secas e Vegetais Desidratados"
+  ],
+  "children": [],
+  "parent": "/categorias/lanches-e-doces"
+ },
+ "/categorias/pipoca": {
+  "href": "/categorias/pipoca",
+  "slug": "pipoca",
+  "name": "Pipoca pronta",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Pipoca pronta"
+  ],
+  "children": [],
+  "parent": "/categorias/lanches-e-doces"
+ },
+ "/categorias/batatas-e-salgadinhos": {
+  "href": "/categorias/batatas-e-salgadinhos",
+  "slug": "batatas-e-salgadinhos",
+  "name": "Snacks, Salgadinhos e Batatinhas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas"
+  ],
+  "children": [
+   "/categorias/batata-palha",
+   "/categorias/jerky-dried-meats",
+   "/categorias/pretzels",
+   "/categorias/salgadinhos",
+   "/categorias/amendoim-salgado",
+   "/categorias/snack-de-amendoas",
+   "/categorias/snack-de-nozes"
+  ],
+  "parent": "/categorias/lanches-e-doces"
+ },
+ "/categorias/achocolatados": {
+  "href": "/categorias/achocolatados",
+  "slug": "achocolatados",
+  "name": "Achocolatados",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Achocolatados"
+  ],
+  "children": [
+   "/categorias/achocolatado-em-po",
+   "/categorias/achocolatado-liquido"
+  ],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/adocante": {
+  "href": "/categorias/adocante",
+  "slug": "adocante",
+  "name": "Adoçante",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Adoçante"
+  ],
+  "children": [],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/bebida-lactea-pronta-para-o-consumo": {
+  "href": "/categorias/bebida-lactea-pronta-para-o-consumo",
+  "slug": "bebida-lactea-pronta-para-o-consumo",
+  "name": "Bebida Láctea pronta para o Consumo",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Bebida Láctea pronta para o Consumo"
+  ],
+  "children": [],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/bolo-industrializado": {
+  "href": "/categorias/bolo-industrializado",
+  "slug": "bolo-industrializado",
+  "name": "Bolo industrializado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Bolo industrializado"
+  ],
+  "children": [],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/cereal-matinal": {
+  "href": "/categorias/cereal-matinal",
+  "slug": "cereal-matinal",
+  "name": "Cereal matinal",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Cereal matinal"
+  ],
+  "children": [],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/leites": {
+  "href": "/categorias/leites",
+  "slug": "leites",
+  "name": "Leites",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Leites"
+  ],
+  "children": [
+   "/categorias/bebidas-lacteas-em-po",
+   "/categorias/leite-longa-vida-uht"
+  ],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/padaria-e-confeitaria": {
+  "href": "/categorias/padaria-e-confeitaria",
+  "slug": "padaria-e-confeitaria",
+  "name": "Padaria e Confeitaria",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Padaria e Confeitaria"
+  ],
+  "children": [
+   "/categorias/ingredientes-para-bolos-e-confeitaria",
+   "/categorias/massas-para-panquecas-e-waffle-mixes"
+  ],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/pao-de-forma": {
+  "href": "/categorias/pao-de-forma",
+  "slug": "pao-de-forma",
+  "name": "Pão de forma",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Pão de forma"
+  ],
+  "children": [],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/pasta-de-amendoim-ou-novez": {
+  "href": "/categorias/pasta-de-amendoim-ou-novez",
+  "slug": "pasta-de-amendoim-ou-novez",
+  "name": "Pasta de Amendoim ou Nozes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Pasta de Amendoim ou Nozes"
+  ],
+  "children": [],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/torrada": {
+  "href": "/categorias/torrada",
+  "slug": "torrada",
+  "name": "Torrada",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Torrada"
+  ],
+  "children": [],
+  "parent": "/categorias/matinais"
+ },
+ "/categorias/acucar": {
+  "href": "/categorias/acucar",
+  "slug": "acucar",
+  "name": "Açúcar",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Açúcar"
+  ],
+  "children": [
+   "/categorias/acucar-cristal",
+   "/categorias/acucar-mascavo",
+   "/categorias/acucar-refinado"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/arroz": {
+  "href": "/categorias/arroz",
+  "slug": "arroz",
+  "name": "Arroz",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Arroz"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/azeite": {
+  "href": "/categorias/azeite",
+  "slug": "azeite",
+  "name": "Azeite",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Azeite"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/cafe": {
+  "href": "/categorias/cafe",
+  "slug": "cafe",
+  "name": "Café",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Café"
+  ],
+  "children": [
+   "/categorias/cafe-coffee-creamers",
+   "/categorias/cafe-moido-e-cafe-em-po",
+   "/categorias/cafe-soluvel",
+   "/categorias/cafe-em-capsulas",
+   "/categorias/cafe-em-graos"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/caldo-em-tablet-e-po": {
+  "href": "/categorias/caldo-em-tablet-e-po",
+  "slug": "caldo-em-tablet-e-po",
+  "name": "Caldo em tablete e pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Caldo em tablete e pó"
+  ],
+  "children": [
+   "/categorias/caldo-em-po",
+   "/categorias/caldo-em-tablete"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/aveia-e-mingau": {
+  "href": "/categorias/aveia-e-mingau",
+  "slug": "aveia-e-mingau",
+  "name": "Cereais",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais"
+  ],
+  "children": [
+   "/categorias/aveia"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/cereais-graos-e-farinhas": {
+  "href": "/categorias/cereais-graos-e-farinhas",
+  "slug": "cereais-graos-e-farinhas",
+  "name": "Cereais, Grãos, Farinhas e Farofas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas"
+  ],
+  "children": [
+   "/categorias/ervilha",
+   "/categorias/farinha",
+   "/categorias/farofa",
+   "/categorias/feijao",
+   "/categorias/grao-de-bico",
+   "/categorias/lentilha",
+   "/categorias/polvilho-fecula-e-farinha-para-tapioca"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/cha": {
+  "href": "/categorias/cha",
+  "slug": "cha",
+  "name": "Chá",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Chá"
+  ],
+  "children": [
+   "/categorias/cha-verde",
+   "/categorias/cha-de-ervas-e-frutas",
+   "/categorias/cha-mate"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/temperos": {
+  "href": "/categorias/temperos",
+  "slug": "temperos",
+  "name": "Ervas, Temperos e Especiarias",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Ervas, Temperos e Especiarias"
+  ],
+  "children": [
+   "/categorias/anis",
+   "/categorias/canela",
+   "/categorias/oregano"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/maionese": {
+  "href": "/categorias/maionese",
+  "slug": "maionese",
+  "name": "Maionese",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Maionese"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/massa-e-macarrao": {
+  "href": "/categorias/massa-e-macarrao",
+  "slug": "massa-e-macarrao",
+  "name": "Massa e Macarrão",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Massa e Macarrão"
+  ],
+  "children": [
+   "/categorias/macarrao",
+   "/categorias/macarrao-instantaneo"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/milho-e-canjica": {
+  "href": "/categorias/milho-e-canjica",
+  "slug": "milho-e-canjica",
+  "name": "Milho e Canjica",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Milho e Canjica"
+  ],
+  "children": [
+   "/categorias/milho-de-pipoca"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/molhos-e-condimentos": {
+  "href": "/categorias/molhos-e-condimentos",
+  "slug": "molhos-e-condimentos",
+  "name": "Molhos e Condimentos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos"
+  ],
+  "children": [
+   "/categorias/amaciantes-para-carne",
+   "/categorias/catchup",
+   "/categorias/condimentos",
+   "/categorias/molho-de-soja",
+   "/categorias/atomatados",
+   "/categorias/molho-pronto-para-saladas",
+   "/categorias/molhos-picantes",
+   "/categorias/mostarda"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/oleos": {
+  "href": "/categorias/oleos",
+  "slug": "oleos",
+  "name": "Óleos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Óleos"
+  ],
+  "children": [
+   "/categorias/oleo-de-coco",
+   "/categorias/oleo-de-milho",
+   "/categorias/oleo-de-soja"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/peixes-enlatados": {
+  "href": "/categorias/peixes-enlatados",
+  "slug": "peixes-enlatados",
+  "name": "Peixes Enlatados",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Peixes Enlatados"
+  ],
+  "children": [
+   "/categorias/atum-em-lata",
+   "/categorias/sardinha"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/sal": {
+  "href": "/categorias/sal",
+  "slug": "sal",
+  "name": "Sal",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Sal"
+  ],
+  "children": [
+   "/categorias/sal-grosso",
+   "/categorias/sal-marinho",
+   "/categorias/sal-refinado",
+   "/categorias/sal-rosa"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/sopas": {
+  "href": "/categorias/sopas",
+  "slug": "sopas",
+  "name": "Sopas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Sopas"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/vegetais-em-conserva": {
+  "href": "/categorias/vegetais-em-conserva",
+  "slug": "vegetais-em-conserva",
+  "name": "Vegetais em conserva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vegetais em conserva"
+  ],
+  "children": [
+   "/categorias/alcaparra-em-conserva",
+   "/categorias/azeitonas-em-conserva",
+   "/categorias/ervilha-em-conserva",
+   "/categorias/milho-verde-em-conserva",
+   "/categorias/palmito-em-conserva",
+   "/categorias/seleta-de-legumes-em-conserva"
+  ],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/vinagre": {
+  "href": "/categorias/vinagre",
+  "slug": "vinagre",
+  "name": "Vinagre",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vinagre"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-alto-giro"
+ },
+ "/categorias/coco-ralado-e-leite-de-coco": {
+  "href": "/categorias/coco-ralado-e-leite-de-coco",
+  "slug": "coco-ralado-e-leite-de-coco",
+  "name": "Coco Ralado e Leite de Coco",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Coco Ralado e Leite de Coco"
+  ],
+  "children": [
+   "/categorias/coco-ralado",
+   "/categorias/leite-de-coco"
+  ],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/creme-de-avela": {
+  "href": "/categorias/creme-de-avela",
+  "slug": "creme-de-avela",
+  "name": "Creme de avelã",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Creme de avelã"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/creme-de-chocolate": {
+  "href": "/categorias/creme-de-chocolate",
+  "slug": "creme-de-chocolate",
+  "name": "Creme de chocolate",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Creme de chocolate"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/creme-de-leite": {
+  "href": "/categorias/creme-de-leite",
+  "slug": "creme-de-leite",
+  "name": "Creme de leite",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Creme de leite"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/fermento-em-po": {
+  "href": "/categorias/fermento-em-po",
+  "slug": "fermento-em-po",
+  "name": "Fermento em pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Fermento em pó"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/gelatina-em-po": {
+  "href": "/categorias/gelatina-em-po",
+  "slug": "gelatina-em-po",
+  "name": "Gelatina em pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Gelatina em pó"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/geleias-e-mel": {
+  "href": "/categorias/geleias-e-mel",
+  "slug": "geleias-e-mel",
+  "name": "Geleias, Mel, Própolis e Xarope Melado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Geleias, Mel, Própolis e Xarope Melado"
+  ],
+  "children": [
+   "/categorias/geleias",
+   "/categorias/mel"
+  ],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/leite-condensado": {
+  "href": "/categorias/leite-condensado",
+  "slug": "leite-condensado",
+  "name": "Leite condensado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Leite condensado"
+  ],
+  "children": [],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/mistura-para-paes-bolos-e-sobremesas": {
+  "href": "/categorias/mistura-para-paes-bolos-e-sobremesas",
+  "slug": "mistura-para-paes-bolos-e-sobremesas",
+  "name": "Mistura para pães, bolos e sobremesas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Mistura para pães, bolos e sobremesas"
+  ],
+  "children": [
+   "/categorias/aromatizantes-essencias-corantes-culinarios",
+   "/categorias/mistura-para-bolo"
+  ],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/nutricao-infantil": {
+  "href": "/categorias/nutricao-infantil",
+  "slug": "nutricao-infantil",
+  "name": "Nutrição infantil",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Nutrição infantil"
+  ],
+  "children": [
+   "/categorias/papinha-de-bebe"
+  ],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/panetone": {
+  "href": "/categorias/panetone",
+  "slug": "panetone",
+  "name": "Panetones, Chocotones e Colombas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Panetones, Chocotones e Colombas"
+  ],
+  "children": [
+   "/categorias/chocotones",
+   "/categorias/colombas",
+   "/categorias/panetones"
+  ],
+  "parent": "/categorias/mercearia-doce"
+ },
+ "/categorias/bebida-lactea": {
+  "href": "/categorias/bebida-lactea",
+  "slug": "bebida-lactea",
+  "name": "Bebida Láctea",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Bebida Láctea"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-lacteos"
+ },
+ "/categorias/cream-cheese": {
+  "href": "/categorias/cream-cheese",
+  "slug": "cream-cheese",
+  "name": "Cream cheese",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Cream cheese"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-lacteos"
+ },
+ "/categorias/iogurte": {
+  "href": "/categorias/iogurte",
+  "slug": "iogurte",
+  "name": "Iogurte",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Iogurte"
+  ],
+  "children": [
+   "/categorias/iogurte-doce-e-sobremesa",
+   "/categorias/iogurte-funcional",
+   "/categorias/iogurte-grego"
+  ],
+  "parent": "/categorias/pereciveis-lacteos"
+ },
+ "/categorias/leite-fermentado": {
+  "href": "/categorias/leite-fermentado",
+  "slug": "leite-fermentado",
+  "name": "Leite fermentado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Leite fermentado"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-lacteos"
+ },
+ "/categorias/manteiga": {
+  "href": "/categorias/manteiga",
+  "slug": "manteiga",
+  "name": "Manteiga e Margarina",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Manteiga e Margarina"
+  ],
+  "children": [
+   "/categorias/manteiga-c574feb6-1757-410a-a65c-9fcd7ddc0ec0",
+   "/categorias/margarina"
+  ],
+  "parent": "/categorias/pereciveis-lacteos"
+ },
+ "/categorias/queijos": {
+  "href": "/categorias/queijos",
+  "slug": "queijos",
+  "name": "Queijos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Queijos"
+  ],
+  "children": [
+   "/categorias/queijo-cheddar",
+   "/categorias/queijo-mussarela",
+   "/categorias/queijo-parmessao",
+   "/categorias/queijos-especiais"
+  ],
+  "parent": "/categorias/pereciveis-lacteos"
+ },
+ "/categorias/requeijao": {
+  "href": "/categorias/requeijao",
+  "slug": "requeijao",
+  "name": "Requeijão",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Requeijão"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-lacteos"
+ },
+ "/categorias/batata-congelada": {
+  "href": "/categorias/batata-congelada",
+  "slug": "batata-congelada",
+  "name": "Batata congelada",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Batata congelada"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/carnes": {
+  "href": "/categorias/carnes",
+  "slug": "carnes",
+  "name": "Carnes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Carnes"
+  ],
+  "children": [
+   "/categorias/carnes-congeladas"
+  ],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/empanados": {
+  "href": "/categorias/empanados",
+  "slug": "empanados",
+  "name": "Empanados",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Empanados"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/frios": {
+  "href": "/categorias/frios",
+  "slug": "frios",
+  "name": "Frios",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Frios"
+  ],
+  "children": [
+   "/categorias/presunto",
+   "/categorias/salame"
+  ],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/gelo-em-cubos-ou-triturado": {
+  "href": "/categorias/gelo-em-cubos-ou-triturado",
+  "slug": "gelo-em-cubos-ou-triturado",
+  "name": "Gelo em Cubos ou Triturado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Gelo em Cubos ou Triturado"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/hamburguer": {
+  "href": "/categorias/hamburguer",
+  "slug": "hamburguer",
+  "name": "Hambúrguer",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Hambúrguer"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/linguica": {
+  "href": "/categorias/linguica",
+  "slug": "linguica",
+  "name": "Linguiça",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Linguiça"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/massas-frescas": {
+  "href": "/categorias/massas-frescas",
+  "slug": "massas-frescas",
+  "name": "Massas frescas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Massas frescas"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/pizza-congelada": {
+  "href": "/categorias/pizza-congelada",
+  "slug": "pizza-congelada",
+  "name": "Pizza Congelada",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Pizza Congelada"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/prato-pronto-congelado": {
+  "href": "/categorias/prato-pronto-congelado",
+  "slug": "prato-pronto-congelado",
+  "name": "Prato pronto congelado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Prato pronto congelado"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/salsicha": {
+  "href": "/categorias/salsicha",
+  "slug": "salsicha",
+  "name": "Salsicha",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Salsicha"
+  ],
+  "children": [],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/sorvetes-e-cremes-de-frutas-gelados": {
+  "href": "/categorias/sorvetes-e-cremes-de-frutas-gelados",
+  "slug": "sorvetes-e-cremes-de-frutas-gelados",
+  "name": "Sorvetes e Cremes de Frutas Gelados",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Sorvetes e Cremes de Frutas Gelados"
+  ],
+  "children": [
+   "/categorias/acai",
+   "/categorias/sorvete"
+  ],
+  "parent": "/categorias/pereciveis-congelados-e-resfriados"
+ },
+ "/categorias/agua-com-sabor": {
+  "href": "/categorias/agua-com-sabor",
+  "slug": "agua-com-sabor",
+  "name": "Água com Sabor",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Água",
+   "Água com Sabor"
+  ],
+  "children": [],
+  "parent": "/categorias/agua"
+ },
+ "/categorias/agua-mineral-com-gas": {
+  "href": "/categorias/agua-mineral-com-gas",
+  "slug": "agua-mineral-com-gas",
+  "name": "Água Mineral com Gás",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Água",
+   "Água Mineral com Gás"
+  ],
+  "children": [],
+  "parent": "/categorias/agua"
+ },
+ "/categorias/agua-mineral-sem-gas": {
+  "href": "/categorias/agua-mineral-sem-gas",
+  "slug": "agua-mineral-sem-gas",
+  "name": "Água Mineral sem Gás",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Água",
+   "Água Mineral sem Gás"
+  ],
+  "children": [],
+  "parent": "/categorias/agua"
+ },
+ "/categorias/aperitivos": {
+  "href": "/categorias/aperitivos",
+  "slug": "aperitivos",
+  "name": "Aperitivos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Aperitivos"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas-alcoolicas"
+ },
+ "/categorias/cervejas-74f08a6d-d6a6-4f1d-a60c-c07059945db0": {
+  "href": "/categorias/cervejas-74f08a6d-d6a6-4f1d-a60c-c07059945db0",
+  "slug": "cervejas-74f08a6d-d6a6-4f1d-a60c-c07059945db0",
+  "name": "Cervejas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Cervejas"
+  ],
+  "children": [
+   "/categorias/cervejas-especiais",
+   "/categorias/cervejas"
+  ],
+  "parent": "/categorias/bebidas-alcoolicas"
+ },
+ "/categorias/destilados": {
+  "href": "/categorias/destilados",
+  "slug": "destilados",
+  "name": "Destilados",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados"
+  ],
+  "children": [
+   "/categorias/cachaca",
+   "/categorias/conhaque",
+   "/categorias/gin",
+   "/categorias/rum",
+   "/categorias/tequila",
+   "/categorias/vodka",
+   "/categorias/whisky"
+  ],
+  "parent": "/categorias/bebidas-alcoolicas"
+ },
+ "/categorias/espumante-e-champanhe": {
+  "href": "/categorias/espumante-e-champanhe",
+  "slug": "espumante-e-champanhe",
+  "name": "Espumante e Champanhe",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Espumante e Champanhe"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas-alcoolicas"
+ },
+ "/categorias/licor": {
+  "href": "/categorias/licor",
+  "slug": "licor",
+  "name": "Licor",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Licor"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas-alcoolicas"
+ },
+ "/categorias/saque-e-bebidas-a-base-de-arroz": {
+  "href": "/categorias/saque-e-bebidas-a-base-de-arroz",
+  "slug": "saque-e-bebidas-a-base-de-arroz",
+  "name": "Saquê e Bebidas a Base de Arroz",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Saquê e Bebidas a Base de Arroz"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas-alcoolicas"
+ },
+ "/categorias/sidra": {
+  "href": "/categorias/sidra",
+  "slug": "sidra",
+  "name": "Sidra",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Sidra"
+  ],
+  "children": [],
+  "parent": "/categorias/bebidas-alcoolicas"
+ },
+ "/categorias/agua-tonica": {
+  "href": "/categorias/agua-tonica",
+  "slug": "agua-tonica",
+  "name": "Água Tônica",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Refrigerantes",
+   "Água Tônica"
+  ],
+  "children": [],
+  "parent": "/categorias/refrigerantes"
+ },
+ "/categorias/refrigerantes-pet": {
+  "href": "/categorias/refrigerantes-pet",
+  "slug": "refrigerantes-pet",
+  "name": "Refrigerantes Pet",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Refrigerantes",
+   "Refrigerantes Pet"
+  ],
+  "children": [],
+  "parent": "/categorias/refrigerantes"
+ },
+ "/categorias/suco-concentrado": {
+  "href": "/categorias/suco-concentrado",
+  "slug": "suco-concentrado",
+  "name": "Suco concentrado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Sucos",
+   "Suco concentrado"
+  ],
+  "children": [],
+  "parent": "/categorias/sucos"
+ },
+ "/categorias/suco-pronto": {
+  "href": "/categorias/suco-pronto",
+  "slug": "suco-pronto",
+  "name": "Suco pronto",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Sucos",
+   "Suco pronto"
+  ],
+  "children": [],
+  "parent": "/categorias/sucos"
+ },
+ "/categorias/vinho-branco": {
+  "href": "/categorias/vinho-branco",
+  "slug": "vinho-branco",
+  "name": "Vinho Branco",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Vinhos",
+   "Vinho Branco"
+  ],
+  "children": [],
+  "parent": "/categorias/vinhos"
+ },
+ "/categorias/vinho-rose": {
+  "href": "/categorias/vinho-rose",
+  "slug": "vinho-rose",
+  "name": "Vinho Rosé",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Vinhos",
+   "Vinho Rosé"
+  ],
+  "children": [],
+  "parent": "/categorias/vinhos"
+ },
+ "/categorias/vinho-tinto": {
+  "href": "/categorias/vinho-tinto",
+  "slug": "vinho-tinto",
+  "name": "Vinho Tinto",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Vinhos",
+   "Vinho Tinto"
+  ],
+  "children": [],
+  "parent": "/categorias/vinhos"
+ },
+ "/categorias/vinhos-brasileiros": {
+  "href": "/categorias/vinhos-brasileiros",
+  "slug": "vinhos-brasileiros",
+  "name": "Vinhos Brasileiros",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Vinhos",
+   "Vinhos Brasileiros"
+  ],
+  "children": [],
+  "parent": "/categorias/vinhos"
+ },
+ "/categorias/abobora": {
+  "href": "/categorias/abobora",
+  "slug": "abobora",
+  "name": "Abóbora",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Abóbora"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/alho": {
+  "href": "/categorias/alho",
+  "slug": "alho",
+  "name": "Alho",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Alho"
+  ],
+  "children": [
+   "/categorias/alho-in-natura"
+  ],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/frutas": {
+  "href": "/categorias/frutas",
+  "slug": "frutas",
+  "name": "Frutas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Frutas"
+  ],
+  "children": [
+   "/categorias/banana",
+   "/categorias/maca",
+   "/categorias/melancia",
+   "/categorias/melao",
+   "/categorias/uva"
+  ],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/legumes": {
+  "href": "/categorias/legumes",
+  "slug": "legumes",
+  "name": "Legumes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Legumes"
+  ],
+  "children": [
+   "/categorias/cebola",
+   "/categorias/tuberculos"
+  ],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/pepinos": {
+  "href": "/categorias/pepinos",
+  "slug": "pepinos",
+  "name": "Pepinos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Pepinos"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/pimentao": {
+  "href": "/categorias/pimentao",
+  "slug": "pimentao",
+  "name": "Pimentão",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Pimentão"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/pimentas-frescas": {
+  "href": "/categorias/pimentas-frescas",
+  "slug": "pimentas-frescas",
+  "name": "Pimentas Frescas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Pimentas Frescas"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/tomates": {
+  "href": "/categorias/tomates",
+  "slug": "tomates",
+  "name": "Tomates",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Tomates"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/verduras": {
+  "href": "/categorias/verduras",
+  "slug": "verduras",
+  "name": "Verduras",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Verduras"
+  ],
+  "children": [
+   "/categorias/acelga",
+   "/categorias/agriao",
+   "/categorias/alecrim",
+   "/categorias/alface"
+  ],
+  "parent": "/categorias/frutas-legumes-e-verduras"
+ },
+ "/categorias/biscoito-amanteigado": {
+  "href": "/categorias/biscoito-amanteigado",
+  "slug": "biscoito-amanteigado",
+  "name": "Biscoito Amanteigado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoito Amanteigado"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoito"
+ },
+ "/categorias/biscoito-de-polvilho": {
+  "href": "/categorias/biscoito-de-polvilho",
+  "slug": "biscoito-de-polvilho",
+  "name": "Biscoito de Polvilho",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoito de Polvilho"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoito"
+ },
+ "/categorias/biscoito-salgado": {
+  "href": "/categorias/biscoito-salgado",
+  "slug": "biscoito-salgado",
+  "name": "Biscoito Salgado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoito Salgado"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoito"
+ },
+ "/categorias/biscoitos-doces": {
+  "href": "/categorias/biscoitos-doces",
+  "slug": "biscoitos-doces",
+  "name": "Biscoitos Doces",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoitos Doces"
+  ],
+  "children": [
+   "/categorias/biscoito-champagne",
+   "/categorias/biscoito-maizena-maria-e-leite",
+   "/categorias/biscoito-recheado-doce",
+   "/categorias/biscoito-wafer",
+   "/categorias/pao-de-mel"
+  ],
+  "parent": "/categorias/biscoito"
+ },
+ "/categorias/castanha-de-caju": {
+  "href": "/categorias/castanha-de-caju",
+  "slug": "castanha-de-caju",
+  "name": "Castanha de Cajú",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Castanhas, Nozes e Sementes",
+   "Castanha de Cajú"
+  ],
+  "children": [],
+  "parent": "/categorias/castanhas"
+ },
+ "/categorias/pistache": {
+  "href": "/categorias/pistache",
+  "slug": "pistache",
+  "name": "Pistache",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Castanhas, Nozes e Sementes",
+   "Pistache"
+  ],
+  "children": [],
+  "parent": "/categorias/castanhas"
+ },
+ "/categorias/sementes": {
+  "href": "/categorias/sementes",
+  "slug": "sementes",
+  "name": "Sementes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Castanhas, Nozes e Sementes",
+   "Sementes"
+  ],
+  "children": [
+   "/categorias/sementes-de-chia"
+  ],
+  "parent": "/categorias/castanhas"
+ },
+ "/categorias/balas-de-gelatina": {
+  "href": "/categorias/balas-de-gelatina",
+  "slug": "balas-de-gelatina",
+  "name": "Balas de Gelatina",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Balas de Gelatina"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/balas-e-pirulitos": {
+  "href": "/categorias/balas-e-pirulitos",
+  "slug": "balas-e-pirulitos",
+  "name": "Balas e Pirulitos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Balas e Pirulitos"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/caramelo-dropes-goma-de-mascar-e-pastilha": {
+  "href": "/categorias/caramelo-dropes-goma-de-mascar-e-pastilha",
+  "slug": "caramelo-dropes-goma-de-mascar-e-pastilha",
+  "name": "Caramelo, dropes, goma de mascar e pastilha",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Caramelo, dropes, goma de mascar e pastilha"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/chiq": {
+  "href": "/categorias/chiq",
+  "slug": "chiq",
+  "name": "Chiclete e Goma de Mascar",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Chiclete e Goma de Mascar"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/chocolate": {
+  "href": "/categorias/chocolate",
+  "slug": "chocolate",
+  "name": "Chocolate",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Chocolate"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/chocolate-granulado": {
+  "href": "/categorias/chocolate-granulado",
+  "slug": "chocolate-granulado",
+  "name": "Chocolate Granulado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Chocolate Granulado"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/doce-de-amendoim": {
+  "href": "/categorias/doce-de-amendoim",
+  "slug": "doce-de-amendoim",
+  "name": "Doce de Amendoim",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Doce de Amendoim"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/doce-de-leite": {
+  "href": "/categorias/doce-de-leite",
+  "slug": "doce-de-leite",
+  "name": "Doce de Leite",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Doce de Leite"
+  ],
+  "children": [
+   "/categorias/doce-de-leite-creme",
+   "/categorias/doce-de-leite-em-tablete"
+  ],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/ovo-de-pascoa": {
+  "href": "/categorias/ovo-de-pascoa",
+  "slug": "ovo-de-pascoa",
+  "name": "Ovo de Páscoa",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Ovo de Páscoa"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/torrones": {
+  "href": "/categorias/torrones",
+  "slug": "torrones",
+  "name": "Torrones",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Torrones"
+  ],
+  "children": [],
+  "parent": "/categorias/balas"
+ },
+ "/categorias/batata-palha": {
+  "href": "/categorias/batata-palha",
+  "slug": "batata-palha",
+  "name": "Batata palha",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas",
+   "Batata palha"
+  ],
+  "children": [],
+  "parent": "/categorias/batatas-e-salgadinhos"
+ },
+ "/categorias/jerky-dried-meats": {
+  "href": "/categorias/jerky-dried-meats",
+  "slug": "jerky-dried-meats",
+  "name": "Jerky & Dried Meats",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas",
+   "Jerky & Dried Meats"
+  ],
+  "children": [],
+  "parent": "/categorias/batatas-e-salgadinhos"
+ },
+ "/categorias/pretzels": {
+  "href": "/categorias/pretzels",
+  "slug": "pretzels",
+  "name": "Pretzels",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas",
+   "Pretzels"
+  ],
+  "children": [],
+  "parent": "/categorias/batatas-e-salgadinhos"
+ },
+ "/categorias/salgadinhos": {
+  "href": "/categorias/salgadinhos",
+  "slug": "salgadinhos",
+  "name": "Salgadinhos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas",
+   "Salgadinhos"
+  ],
+  "children": [],
+  "parent": "/categorias/batatas-e-salgadinhos"
+ },
+ "/categorias/snack-de-amendoas": {
+  "href": "/categorias/snack-de-amendoas",
+  "slug": "snack-de-amendoas",
+  "name": "Snack de Amêndoas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas",
+   "Snack de Amêndoas"
+  ],
+  "children": [],
+  "parent": "/categorias/batatas-e-salgadinhos"
+ },
+ "/categorias/amendoim-salgado": {
+  "href": "/categorias/amendoim-salgado",
+  "slug": "amendoim-salgado",
+  "name": "Snack de Amendoim Salgado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas",
+   "Snack de Amendoim Salgado"
+  ],
+  "children": [],
+  "parent": "/categorias/batatas-e-salgadinhos"
+ },
+ "/categorias/snack-de-nozes": {
+  "href": "/categorias/snack-de-nozes",
+  "slug": "snack-de-nozes",
+  "name": "Snack de Nozes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Snacks, Salgadinhos e Batatinhas",
+   "Snack de Nozes"
+  ],
+  "children": [],
+  "parent": "/categorias/batatas-e-salgadinhos"
+ },
+ "/categorias/achocolatado-em-po": {
+  "href": "/categorias/achocolatado-em-po",
+  "slug": "achocolatado-em-po",
+  "name": "Achocolatado em pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Achocolatados",
+   "Achocolatado em pó"
+  ],
+  "children": [],
+  "parent": "/categorias/achocolatados"
+ },
+ "/categorias/achocolatado-liquido": {
+  "href": "/categorias/achocolatado-liquido",
+  "slug": "achocolatado-liquido",
+  "name": "Achocolatado líquido",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Achocolatados",
+   "Achocolatado líquido"
+  ],
+  "children": [],
+  "parent": "/categorias/achocolatados"
+ },
+ "/categorias/bebidas-lacteas-em-po": {
+  "href": "/categorias/bebidas-lacteas-em-po",
+  "slug": "bebidas-lacteas-em-po",
+  "name": "Bebidas lácteas em pó e Leites em pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Leites",
+   "Bebidas lácteas em pó e Leites em pó"
+  ],
+  "children": [],
+  "parent": "/categorias/leites"
+ },
+ "/categorias/leite-longa-vida-uht": {
+  "href": "/categorias/leite-longa-vida-uht",
+  "slug": "leite-longa-vida-uht",
+  "name": "Leite longa vida (UHT)",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Leites",
+   "Leite longa vida (UHT)"
+  ],
+  "children": [
+   "/categorias/leite-longa-vida-desnatado",
+   "/categorias/leite-longa-vida-integral",
+   "/categorias/leite-longa-vida-sem-lactose",
+   "/categorias/leite-longa-vida-semi-desnatado"
+  ],
+  "parent": "/categorias/leites"
+ },
+ "/categorias/ingredientes-para-bolos-e-confeitaria": {
+  "href": "/categorias/ingredientes-para-bolos-e-confeitaria",
+  "slug": "ingredientes-para-bolos-e-confeitaria",
+  "name": "Ingredientes para Bolos e Confeitaria",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Padaria e Confeitaria",
+   "Ingredientes para Bolos e Confeitaria"
+  ],
+  "children": [],
+  "parent": "/categorias/padaria-e-confeitaria"
+ },
+ "/categorias/massas-para-panquecas-e-waffle-mixes": {
+  "href": "/categorias/massas-para-panquecas-e-waffle-mixes",
+  "slug": "massas-para-panquecas-e-waffle-mixes",
+  "name": "Massa para Panqueca e Waffle",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Padaria e Confeitaria",
+   "Massa para Panqueca e Waffle"
+  ],
+  "children": [],
+  "parent": "/categorias/padaria-e-confeitaria"
+ },
+ "/categorias/acucar-cristal": {
+  "href": "/categorias/acucar-cristal",
+  "slug": "acucar-cristal",
+  "name": "Açucar Cristal",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Açúcar",
+   "Açucar Cristal"
+  ],
+  "children": [],
+  "parent": "/categorias/acucar"
+ },
+ "/categorias/acucar-mascavo": {
+  "href": "/categorias/acucar-mascavo",
+  "slug": "acucar-mascavo",
+  "name": "Açucar Mascavo",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Açúcar",
+   "Açucar Mascavo"
+  ],
+  "children": [],
+  "parent": "/categorias/acucar"
+ },
+ "/categorias/acucar-refinado": {
+  "href": "/categorias/acucar-refinado",
+  "slug": "acucar-refinado",
+  "name": "Açucar Refinado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Açúcar",
+   "Açucar Refinado"
+  ],
+  "children": [],
+  "parent": "/categorias/acucar"
+ },
+ "/categorias/cafe-coffee-creamers": {
+  "href": "/categorias/cafe-coffee-creamers",
+  "slug": "cafe-coffee-creamers",
+  "name": "Café - Coffee Creamers",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Café",
+   "Café - Coffee Creamers"
+  ],
+  "children": [],
+  "parent": "/categorias/cafe"
+ },
+ "/categorias/cafe-em-capsulas": {
+  "href": "/categorias/cafe-em-capsulas",
+  "slug": "cafe-em-capsulas",
+  "name": "Café em Capsulas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Café",
+   "Café em Capsulas"
+  ],
+  "children": [],
+  "parent": "/categorias/cafe"
+ },
+ "/categorias/cafe-em-graos": {
+  "href": "/categorias/cafe-em-graos",
+  "slug": "cafe-em-graos",
+  "name": "Café em Grãos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Café",
+   "Café em Grãos"
+  ],
+  "children": [],
+  "parent": "/categorias/cafe"
+ },
+ "/categorias/cafe-moido-e-cafe-em-po": {
+  "href": "/categorias/cafe-moido-e-cafe-em-po",
+  "slug": "cafe-moido-e-cafe-em-po",
+  "name": "Café Moído e em Pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Café",
+   "Café Moído e em Pó"
+  ],
+  "children": [],
+  "parent": "/categorias/cafe"
+ },
+ "/categorias/cafe-soluvel": {
+  "href": "/categorias/cafe-soluvel",
+  "slug": "cafe-soluvel",
+  "name": "Café Solúvel",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Café",
+   "Café Solúvel"
+  ],
+  "children": [],
+  "parent": "/categorias/cafe"
+ },
+ "/categorias/caldo-em-po": {
+  "href": "/categorias/caldo-em-po",
+  "slug": "caldo-em-po",
+  "name": "Caldo em pó",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Caldo em tablete e pó",
+   "Caldo em pó"
+  ],
+  "children": [],
+  "parent": "/categorias/caldo-em-tablet-e-po"
+ },
+ "/categorias/caldo-em-tablete": {
+  "href": "/categorias/caldo-em-tablete",
+  "slug": "caldo-em-tablete",
+  "name": "Caldo em tablete",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Caldo em tablete e pó",
+   "Caldo em tablete"
+  ],
+  "children": [],
+  "parent": "/categorias/caldo-em-tablet-e-po"
+ },
+ "/categorias/aveia": {
+  "href": "/categorias/aveia",
+  "slug": "aveia",
+  "name": "Aveia",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais",
+   "Aveia"
+  ],
+  "children": [],
+  "parent": "/categorias/aveia-e-mingau"
+ },
+ "/categorias/ervilha": {
+  "href": "/categorias/ervilha",
+  "slug": "ervilha",
+  "name": "Ervilha",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Ervilha"
+  ],
+  "children": [],
+  "parent": "/categorias/cereais-graos-e-farinhas"
+ },
+ "/categorias/farinha": {
+  "href": "/categorias/farinha",
+  "slug": "farinha",
+  "name": "Farinhas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farinhas"
+  ],
+  "children": [
+   "/categorias/farinha-de-aveia",
+   "/categorias/farinha-de-mandioca",
+   "/categorias/farinha-de-milho",
+   "/categorias/farinha-de-rosca",
+   "/categorias/farinha-de-semola",
+   "/categorias/farinha-de-trigo"
+  ],
+  "parent": "/categorias/cereais-graos-e-farinhas"
+ },
+ "/categorias/farofa": {
+  "href": "/categorias/farofa",
+  "slug": "farofa",
+  "name": "Farofa",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farofa"
+  ],
+  "children": [],
+  "parent": "/categorias/cereais-graos-e-farinhas"
+ },
+ "/categorias/feijao": {
+  "href": "/categorias/feijao",
+  "slug": "feijao",
+  "name": "Feijão",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Feijão"
+  ],
+  "children": [
+   "/categorias/feijao-branco",
+   "/categorias/feijao-carioca",
+   "/categorias/feijao-preto",
+   "/categorias/feijao-de-corda"
+  ],
+  "parent": "/categorias/cereais-graos-e-farinhas"
+ },
+ "/categorias/grao-de-bico": {
+  "href": "/categorias/grao-de-bico",
+  "slug": "grao-de-bico",
+  "name": "Grão de Bico",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Grão de Bico"
+  ],
+  "children": [],
+  "parent": "/categorias/cereais-graos-e-farinhas"
+ },
+ "/categorias/lentilha": {
+  "href": "/categorias/lentilha",
+  "slug": "lentilha",
+  "name": "Lentilha",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Lentilha"
+  ],
+  "children": [],
+  "parent": "/categorias/cereais-graos-e-farinhas"
+ },
+ "/categorias/polvilho-fecula-e-farinha-para-tapioca": {
+  "href": "/categorias/polvilho-fecula-e-farinha-para-tapioca",
+  "slug": "polvilho-fecula-e-farinha-para-tapioca",
+  "name": "Polvilho, Fécula e Farinha para Tapioca",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Polvilho, Fécula e Farinha para Tapioca"
+  ],
+  "children": [
+   "/categorias/polvilho-azedo",
+   "/categorias/tapioca"
+  ],
+  "parent": "/categorias/cereais-graos-e-farinhas"
+ },
+ "/categorias/cha-de-ervas-e-frutas": {
+  "href": "/categorias/cha-de-ervas-e-frutas",
+  "slug": "cha-de-ervas-e-frutas",
+  "name": "Chá de Ervas e Frutas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Chá",
+   "Chá de Ervas e Frutas"
+  ],
+  "children": [],
+  "parent": "/categorias/cha"
+ },
+ "/categorias/cha-verde": {
+  "href": "/categorias/cha-verde",
+  "slug": "cha-verde",
+  "name": "Chá Verde",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Chá",
+   "Chá Verde"
+  ],
+  "children": [],
+  "parent": "/categorias/cha"
+ },
+ "/categorias/cha-mate": {
+  "href": "/categorias/cha-mate",
+  "slug": "cha-mate",
+  "name": "Chá-Mate",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Chá",
+   "Chá-Mate"
+  ],
+  "children": [],
+  "parent": "/categorias/cha"
+ },
+ "/categorias/anis": {
+  "href": "/categorias/anis",
+  "slug": "anis",
+  "name": "Anis",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Ervas, Temperos e Especiarias",
+   "Anis"
+  ],
+  "children": [],
+  "parent": "/categorias/temperos"
+ },
+ "/categorias/canela": {
+  "href": "/categorias/canela",
+  "slug": "canela",
+  "name": "Canela",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Ervas, Temperos e Especiarias",
+   "Canela"
+  ],
+  "children": [],
+  "parent": "/categorias/temperos"
+ },
+ "/categorias/oregano": {
+  "href": "/categorias/oregano",
+  "slug": "oregano",
+  "name": "Oregano",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Ervas, Temperos e Especiarias",
+   "Oregano"
+  ],
+  "children": [],
+  "parent": "/categorias/temperos"
+ },
+ "/categorias/macarrao": {
+  "href": "/categorias/macarrao",
+  "slug": "macarrao",
+  "name": "Macarrão",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Massa e Macarrão",
+   "Macarrão"
+  ],
+  "children": [],
+  "parent": "/categorias/massa-e-macarrao"
+ },
+ "/categorias/macarrao-instantaneo": {
+  "href": "/categorias/macarrao-instantaneo",
+  "slug": "macarrao-instantaneo",
+  "name": "Macarrão instantâneo",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Massa e Macarrão",
+   "Macarrão instantâneo"
+  ],
+  "children": [],
+  "parent": "/categorias/massa-e-macarrao"
+ },
+ "/categorias/milho-de-pipoca": {
+  "href": "/categorias/milho-de-pipoca",
+  "slug": "milho-de-pipoca",
+  "name": "Milho de pipoca",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Milho e Canjica",
+   "Milho de pipoca"
+  ],
+  "children": [],
+  "parent": "/categorias/milho-e-canjica"
+ },
+ "/categorias/amaciantes-para-carne": {
+  "href": "/categorias/amaciantes-para-carne",
+  "slug": "amaciantes-para-carne",
+  "name": "Amaciantes para Carne",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Amaciantes para Carne"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/catchup": {
+  "href": "/categorias/catchup",
+  "slug": "catchup",
+  "name": "Catchup / Ketchup",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Catchup / Ketchup"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/condimentos": {
+  "href": "/categorias/condimentos",
+  "slug": "condimentos",
+  "name": "Condimentos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Condimentos"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/molho-de-soja": {
+  "href": "/categorias/molho-de-soja",
+  "slug": "molho-de-soja",
+  "name": "Molho de soja",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Molho de soja"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/atomatados": {
+  "href": "/categorias/atomatados",
+  "slug": "atomatados",
+  "name": "Molho de tomate",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Molho de tomate"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/molho-pronto-para-saladas": {
+  "href": "/categorias/molho-pronto-para-saladas",
+  "slug": "molho-pronto-para-saladas",
+  "name": "Molho pronto para saladas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Molho pronto para saladas"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/molhos-picantes": {
+  "href": "/categorias/molhos-picantes",
+  "slug": "molhos-picantes",
+  "name": "Molhos Picantes",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Molhos Picantes"
+  ],
+  "children": [
+   "/categorias/molho-de-alho",
+   "/categorias/molho-de-pimenta",
+   "/categorias/molho-ingles"
+  ],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/mostarda": {
+  "href": "/categorias/mostarda",
+  "slug": "mostarda",
+  "name": "Mostarda",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Mostarda"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-e-condimentos"
+ },
+ "/categorias/oleo-de-coco": {
+  "href": "/categorias/oleo-de-coco",
+  "slug": "oleo-de-coco",
+  "name": "Óleo de Côco",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Óleos",
+   "Óleo de Côco"
+  ],
+  "children": [],
+  "parent": "/categorias/oleos"
+ },
+ "/categorias/oleo-de-milho": {
+  "href": "/categorias/oleo-de-milho",
+  "slug": "oleo-de-milho",
+  "name": "Óleo de Milho",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Óleos",
+   "Óleo de Milho"
+  ],
+  "children": [],
+  "parent": "/categorias/oleos"
+ },
+ "/categorias/oleo-de-soja": {
+  "href": "/categorias/oleo-de-soja",
+  "slug": "oleo-de-soja",
+  "name": "Óleo de Soja",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Óleos",
+   "Óleo de Soja"
+  ],
+  "children": [],
+  "parent": "/categorias/oleos"
+ },
+ "/categorias/atum-em-lata": {
+  "href": "/categorias/atum-em-lata",
+  "slug": "atum-em-lata",
+  "name": "Atum em lata",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Peixes Enlatados",
+   "Atum em lata"
+  ],
+  "children": [],
+  "parent": "/categorias/peixes-enlatados"
+ },
+ "/categorias/sardinha": {
+  "href": "/categorias/sardinha",
+  "slug": "sardinha",
+  "name": "Sardinha em lata",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Peixes Enlatados",
+   "Sardinha em lata"
+  ],
+  "children": [],
+  "parent": "/categorias/peixes-enlatados"
+ },
+ "/categorias/sal-grosso": {
+  "href": "/categorias/sal-grosso",
+  "slug": "sal-grosso",
+  "name": "Sal Grosso",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Sal",
+   "Sal Grosso"
+  ],
+  "children": [],
+  "parent": "/categorias/sal"
+ },
+ "/categorias/sal-marinho": {
+  "href": "/categorias/sal-marinho",
+  "slug": "sal-marinho",
+  "name": "Sal Marinho",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Sal",
+   "Sal Marinho"
+  ],
+  "children": [],
+  "parent": "/categorias/sal"
+ },
+ "/categorias/sal-refinado": {
+  "href": "/categorias/sal-refinado",
+  "slug": "sal-refinado",
+  "name": "Sal Refinado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Sal",
+   "Sal Refinado"
+  ],
+  "children": [],
+  "parent": "/categorias/sal"
+ },
+ "/categorias/sal-rosa": {
+  "href": "/categorias/sal-rosa",
+  "slug": "sal-rosa",
+  "name": "Sal Rosa",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Sal",
+   "Sal Rosa"
+  ],
+  "children": [],
+  "parent": "/categorias/sal"
+ },
+ "/categorias/alcaparra-em-conserva": {
+  "href": "/categorias/alcaparra-em-conserva",
+  "slug": "alcaparra-em-conserva",
+  "name": "Alcaparra em conserva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vegetais em conserva",
+   "Alcaparra em conserva"
+  ],
+  "children": [],
+  "parent": "/categorias/vegetais-em-conserva"
+ },
+ "/categorias/azeitonas-em-conserva": {
+  "href": "/categorias/azeitonas-em-conserva",
+  "slug": "azeitonas-em-conserva",
+  "name": "Azeitonas em conserva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vegetais em conserva",
+   "Azeitonas em conserva"
+  ],
+  "children": [],
+  "parent": "/categorias/vegetais-em-conserva"
+ },
+ "/categorias/ervilha-em-conserva": {
+  "href": "/categorias/ervilha-em-conserva",
+  "slug": "ervilha-em-conserva",
+  "name": "Ervilha em conserva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vegetais em conserva",
+   "Ervilha em conserva"
+  ],
+  "children": [],
+  "parent": "/categorias/vegetais-em-conserva"
+ },
+ "/categorias/milho-verde-em-conserva": {
+  "href": "/categorias/milho-verde-em-conserva",
+  "slug": "milho-verde-em-conserva",
+  "name": "Milho verde em conserva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vegetais em conserva",
+   "Milho verde em conserva"
+  ],
+  "children": [],
+  "parent": "/categorias/vegetais-em-conserva"
+ },
+ "/categorias/palmito-em-conserva": {
+  "href": "/categorias/palmito-em-conserva",
+  "slug": "palmito-em-conserva",
+  "name": "Palmito em conserva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vegetais em conserva",
+   "Palmito em conserva"
+  ],
+  "children": [],
+  "parent": "/categorias/vegetais-em-conserva"
+ },
+ "/categorias/seleta-de-legumes-em-conserva": {
+  "href": "/categorias/seleta-de-legumes-em-conserva",
+  "slug": "seleta-de-legumes-em-conserva",
+  "name": "Seleta de vegetais em conserva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Vegetais em conserva",
+   "Seleta de vegetais em conserva"
+  ],
+  "children": [],
+  "parent": "/categorias/vegetais-em-conserva"
+ },
+ "/categorias/coco-ralado": {
+  "href": "/categorias/coco-ralado",
+  "slug": "coco-ralado",
+  "name": "Coco Ralado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Coco Ralado e Leite de Coco",
+   "Coco Ralado"
+  ],
+  "children": [],
+  "parent": "/categorias/coco-ralado-e-leite-de-coco"
+ },
+ "/categorias/leite-de-coco": {
+  "href": "/categorias/leite-de-coco",
+  "slug": "leite-de-coco",
+  "name": "Leite de Coco",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Coco Ralado e Leite de Coco",
+   "Leite de Coco"
+  ],
+  "children": [],
+  "parent": "/categorias/coco-ralado-e-leite-de-coco"
+ },
+ "/categorias/geleias": {
+  "href": "/categorias/geleias",
+  "slug": "geleias",
+  "name": "Geleias",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Geleias, Mel, Própolis e Xarope Melado",
+   "Geleias"
+  ],
+  "children": [],
+  "parent": "/categorias/geleias-e-mel"
+ },
+ "/categorias/mel": {
+  "href": "/categorias/mel",
+  "slug": "mel",
+  "name": "Mel e Própolis",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Geleias, Mel, Própolis e Xarope Melado",
+   "Mel e Própolis"
+  ],
+  "children": [],
+  "parent": "/categorias/geleias-e-mel"
+ },
+ "/categorias/aromatizantes-essencias-corantes-culinarios": {
+  "href": "/categorias/aromatizantes-essencias-corantes-culinarios",
+  "slug": "aromatizantes-essencias-corantes-culinarios",
+  "name": "Aromatizantes, Essências, Corantes Culinários",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Mistura para pães, bolos e sobremesas",
+   "Aromatizantes, Essências, Corantes Culinários"
+  ],
+  "children": [],
+  "parent": "/categorias/mistura-para-paes-bolos-e-sobremesas"
+ },
+ "/categorias/mistura-para-bolo": {
+  "href": "/categorias/mistura-para-bolo",
+  "slug": "mistura-para-bolo",
+  "name": "Mistura para bolo",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Mistura para pães, bolos e sobremesas",
+   "Mistura para bolo"
+  ],
+  "children": [],
+  "parent": "/categorias/mistura-para-paes-bolos-e-sobremesas"
+ },
+ "/categorias/papinha-de-bebe": {
+  "href": "/categorias/papinha-de-bebe",
+  "slug": "papinha-de-bebe",
+  "name": "Papinha de Bebê",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Nutrição infantil",
+   "Papinha de Bebê"
+  ],
+  "children": [],
+  "parent": "/categorias/nutricao-infantil"
+ },
+ "/categorias/chocotones": {
+  "href": "/categorias/chocotones",
+  "slug": "chocotones",
+  "name": "Chocotones",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Panetones, Chocotones e Colombas",
+   "Chocotones"
+  ],
+  "children": [],
+  "parent": "/categorias/panetone"
+ },
+ "/categorias/colombas": {
+  "href": "/categorias/colombas",
+  "slug": "colombas",
+  "name": "Colomba Pascal",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Panetones, Chocotones e Colombas",
+   "Colomba Pascal"
+  ],
+  "children": [],
+  "parent": "/categorias/panetone"
+ },
+ "/categorias/panetones": {
+  "href": "/categorias/panetones",
+  "slug": "panetones",
+  "name": "Panetones",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Doce",
+   "Panetones, Chocotones e Colombas",
+   "Panetones"
+  ],
+  "children": [],
+  "parent": "/categorias/panetone"
+ },
+ "/categorias/iogurte-doce-e-sobremesa": {
+  "href": "/categorias/iogurte-doce-e-sobremesa",
+  "slug": "iogurte-doce-e-sobremesa",
+  "name": "Iogurte doce, flan e sobremesa",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Iogurte",
+   "Iogurte doce, flan e sobremesa"
+  ],
+  "children": [],
+  "parent": "/categorias/iogurte"
+ },
+ "/categorias/iogurte-funcional": {
+  "href": "/categorias/iogurte-funcional",
+  "slug": "iogurte-funcional",
+  "name": "Iogurte funcional",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Iogurte",
+   "Iogurte funcional"
+  ],
+  "children": [],
+  "parent": "/categorias/iogurte"
+ },
+ "/categorias/iogurte-grego": {
+  "href": "/categorias/iogurte-grego",
+  "slug": "iogurte-grego",
+  "name": "Iogurte grego",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Iogurte",
+   "Iogurte grego"
+  ],
+  "children": [],
+  "parent": "/categorias/iogurte"
+ },
+ "/categorias/manteiga-c574feb6-1757-410a-a65c-9fcd7ddc0ec0": {
+  "href": "/categorias/manteiga-c574feb6-1757-410a-a65c-9fcd7ddc0ec0",
+  "slug": "manteiga-c574feb6-1757-410a-a65c-9fcd7ddc0ec0",
+  "name": "Manteiga",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Manteiga e Margarina",
+   "Manteiga"
+  ],
+  "children": [
+   "/categorias/manteiga-com-sal",
+   "/categorias/manteiga-sem-sal"
+  ],
+  "parent": "/categorias/manteiga"
+ },
+ "/categorias/margarina": {
+  "href": "/categorias/margarina",
+  "slug": "margarina",
+  "name": "Margarina",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Manteiga e Margarina",
+   "Margarina"
+  ],
+  "children": [],
+  "parent": "/categorias/manteiga"
+ },
+ "/categorias/queijo-cheddar": {
+  "href": "/categorias/queijo-cheddar",
+  "slug": "queijo-cheddar",
+  "name": "Queijo cheddar",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Queijos",
+   "Queijo cheddar"
+  ],
+  "children": [],
+  "parent": "/categorias/queijos"
+ },
+ "/categorias/queijo-mussarela": {
+  "href": "/categorias/queijo-mussarela",
+  "slug": "queijo-mussarela",
+  "name": "Queijo mussarela",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Queijos",
+   "Queijo mussarela"
+  ],
+  "children": [],
+  "parent": "/categorias/queijos"
+ },
+ "/categorias/queijo-parmessao": {
+  "href": "/categorias/queijo-parmessao",
+  "slug": "queijo-parmessao",
+  "name": "Queijo parmesão",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Queijos",
+   "Queijo parmesão"
+  ],
+  "children": [],
+  "parent": "/categorias/queijos"
+ },
+ "/categorias/queijos-especiais": {
+  "href": "/categorias/queijos-especiais",
+  "slug": "queijos-especiais",
+  "name": "Queijos especiais",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Queijos",
+   "Queijos especiais"
+  ],
+  "children": [],
+  "parent": "/categorias/queijos"
+ },
+ "/categorias/carnes-congeladas": {
+  "href": "/categorias/carnes-congeladas",
+  "slug": "carnes-congeladas",
+  "name": "Carne Bovina Congeladas",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Carnes",
+   "Carne Bovina Congeladas"
+  ],
+  "children": [],
+  "parent": "/categorias/carnes"
+ },
+ "/categorias/presunto": {
+  "href": "/categorias/presunto",
+  "slug": "presunto",
+  "name": "Presunto",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Frios",
+   "Presunto"
+  ],
+  "children": [],
+  "parent": "/categorias/frios"
+ },
+ "/categorias/salame": {
+  "href": "/categorias/salame",
+  "slug": "salame",
+  "name": "Salame",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Frios",
+   "Salame"
+  ],
+  "children": [],
+  "parent": "/categorias/frios"
+ },
+ "/categorias/acai": {
+  "href": "/categorias/acai",
+  "slug": "acai",
+  "name": "Açaí",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Sorvetes e Cremes de Frutas Gelados",
+   "Açaí"
+  ],
+  "children": [],
+  "parent": "/categorias/sorvetes-e-cremes-de-frutas-gelados"
+ },
+ "/categorias/sorvete": {
+  "href": "/categorias/sorvete",
+  "slug": "sorvete",
+  "name": "Sorvete",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis, resfriados e congelados",
+   "Sorvetes e Cremes de Frutas Gelados",
+   "Sorvete"
+  ],
+  "children": [],
+  "parent": "/categorias/sorvetes-e-cremes-de-frutas-gelados"
+ },
+ "/categorias/cervejas-especiais": {
+  "href": "/categorias/cervejas-especiais",
+  "slug": "cervejas-especiais",
+  "name": "Cervejas Especiais",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Cervejas",
+   "Cervejas Especiais"
+  ],
+  "children": [],
+  "parent": "/categorias/cervejas-74f08a6d-d6a6-4f1d-a60c-c07059945db0"
+ },
+ "/categorias/cervejas": {
+  "href": "/categorias/cervejas",
+  "slug": "cervejas",
+  "name": "Cervejas Tradicionais",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Cervejas",
+   "Cervejas Tradicionais"
+  ],
+  "children": [],
+  "parent": "/categorias/cervejas-74f08a6d-d6a6-4f1d-a60c-c07059945db0"
+ },
+ "/categorias/cachaca": {
+  "href": "/categorias/cachaca",
+  "slug": "cachaca",
+  "name": "Cachaça",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Cachaça"
+  ],
+  "children": [
+   "/categorias/cachaca-premium",
+   "/categorias/tradicional"
+  ],
+  "parent": "/categorias/destilados"
+ },
+ "/categorias/conhaque": {
+  "href": "/categorias/conhaque",
+  "slug": "conhaque",
+  "name": "Conhaque",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Conhaque"
+  ],
+  "children": [],
+  "parent": "/categorias/destilados"
+ },
+ "/categorias/gin": {
+  "href": "/categorias/gin",
+  "slug": "gin",
+  "name": "Gin",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Gin"
+  ],
+  "children": [],
+  "parent": "/categorias/destilados"
+ },
+ "/categorias/rum": {
+  "href": "/categorias/rum",
+  "slug": "rum",
+  "name": "Rum",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Rum"
+  ],
+  "children": [],
+  "parent": "/categorias/destilados"
+ },
+ "/categorias/tequila": {
+  "href": "/categorias/tequila",
+  "slug": "tequila",
+  "name": "Tequila",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Tequila"
+  ],
+  "children": [],
+  "parent": "/categorias/destilados"
+ },
+ "/categorias/vodka": {
+  "href": "/categorias/vodka",
+  "slug": "vodka",
+  "name": "Vodka",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Vodka"
+  ],
+  "children": [],
+  "parent": "/categorias/destilados"
+ },
+ "/categorias/whisky": {
+  "href": "/categorias/whisky",
+  "slug": "whisky",
+  "name": "Whisky",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Whisky"
+  ],
+  "children": [],
+  "parent": "/categorias/destilados"
+ },
+ "/categorias/alho-in-natura": {
+  "href": "/categorias/alho-in-natura",
+  "slug": "alho-in-natura",
+  "name": "Alho (In Natura)",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Alho",
+   "Alho (In Natura)"
+  ],
+  "children": [],
+  "parent": "/categorias/alho"
+ },
+ "/categorias/banana": {
+  "href": "/categorias/banana",
+  "slug": "banana",
+  "name": "Banana",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Frutas",
+   "Banana"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas"
+ },
+ "/categorias/maca": {
+  "href": "/categorias/maca",
+  "slug": "maca",
+  "name": "Maça",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Frutas",
+   "Maça"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas"
+ },
+ "/categorias/melancia": {
+  "href": "/categorias/melancia",
+  "slug": "melancia",
+  "name": "Melancia",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Frutas",
+   "Melancia"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas"
+ },
+ "/categorias/melao": {
+  "href": "/categorias/melao",
+  "slug": "melao",
+  "name": "Melão",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Frutas",
+   "Melão"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas"
+ },
+ "/categorias/uva": {
+  "href": "/categorias/uva",
+  "slug": "uva",
+  "name": "Uva",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Frutas",
+   "Uva"
+  ],
+  "children": [],
+  "parent": "/categorias/frutas"
+ },
+ "/categorias/cebola": {
+  "href": "/categorias/cebola",
+  "slug": "cebola",
+  "name": "Cebola",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Legumes",
+   "Cebola"
+  ],
+  "children": [],
+  "parent": "/categorias/legumes"
+ },
+ "/categorias/tuberculos": {
+  "href": "/categorias/tuberculos",
+  "slug": "tuberculos",
+  "name": "Tubérculos",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Legumes",
+   "Tubérculos"
+  ],
+  "children": [
+   "/categorias/batata",
+   "/categorias/bata-doce",
+   "/categorias/cenoura",
+   "/categorias/rabanete"
+  ],
+  "parent": "/categorias/legumes"
+ },
+ "/categorias/acelga": {
+  "href": "/categorias/acelga",
+  "slug": "acelga",
+  "name": "Acelga",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Verduras",
+   "Acelga"
+  ],
+  "children": [],
+  "parent": "/categorias/verduras"
+ },
+ "/categorias/agriao": {
+  "href": "/categorias/agriao",
+  "slug": "agriao",
+  "name": "Agrião",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Verduras",
+   "Agrião"
+  ],
+  "children": [],
+  "parent": "/categorias/verduras"
+ },
+ "/categorias/alecrim": {
+  "href": "/categorias/alecrim",
+  "slug": "alecrim",
+  "name": "Alecrim (In Natura)",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Verduras",
+   "Alecrim (In Natura)"
+  ],
+  "children": [],
+  "parent": "/categorias/verduras"
+ },
+ "/categorias/alface": {
+  "href": "/categorias/alface",
+  "slug": "alface",
+  "name": "Alface",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Verduras",
+   "Alface"
+  ],
+  "children": [],
+  "parent": "/categorias/verduras"
+ },
+ "/categorias/biscoito-champagne": {
+  "href": "/categorias/biscoito-champagne",
+  "slug": "biscoito-champagne",
+  "name": "Biscoito Champagne",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoitos Doces",
+   "Biscoito Champagne"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoitos-doces"
+ },
+ "/categorias/biscoito-maizena-maria-e-leite": {
+  "href": "/categorias/biscoito-maizena-maria-e-leite",
+  "slug": "biscoito-maizena-maria-e-leite",
+  "name": "Biscoito Maizena, Maria e Leite",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoitos Doces",
+   "Biscoito Maizena, Maria e Leite"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoitos-doces"
+ },
+ "/categorias/biscoito-recheado-doce": {
+  "href": "/categorias/biscoito-recheado-doce",
+  "slug": "biscoito-recheado-doce",
+  "name": "Biscoito Recheado Doce",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoitos Doces",
+   "Biscoito Recheado Doce"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoitos-doces"
+ },
+ "/categorias/biscoito-wafer": {
+  "href": "/categorias/biscoito-wafer",
+  "slug": "biscoito-wafer",
+  "name": "Biscoito Wafer",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoitos Doces",
+   "Biscoito Wafer"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoitos-doces"
+ },
+ "/categorias/pao-de-mel": {
+  "href": "/categorias/pao-de-mel",
+  "slug": "pao-de-mel",
+  "name": "Pão de Mel",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Biscoito",
+   "Biscoitos Doces",
+   "Pão de Mel"
+  ],
+  "children": [],
+  "parent": "/categorias/biscoitos-doces"
+ },
+ "/categorias/sementes-de-chia": {
+  "href": "/categorias/sementes-de-chia",
+  "slug": "sementes-de-chia",
+  "name": "Sementes de Chia",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Castanhas, Nozes e Sementes",
+   "Sementes",
+   "Sementes de Chia"
+  ],
+  "children": [],
+  "parent": "/categorias/sementes"
+ },
+ "/categorias/doce-de-leite-em-tablete": {
+  "href": "/categorias/doce-de-leite-em-tablete",
+  "slug": "doce-de-leite-em-tablete",
+  "name": "Doce de Leite em Tablete",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Doce de Leite",
+   "Doce de Leite em Tablete"
+  ],
+  "children": [],
+  "parent": "/categorias/doce-de-leite"
+ },
+ "/categorias/doce-de-leite-creme": {
+  "href": "/categorias/doce-de-leite-creme",
+  "slug": "doce-de-leite-creme",
+  "name": "Doce de Leite Pastoso",
+  "path": [
+   "Alimentos e Bebidas",
+   "Lanches e Doces",
+   "Doces",
+   "Doce de Leite",
+   "Doce de Leite Pastoso"
+  ],
+  "children": [],
+  "parent": "/categorias/doce-de-leite"
+ },
+ "/categorias/leite-longa-vida-desnatado": {
+  "href": "/categorias/leite-longa-vida-desnatado",
+  "slug": "leite-longa-vida-desnatado",
+  "name": "Leite longa vida desnatado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Leites",
+   "Leite longa vida (UHT)",
+   "Leite longa vida desnatado"
+  ],
+  "children": [],
+  "parent": "/categorias/leite-longa-vida-uht"
+ },
+ "/categorias/leite-longa-vida-integral": {
+  "href": "/categorias/leite-longa-vida-integral",
+  "slug": "leite-longa-vida-integral",
+  "name": "Leite longa vida integral",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Leites",
+   "Leite longa vida (UHT)",
+   "Leite longa vida integral"
+  ],
+  "children": [],
+  "parent": "/categorias/leite-longa-vida-uht"
+ },
+ "/categorias/leite-longa-vida-sem-lactose": {
+  "href": "/categorias/leite-longa-vida-sem-lactose",
+  "slug": "leite-longa-vida-sem-lactose",
+  "name": "Leite longa vida sem lactose",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Leites",
+   "Leite longa vida (UHT)",
+   "Leite longa vida sem lactose"
+  ],
+  "children": [],
+  "parent": "/categorias/leite-longa-vida-uht"
+ },
+ "/categorias/leite-longa-vida-semi-desnatado": {
+  "href": "/categorias/leite-longa-vida-semi-desnatado",
+  "slug": "leite-longa-vida-semi-desnatado",
+  "name": "Leite longa vida semi-desnatado",
+  "path": [
+   "Alimentos e Bebidas",
+   "Matinais",
+   "Leites",
+   "Leite longa vida (UHT)",
+   "Leite longa vida semi-desnatado"
+  ],
+  "children": [],
+  "parent": "/categorias/leite-longa-vida-uht"
+ },
+ "/categorias/farinha-de-aveia": {
+  "href": "/categorias/farinha-de-aveia",
+  "slug": "farinha-de-aveia",
+  "name": "Farinha de aveia",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farinhas",
+   "Farinha de aveia"
+  ],
+  "children": [],
+  "parent": "/categorias/farinha"
+ },
+ "/categorias/farinha-de-mandioca": {
+  "href": "/categorias/farinha-de-mandioca",
+  "slug": "farinha-de-mandioca",
+  "name": "Farinha de mandioca",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farinhas",
+   "Farinha de mandioca"
+  ],
+  "children": [],
+  "parent": "/categorias/farinha"
+ },
+ "/categorias/farinha-de-milho": {
+  "href": "/categorias/farinha-de-milho",
+  "slug": "farinha-de-milho",
+  "name": "Farinha de milho",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farinhas",
+   "Farinha de milho"
+  ],
+  "children": [],
+  "parent": "/categorias/farinha"
+ },
+ "/categorias/farinha-de-rosca": {
+  "href": "/categorias/farinha-de-rosca",
+  "slug": "farinha-de-rosca",
+  "name": "Farinha de rosca",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farinhas",
+   "Farinha de rosca"
+  ],
+  "children": [],
+  "parent": "/categorias/farinha"
+ },
+ "/categorias/farinha-de-semola": {
+  "href": "/categorias/farinha-de-semola",
+  "slug": "farinha-de-semola",
+  "name": "Farinha de sêmola",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farinhas",
+   "Farinha de sêmola"
+  ],
+  "children": [],
+  "parent": "/categorias/farinha"
+ },
+ "/categorias/farinha-de-trigo": {
+  "href": "/categorias/farinha-de-trigo",
+  "slug": "farinha-de-trigo",
+  "name": "Farinha de trigo",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Farinhas",
+   "Farinha de trigo"
+  ],
+  "children": [],
+  "parent": "/categorias/farinha"
+ },
+ "/categorias/feijao-branco": {
+  "href": "/categorias/feijao-branco",
+  "slug": "feijao-branco",
+  "name": "Feijão Branco",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Feijão",
+   "Feijão Branco"
+  ],
+  "children": [],
+  "parent": "/categorias/feijao"
+ },
+ "/categorias/feijao-carioca": {
+  "href": "/categorias/feijao-carioca",
+  "slug": "feijao-carioca",
+  "name": "Feijão Carioca",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Feijão",
+   "Feijão Carioca"
+  ],
+  "children": [],
+  "parent": "/categorias/feijao"
+ },
+ "/categorias/feijao-de-corda": {
+  "href": "/categorias/feijao-de-corda",
+  "slug": "feijao-de-corda",
+  "name": "Feijão de Corda",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Feijão",
+   "Feijão de Corda"
+  ],
+  "children": [],
+  "parent": "/categorias/feijao"
+ },
+ "/categorias/feijao-preto": {
+  "href": "/categorias/feijao-preto",
+  "slug": "feijao-preto",
+  "name": "Feijão Preto",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Feijão",
+   "Feijão Preto"
+  ],
+  "children": [],
+  "parent": "/categorias/feijao"
+ },
+ "/categorias/polvilho-azedo": {
+  "href": "/categorias/polvilho-azedo",
+  "slug": "polvilho-azedo",
+  "name": "Polvilho azedo",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Polvilho, Fécula e Farinha para Tapioca",
+   "Polvilho azedo"
+  ],
+  "children": [],
+  "parent": "/categorias/polvilho-fecula-e-farinha-para-tapioca"
+ },
+ "/categorias/tapioca": {
+  "href": "/categorias/tapioca",
+  "slug": "tapioca",
+  "name": "Tapioca",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Cereais, Grãos, Farinhas e Farofas",
+   "Polvilho, Fécula e Farinha para Tapioca",
+   "Tapioca"
+  ],
+  "children": [],
+  "parent": "/categorias/polvilho-fecula-e-farinha-para-tapioca"
+ },
+ "/categorias/molho-de-alho": {
+  "href": "/categorias/molho-de-alho",
+  "slug": "molho-de-alho",
+  "name": "Molho de alho",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Molhos Picantes",
+   "Molho de alho"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-picantes"
+ },
+ "/categorias/molho-de-pimenta": {
+  "href": "/categorias/molho-de-pimenta",
+  "slug": "molho-de-pimenta",
+  "name": "Molho de pimenta",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Molhos Picantes",
+   "Molho de pimenta"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-picantes"
+ },
+ "/categorias/molho-ingles": {
+  "href": "/categorias/molho-ingles",
+  "slug": "molho-ingles",
+  "name": "Molho inglês",
+  "path": [
+   "Alimentos e Bebidas",
+   "Mercearia Alto Giro",
+   "Molhos e Condimentos",
+   "Molhos Picantes",
+   "Molho inglês"
+  ],
+  "children": [],
+  "parent": "/categorias/molhos-picantes"
+ },
+ "/categorias/manteiga-com-sal": {
+  "href": "/categorias/manteiga-com-sal",
+  "slug": "manteiga-com-sal",
+  "name": "Manteiga com sal",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Manteiga e Margarina",
+   "Manteiga",
+   "Manteiga com sal"
+  ],
+  "children": [],
+  "parent": "/categorias/manteiga-c574feb6-1757-410a-a65c-9fcd7ddc0ec0"
+ },
+ "/categorias/manteiga-sem-sal": {
+  "href": "/categorias/manteiga-sem-sal",
+  "slug": "manteiga-sem-sal",
+  "name": "Manteiga sem sal",
+  "path": [
+   "Alimentos e Bebidas",
+   "Perecíveis Lácteos",
+   "Manteiga e Margarina",
+   "Manteiga",
+   "Manteiga sem sal"
+  ],
+  "children": [],
+  "parent": "/categorias/manteiga-c574feb6-1757-410a-a65c-9fcd7ddc0ec0"
+ },
+ "/categorias/cachaca-premium": {
+  "href": "/categorias/cachaca-premium",
+  "slug": "cachaca-premium",
+  "name": "Cachaça Premium",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Cachaça",
+   "Cachaça Premium"
+  ],
+  "children": [],
+  "parent": "/categorias/cachaca"
+ },
+ "/categorias/tradicional": {
+  "href": "/categorias/tradicional",
+  "slug": "tradicional",
+  "name": "Cachaça Tradicional",
+  "path": [
+   "Alimentos e Bebidas",
+   "Bebidas",
+   "Bebidas Alcoólicas",
+   "Destilados",
+   "Cachaça",
+   "Cachaça Tradicional"
+  ],
+  "children": [],
+  "parent": "/categorias/cachaca"
+ },
+ "/categorias/batata": {
+  "href": "/categorias/batata",
+  "slug": "batata",
+  "name": "Batata",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Legumes",
+   "Tubérculos",
+   "Batata"
+  ],
+  "children": [],
+  "parent": "/categorias/tuberculos"
+ },
+ "/categorias/bata-doce": {
+  "href": "/categorias/bata-doce",
+  "slug": "bata-doce",
+  "name": "Batata Doce",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Legumes",
+   "Tubérculos",
+   "Batata Doce"
+  ],
+  "children": [],
+  "parent": "/categorias/tuberculos"
+ },
+ "/categorias/cenoura": {
+  "href": "/categorias/cenoura",
+  "slug": "cenoura",
+  "name": "Cenoura",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Legumes",
+   "Tubérculos",
+   "Cenoura"
+  ],
+  "children": [],
+  "parent": "/categorias/tuberculos"
+ },
+ "/categorias/rabanete": {
+  "href": "/categorias/rabanete",
+  "slug": "rabanete",
+  "name": "Rabanete",
+  "path": [
+   "Alimentos e Bebidas",
+   "Hortifruti",
+   "Frutas, Legumes e Verduras",
+   "Legumes",
+   "Tubérculos",
+   "Rabanete"
+  ],
+  "children": [],
+  "parent": "/categorias/tuberculos"
+ },
+ "/categorias/limpeza": {
+  "href": "/categorias/limpeza",
+  "slug": "limpeza",
+  "name": "Limpeza",
+  "path": [
+   "Limpeza"
+  ],
+  "children": [
+   "/categorias/alvejantes",
+   "/categorias/amaciante",
+   "/categorias/cera-para-piso",
+   "/categorias/desengordurante",
+   "/categorias/desinfetante",
+   "/categorias/desodorizador-sanitario",
+   "/categorias/esponjas-e-buchas-de-limpeza",
+   "/categorias/inseticida",
+   "/categorias/detergente-para-loucas",
+   "/categorias/limpa-aluminio",
+   "/categorias/limpa-vidros",
+   "/categorias/limpadores",
+   "/categorias/lustra-moveis",
+   "/categorias/la-de-aco",
+   "/categorias/odorizador",
+   "/categorias/sabao-em-barra",
+   "/categorias/sabao-em-pasta",
+   "/categorias/sabao-para-roupa",
+   "/categorias/alcool-liquido-para-limpeza"
+  ],
+  "parent": ""
+ },
+ "/categorias/higiene-e-beleza": {
+  "href": "/categorias/higiene-e-beleza",
+  "slug": "higiene-e-beleza",
+  "name": "Higiene e Beleza",
+  "path": [
+   "Higiene e Beleza"
+  ],
+  "children": [
+   "/categorias/algodao-em-chumaco-quadrado-e-haste-flexivel",
+   "/categorias/cuidados-com-a-barba",
+   "/categorias/cuidados-com-a-pele",
+   "/categorias/cuidados-com-a-unhas",
+   "/categorias/cuidados-com-maos-e-pes",
+   "/categorias/cuidados-com-o-cabelo",
+   "/categorias/cuidados-com-o-rosto",
+   "/categorias/depilatorios",
+   "/categorias/desodorante",
+   "/categorias/escova-de-cabelo",
+   "/categorias/esponjas-e-buchas-para-banho",
+   "/categorias/higiene-buscal",
+   "/categorias/higiene-infantil",
+   "/categorias/lenco-umedecido",
+   "/categorias/maquiagem",
+   "/categorias/perfumes",
+   "/categorias/protetor-solar",
+   "/categorias/repelente",
+   "/categorias/sabonete"
+  ],
+  "parent": ""
+ },
+ "/categorias/eletro": {
+  "href": "/categorias/eletro",
+  "slug": "eletro",
+  "name": "Eletro",
+  "path": [
+   "Eletro"
+  ],
+  "children": [
+   "/categorias/aspiradores-de-po-e-cuidados-com-o-chao",
+   "/categorias/eletronicos",
+   "/categorias/maquina-de-cafe"
+  ],
+  "parent": ""
+ },
+ "/categorias/alcool-liquido-para-limpeza": {
+  "href": "/categorias/alcool-liquido-para-limpeza",
+  "slug": "alcool-liquido-para-limpeza",
+  "name": "Álcool Líquido para Limpeza",
+  "path": [
+   "Limpeza",
+   "Álcool Líquido para Limpeza"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/alvejantes": {
+  "href": "/categorias/alvejantes",
+  "slug": "alvejantes",
+  "name": "Alvejantes e Águas Sanitárias",
+  "path": [
+   "Limpeza",
+   "Alvejantes e Águas Sanitárias"
+  ],
+  "children": [
+   "/categorias/alvejante-com-cloro",
+   "/categorias/alvejante-sem-cloro",
+   "/categorias/agua-sanitaria"
+  ],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/amaciante": {
+  "href": "/categorias/amaciante",
+  "slug": "amaciante",
+  "name": "Amaciante para roupas",
+  "path": [
+   "Limpeza",
+   "Amaciante para roupas"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/cera-para-piso": {
+  "href": "/categorias/cera-para-piso",
+  "slug": "cera-para-piso",
+  "name": "Cera para piso",
+  "path": [
+   "Limpeza",
+   "Cera para piso"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/desengordurante": {
+  "href": "/categorias/desengordurante",
+  "slug": "desengordurante",
+  "name": "Desengordurante",
+  "path": [
+   "Limpeza",
+   "Desengordurante"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/desinfetante": {
+  "href": "/categorias/desinfetante",
+  "slug": "desinfetante",
+  "name": "Desinfetante",
+  "path": [
+   "Limpeza",
+   "Desinfetante"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/desodorizador-sanitario": {
+  "href": "/categorias/desodorizador-sanitario",
+  "slug": "desodorizador-sanitario",
+  "name": "Desodorizador sanitário e Purificador de Ar",
+  "path": [
+   "Limpeza",
+   "Desodorizador sanitário e Purificador de Ar"
+  ],
+  "children": [
+   "/categorias/pedra-e-pastilha-sanitaria",
+   "/categorias/purificador-de-ar"
+  ],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/esponjas-e-buchas-de-limpeza": {
+  "href": "/categorias/esponjas-e-buchas-de-limpeza",
+  "slug": "esponjas-e-buchas-de-limpeza",
+  "name": "Escovas, Esponjas e Buchas de Limpeza",
+  "path": [
+   "Limpeza",
+   "Escovas, Esponjas e Buchas de Limpeza"
+  ],
+  "children": [
+   "/categorias/escovas-de-limpeza",
+   "/categorias/esponja-sintetica"
+  ],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/inseticida": {
+  "href": "/categorias/inseticida",
+  "slug": "inseticida",
+  "name": "Inseticida",
+  "path": [
+   "Limpeza",
+   "Inseticida"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/la-de-aco": {
+  "href": "/categorias/la-de-aco",
+  "slug": "la-de-aco",
+  "name": "Lãs e Esponjas e Palhas de aço",
+  "path": [
+   "Limpeza",
+   "Lãs e Esponjas e Palhas de aço"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/detergente-para-loucas": {
+  "href": "/categorias/detergente-para-loucas",
+  "slug": "detergente-para-loucas",
+  "name": "Lava-louças",
+  "path": [
+   "Limpeza",
+   "Lava-louças"
+  ],
+  "children": [
+   "/categorias/detergente-liquido"
+  ],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/limpa-aluminio": {
+  "href": "/categorias/limpa-aluminio",
+  "slug": "limpa-aluminio",
+  "name": "Limpa alumínio",
+  "path": [
+   "Limpeza",
+   "Limpa alumínio"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/limpa-vidros": {
+  "href": "/categorias/limpa-vidros",
+  "slug": "limpa-vidros",
+  "name": "Limpa vidros",
+  "path": [
+   "Limpeza",
+   "Limpa vidros"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/limpadores": {
+  "href": "/categorias/limpadores",
+  "slug": "limpadores",
+  "name": "Limpadores Multi-uso",
+  "path": [
+   "Limpeza",
+   "Limpadores Multi-uso"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/lustra-moveis": {
+  "href": "/categorias/lustra-moveis",
+  "slug": "lustra-moveis",
+  "name": "Lustra-móveis",
+  "path": [
+   "Limpeza",
+   "Lustra-móveis"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/odorizador": {
+  "href": "/categorias/odorizador",
+  "slug": "odorizador",
+  "name": "Odorizador",
+  "path": [
+   "Limpeza",
+   "Odorizador"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/sabao-em-barra": {
+  "href": "/categorias/sabao-em-barra",
+  "slug": "sabao-em-barra",
+  "name": "Sabão em barra de lavanderia",
+  "path": [
+   "Limpeza",
+   "Sabão em barra de lavanderia"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/sabao-em-pasta": {
+  "href": "/categorias/sabao-em-pasta",
+  "slug": "sabao-em-pasta",
+  "name": "Sabão em pasta",
+  "path": [
+   "Limpeza",
+   "Sabão em pasta"
+  ],
+  "children": [],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/sabao-para-roupa": {
+  "href": "/categorias/sabao-para-roupa",
+  "slug": "sabao-para-roupa",
+  "name": "Sabão para Roupa (Lava-Roupas)",
+  "path": [
+   "Limpeza",
+   "Sabão para Roupa (Lava-Roupas)"
+  ],
+  "children": [
+   "/categorias/detergente-em-po"
+  ],
+  "parent": "/categorias/limpeza"
+ },
+ "/categorias/algodao-em-chumaco-quadrado-e-haste-flexivel": {
+  "href": "/categorias/algodao-em-chumaco-quadrado-e-haste-flexivel",
+  "slug": "algodao-em-chumaco-quadrado-e-haste-flexivel",
+  "name": "Algodão em Chumaço, Quadrado e Haste Flexível",
+  "path": [
+   "Higiene e Beleza",
+   "Algodão em Chumaço, Quadrado e Haste Flexível"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/cuidados-com-a-barba": {
+  "href": "/categorias/cuidados-com-a-barba",
+  "slug": "cuidados-com-a-barba",
+  "name": "Cuidados com a barba",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a barba"
+  ],
+  "children": [
+   "/categorias/aparelho-de-barbear",
+   "/categorias/creme-para-barbear",
+   "/categorias/locao-pos-barba"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/cuidados-com-a-pele": {
+  "href": "/categorias/cuidados-com-a-pele",
+  "slug": "cuidados-com-a-pele",
+  "name": "Cuidados com a pele",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a pele"
+  ],
+  "children": [
+   "/categorias/cremes-locoes-corporais",
+   "/categorias/creme-para-assaduras",
+   "/categorias/hidratantes-para-a-pele",
+   "/categorias/oleos-corporais"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/cuidados-com-a-unhas": {
+  "href": "/categorias/cuidados-com-a-unhas",
+  "slug": "cuidados-com-a-unhas",
+  "name": "Cuidados com a unhas",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a unhas"
+  ],
+  "children": [
+   "/categorias/esmaltes-para-unhas"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/cuidados-com-maos-e-pes": {
+  "href": "/categorias/cuidados-com-maos-e-pes",
+  "slug": "cuidados-com-maos-e-pes",
+  "name": "Cuidados com mãos e pés",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés"
+  ],
+  "children": [
+   "/categorias/cuidados-com-a-maos",
+   "/categorias/cuidados-com-os-pes"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/cuidados-com-o-cabelo": {
+  "href": "/categorias/cuidados-com-o-cabelo",
+  "slug": "cuidados-com-o-cabelo",
+  "name": "Cuidados com o cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo"
+  ],
+  "children": [
+   "/categorias/chapinhas-para-o-cabelo",
+   "/categorias/coloracao-para-cabelo",
+   "/categorias/gel-para-cabelo",
+   "/categorias/maquinas-de-cortar-cabelo-e-acessorios",
+   "/categorias/shampoo-e-condicionador",
+   "/categorias/spray-para-cabelo",
+   "/categorias/oleos-para-tratamento-do-cabelo"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/cuidados-com-o-rosto": {
+  "href": "/categorias/cuidados-com-o-rosto",
+  "slug": "cuidados-com-o-rosto",
+  "name": "Cuidados com o rosto",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o rosto"
+  ],
+  "children": [
+   "/categorias/cremes-e-hidrantes-faciais",
+   "/categorias/locoes-e-sabonetes-faciais",
+   "/categorias/mascaras-faciais-f40e10d1-62f1-4d56-aaf6-e4c13d5fb1af"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/depilatorios": {
+  "href": "/categorias/depilatorios",
+  "slug": "depilatorios",
+  "name": "Depilatórios",
+  "path": [
+   "Higiene e Beleza",
+   "Depilatórios"
+  ],
+  "children": [
+   "/categorias/cortadores-e-aparadores-de-pelo-para-mulheres"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/desodorante": {
+  "href": "/categorias/desodorante",
+  "slug": "desodorante",
+  "name": "Desodorante",
+  "path": [
+   "Higiene e Beleza",
+   "Desodorante"
+  ],
+  "children": [
+   "/categorias/desodorante-aerosol",
+   "/categorias/desodorante-roll-on"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/escova-de-cabelo": {
+  "href": "/categorias/escova-de-cabelo",
+  "slug": "escova-de-cabelo",
+  "name": "Escovas Pentes para Barba e Cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Escovas Pentes para Barba e Cabelo"
+  ],
+  "children": [
+   "/categorias/escovas-de-cabelo",
+   "/categorias/pentes-de-cabelo"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/esponjas-e-buchas-para-banho": {
+  "href": "/categorias/esponjas-e-buchas-para-banho",
+  "slug": "esponjas-e-buchas-para-banho",
+  "name": "Esponjas e Buchas para Banho",
+  "path": [
+   "Higiene e Beleza",
+   "Esponjas e Buchas para Banho"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/higiene-buscal": {
+  "href": "/categorias/higiene-buscal",
+  "slug": "higiene-buscal",
+  "name": "Higiene Bucal",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal"
+  ],
+  "children": [
+   "/categorias/antisseptico-bucal",
+   "/categorias/branqueador-dental",
+   "/categorias/creme-dental",
+   "/categorias/escova-dental",
+   "/categorias/escova-dental-eletrica-acessorios",
+   "/categorias/fio-e-fita-dental",
+   "/categorias/higiene-bucal-infantil",
+   "/categorias/irrigadores-e-fios-dentais-eletricos"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/higiene-infantil": {
+  "href": "/categorias/higiene-infantil",
+  "slug": "higiene-infantil",
+  "name": "Higiene e Cuidados Infantil",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene e Cuidados Infantil"
+  ],
+  "children": [
+   "/categorias/linha-de-banho-infantil"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/lenco-umedecido": {
+  "href": "/categorias/lenco-umedecido",
+  "slug": "lenco-umedecido",
+  "name": "Lenço umedecido",
+  "path": [
+   "Higiene e Beleza",
+   "Lenço umedecido"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/maquiagem": {
+  "href": "/categorias/maquiagem",
+  "slug": "maquiagem",
+  "name": "Maquiagem",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem"
+  ],
+  "children": [
+   "/categorias/removedores-de-maquiagem",
+   "/categorias/batom-e-gloss",
+   "/categorias/paleta-de-sombra-de-maquiagem",
+   "/categorias/pinceis-e-kits-de-maquiagem"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/perfumes": {
+  "href": "/categorias/perfumes",
+  "slug": "perfumes",
+  "name": "Perfumes",
+  "path": [
+   "Higiene e Beleza",
+   "Perfumes"
+  ],
+  "children": [
+   "/categorias/eau-de-parfum",
+   "/categorias/eau-de-toilette"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/protetor-solar": {
+  "href": "/categorias/protetor-solar",
+  "slug": "protetor-solar",
+  "name": "Protetores Solares",
+  "path": [
+   "Higiene e Beleza",
+   "Protetores Solares"
+  ],
+  "children": [
+   "/categorias/protetor-solar-724f487c-863d-484c-a3f6-4bdf08e0bf2d",
+   "/categorias/protetores-solares-para-o-corpo"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/repelente": {
+  "href": "/categorias/repelente",
+  "slug": "repelente",
+  "name": "Repelente",
+  "path": [
+   "Higiene e Beleza",
+   "Repelente"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/sabonete": {
+  "href": "/categorias/sabonete",
+  "slug": "sabonete",
+  "name": "Sabonetes para o Corpo",
+  "path": [
+   "Higiene e Beleza",
+   "Sabonetes para o Corpo"
+  ],
+  "children": [
+   "/categorias/sabonete-liquido",
+   "/categorias/sabonetes-em-barra"
+  ],
+  "parent": "/categorias/higiene-e-beleza"
+ },
+ "/categorias/aspiradores-de-po-e-cuidados-com-o-chao": {
+  "href": "/categorias/aspiradores-de-po-e-cuidados-com-o-chao",
+  "slug": "aspiradores-de-po-e-cuidados-com-o-chao",
+  "name": "Aspiradores de Pó e Cuidados com o Chão",
+  "path": [
+   "Eletro",
+   "Aspiradores de Pó e Cuidados com o Chão"
+  ],
+  "children": [],
+  "parent": "/categorias/eletro"
+ },
+ "/categorias/eletronicos": {
+  "href": "/categorias/eletronicos",
+  "slug": "eletronicos",
+  "name": "Eletrônicos",
+  "path": [
+   "Eletro",
+   "Eletrônicos"
+  ],
+  "children": [
+   "/categorias/amazon-echo-alexa-smart-devices",
+   "/categorias/celulares-e-acessorios",
+   "/categorias/computadores-acessorios",
+   "/categorias/cameras-de-fotografia-e-video",
+   "/categorias/impressoras-acessorios",
+   "/categorias/leitores-de-ebooks-e-acessorios",
+   "/categorias/pilhas-e-baterias",
+   "/categorias/smartwatches-acessorios",
+   "/categorias/tablets-e-acessorios",
+   "/categorias/televisores-acessorios",
+   "/categorias/wifi-roteadores",
+   "/categorias/audio"
+  ],
+  "parent": "/categorias/eletro"
+ },
+ "/categorias/maquina-de-cafe": {
+  "href": "/categorias/maquina-de-cafe",
+  "slug": "maquina-de-cafe",
+  "name": "Máquina de Café & Acessórios",
+  "path": [
+   "Eletro",
+   "Máquina de Café & Acessórios"
+  ],
+  "children": [],
+  "parent": "/categorias/eletro"
+ },
+ "/categorias/agua-sanitaria": {
+  "href": "/categorias/agua-sanitaria",
+  "slug": "agua-sanitaria",
+  "name": "Água sanitária",
+  "path": [
+   "Limpeza",
+   "Alvejantes e Águas Sanitárias",
+   "Água sanitária"
+  ],
+  "children": [],
+  "parent": "/categorias/alvejantes"
+ },
+ "/categorias/alvejante-com-cloro": {
+  "href": "/categorias/alvejante-com-cloro",
+  "slug": "alvejante-com-cloro",
+  "name": "Alvejante com cloro",
+  "path": [
+   "Limpeza",
+   "Alvejantes e Águas Sanitárias",
+   "Alvejante com cloro"
+  ],
+  "children": [],
+  "parent": "/categorias/alvejantes"
+ },
+ "/categorias/alvejante-sem-cloro": {
+  "href": "/categorias/alvejante-sem-cloro",
+  "slug": "alvejante-sem-cloro",
+  "name": "Alvejante sem cloro",
+  "path": [
+   "Limpeza",
+   "Alvejantes e Águas Sanitárias",
+   "Alvejante sem cloro"
+  ],
+  "children": [],
+  "parent": "/categorias/alvejantes"
+ },
+ "/categorias/pedra-e-pastilha-sanitaria": {
+  "href": "/categorias/pedra-e-pastilha-sanitaria",
+  "slug": "pedra-e-pastilha-sanitaria",
+  "name": "Pedra e Pastilha Sanitária",
+  "path": [
+   "Limpeza",
+   "Desodorizador sanitário e Purificador de Ar",
+   "Pedra e Pastilha Sanitária"
+  ],
+  "children": [],
+  "parent": "/categorias/desodorizador-sanitario"
+ },
+ "/categorias/purificador-de-ar": {
+  "href": "/categorias/purificador-de-ar",
+  "slug": "purificador-de-ar",
+  "name": "Purificador de ar",
+  "path": [
+   "Limpeza",
+   "Desodorizador sanitário e Purificador de Ar",
+   "Purificador de ar"
+  ],
+  "children": [],
+  "parent": "/categorias/desodorizador-sanitario"
+ },
+ "/categorias/escovas-de-limpeza": {
+  "href": "/categorias/escovas-de-limpeza",
+  "slug": "escovas-de-limpeza",
+  "name": "Escovas de Limpeza",
+  "path": [
+   "Limpeza",
+   "Escovas, Esponjas e Buchas de Limpeza",
+   "Escovas de Limpeza"
+  ],
+  "children": [],
+  "parent": "/categorias/esponjas-e-buchas-de-limpeza"
+ },
+ "/categorias/esponja-sintetica": {
+  "href": "/categorias/esponja-sintetica",
+  "slug": "esponja-sintetica",
+  "name": "Esponja sintética para limpeza",
+  "path": [
+   "Limpeza",
+   "Escovas, Esponjas e Buchas de Limpeza",
+   "Esponja sintética para limpeza"
+  ],
+  "children": [],
+  "parent": "/categorias/esponjas-e-buchas-de-limpeza"
+ },
+ "/categorias/detergente-liquido": {
+  "href": "/categorias/detergente-liquido",
+  "slug": "detergente-liquido",
+  "name": "Detergente líquido (Lava-louças)",
+  "path": [
+   "Limpeza",
+   "Lava-louças",
+   "Detergente líquido (Lava-louças)"
+  ],
+  "children": [],
+  "parent": "/categorias/detergente-para-loucas"
+ },
+ "/categorias/detergente-em-po": {
+  "href": "/categorias/detergente-em-po",
+  "slug": "detergente-em-po",
+  "name": "Detergente em pó (Lava-Roupas)",
+  "path": [
+   "Limpeza",
+   "Sabão para Roupa (Lava-Roupas)",
+   "Detergente em pó (Lava-Roupas)"
+  ],
+  "children": [],
+  "parent": "/categorias/sabao-para-roupa"
+ },
+ "/categorias/aparelho-de-barbear": {
+  "href": "/categorias/aparelho-de-barbear",
+  "slug": "aparelho-de-barbear",
+  "name": "Aparelho de barbear",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a barba",
+   "Aparelho de barbear"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-barba"
+ },
+ "/categorias/creme-para-barbear": {
+  "href": "/categorias/creme-para-barbear",
+  "slug": "creme-para-barbear",
+  "name": "Creme para Barbear",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a barba",
+   "Creme para Barbear"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-barba"
+ },
+ "/categorias/locao-pos-barba": {
+  "href": "/categorias/locao-pos-barba",
+  "slug": "locao-pos-barba",
+  "name": "Loção Pós-barba",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a barba",
+   "Loção Pós-barba"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-barba"
+ },
+ "/categorias/cremes-locoes-corporais": {
+  "href": "/categorias/cremes-locoes-corporais",
+  "slug": "cremes-locoes-corporais",
+  "name": "Cremes & Loções Corporais",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a pele",
+   "Cremes & Loções Corporais"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-pele"
+ },
+ "/categorias/creme-para-assaduras": {
+  "href": "/categorias/creme-para-assaduras",
+  "slug": "creme-para-assaduras",
+  "name": "Cremes Antiassaduras",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a pele",
+   "Cremes Antiassaduras"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-pele"
+ },
+ "/categorias/hidratantes-para-a-pele": {
+  "href": "/categorias/hidratantes-para-a-pele",
+  "slug": "hidratantes-para-a-pele",
+  "name": "Hidratantes para a pele",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a pele",
+   "Hidratantes para a pele"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-pele"
+ },
+ "/categorias/oleos-corporais": {
+  "href": "/categorias/oleos-corporais",
+  "slug": "oleos-corporais",
+  "name": "Óleos corporais",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a pele",
+   "Óleos corporais"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-pele"
+ },
+ "/categorias/esmaltes-para-unhas": {
+  "href": "/categorias/esmaltes-para-unhas",
+  "slug": "esmaltes-para-unhas",
+  "name": "Esmaltes para unhas",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com a unhas",
+   "Esmaltes para unhas"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-unhas"
+ },
+ "/categorias/cuidados-com-a-maos": {
+  "href": "/categorias/cuidados-com-a-maos",
+  "slug": "cuidados-com-a-maos",
+  "name": "Cuidados com as mãos",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com as mãos"
+  ],
+  "children": [
+   "/categorias/cremes-e-locoes-para-as-maos",
+   "/categorias/sabonete-liquido-para-as-maos",
+   "/categorias/alcool-gel-e-higienizadores-de-maos"
+  ],
+  "parent": "/categorias/cuidados-com-maos-e-pes"
+ },
+ "/categorias/cuidados-com-os-pes": {
+  "href": "/categorias/cuidados-com-os-pes",
+  "slug": "cuidados-com-os-pes",
+  "name": "Cuidados com os pés",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com os pés"
+  ],
+  "children": [
+   "/categorias/desodorante-para-os-pes"
+  ],
+  "parent": "/categorias/cuidados-com-maos-e-pes"
+ },
+ "/categorias/chapinhas-para-o-cabelo": {
+  "href": "/categorias/chapinhas-para-o-cabelo",
+  "slug": "chapinhas-para-o-cabelo",
+  "name": "Chapinhas para o cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Chapinhas para o cabelo"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-cabelo"
+ },
+ "/categorias/coloracao-para-cabelo": {
+  "href": "/categorias/coloracao-para-cabelo",
+  "slug": "coloracao-para-cabelo",
+  "name": "Coloração e Tintura para cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Coloração e Tintura para cabelo"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-cabelo"
+ },
+ "/categorias/gel-para-cabelo": {
+  "href": "/categorias/gel-para-cabelo",
+  "slug": "gel-para-cabelo",
+  "name": "Gel para cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Gel para cabelo"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-cabelo"
+ },
+ "/categorias/maquinas-de-cortar-cabelo-e-acessorios": {
+  "href": "/categorias/maquinas-de-cortar-cabelo-e-acessorios",
+  "slug": "maquinas-de-cortar-cabelo-e-acessorios",
+  "name": "Máquinas de Cortar Cabelo, Barbeadores Elétricos, Cortadores e Aparadores de Pelo e Acessórios",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Máquinas de Cortar Cabelo, Barbeadores Elétricos, Cortadores e Aparadores de Pelo e Acessórios"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-cabelo"
+ },
+ "/categorias/oleos-para-tratamento-do-cabelo": {
+  "href": "/categorias/oleos-para-tratamento-do-cabelo",
+  "slug": "oleos-para-tratamento-do-cabelo",
+  "name": "Óleos para Tratamento do Cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Óleos para Tratamento do Cabelo"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-cabelo"
+ },
+ "/categorias/shampoo-e-condicionador": {
+  "href": "/categorias/shampoo-e-condicionador",
+  "slug": "shampoo-e-condicionador",
+  "name": "Shampoo e Condicionador",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Shampoo e Condicionador"
+  ],
+  "children": [
+   "/categorias/condicionador",
+   "/categorias/shampoo"
+  ],
+  "parent": "/categorias/cuidados-com-o-cabelo"
+ },
+ "/categorias/spray-para-cabelo": {
+  "href": "/categorias/spray-para-cabelo",
+  "slug": "spray-para-cabelo",
+  "name": "Spray para cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Spray para cabelo"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-cabelo"
+ },
+ "/categorias/cremes-e-hidrantes-faciais": {
+  "href": "/categorias/cremes-e-hidrantes-faciais",
+  "slug": "cremes-e-hidrantes-faciais",
+  "name": "Cremes, óleos e hidratantes faciais",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o rosto",
+   "Cremes, óleos e hidratantes faciais"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-rosto"
+ },
+ "/categorias/locoes-e-sabonetes-faciais": {
+  "href": "/categorias/locoes-e-sabonetes-faciais",
+  "slug": "locoes-e-sabonetes-faciais",
+  "name": "Loções e Sabonetes Faciais",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o rosto",
+   "Loções e Sabonetes Faciais"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-rosto"
+ },
+ "/categorias/mascaras-faciais-f40e10d1-62f1-4d56-aaf6-e4c13d5fb1af": {
+  "href": "/categorias/mascaras-faciais-f40e10d1-62f1-4d56-aaf6-e4c13d5fb1af",
+  "slug": "mascaras-faciais-f40e10d1-62f1-4d56-aaf6-e4c13d5fb1af",
+  "name": "Máscaras faciais para a pele do rosto",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o rosto",
+   "Máscaras faciais para a pele do rosto"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-o-rosto"
+ },
+ "/categorias/cortadores-e-aparadores-de-pelo-para-mulheres": {
+  "href": "/categorias/cortadores-e-aparadores-de-pelo-para-mulheres",
+  "slug": "cortadores-e-aparadores-de-pelo-para-mulheres",
+  "name": "Cortadores e Aparadores de Pelo para Mulheres",
+  "path": [
+   "Higiene e Beleza",
+   "Depilatórios",
+   "Cortadores e Aparadores de Pelo para Mulheres"
+  ],
+  "children": [],
+  "parent": "/categorias/depilatorios"
+ },
+ "/categorias/desodorante-aerosol": {
+  "href": "/categorias/desodorante-aerosol",
+  "slug": "desodorante-aerosol",
+  "name": "Desodorante aerosol",
+  "path": [
+   "Higiene e Beleza",
+   "Desodorante",
+   "Desodorante aerosol"
+  ],
+  "children": [],
+  "parent": "/categorias/desodorante"
+ },
+ "/categorias/desodorante-roll-on": {
+  "href": "/categorias/desodorante-roll-on",
+  "slug": "desodorante-roll-on",
+  "name": "Desodorante roll on",
+  "path": [
+   "Higiene e Beleza",
+   "Desodorante",
+   "Desodorante roll on"
+  ],
+  "children": [],
+  "parent": "/categorias/desodorante"
+ },
+ "/categorias/escovas-de-cabelo": {
+  "href": "/categorias/escovas-de-cabelo",
+  "slug": "escovas-de-cabelo",
+  "name": "Escovas de Cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Escovas Pentes para Barba e Cabelo",
+   "Escovas de Cabelo"
+  ],
+  "children": [],
+  "parent": "/categorias/escova-de-cabelo"
+ },
+ "/categorias/pentes-de-cabelo": {
+  "href": "/categorias/pentes-de-cabelo",
+  "slug": "pentes-de-cabelo",
+  "name": "Pentes de Cabelo",
+  "path": [
+   "Higiene e Beleza",
+   "Escovas Pentes para Barba e Cabelo",
+   "Pentes de Cabelo"
+  ],
+  "children": [],
+  "parent": "/categorias/escova-de-cabelo"
+ },
+ "/categorias/antisseptico-bucal": {
+  "href": "/categorias/antisseptico-bucal",
+  "slug": "antisseptico-bucal",
+  "name": "Antisséptico e enxaguante bucal",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Antisséptico e enxaguante bucal"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/branqueador-dental": {
+  "href": "/categorias/branqueador-dental",
+  "slug": "branqueador-dental",
+  "name": "Branqueador Dental",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Branqueador Dental"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/creme-dental": {
+  "href": "/categorias/creme-dental",
+  "slug": "creme-dental",
+  "name": "Creme dental",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Creme dental"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/escova-dental": {
+  "href": "/categorias/escova-dental",
+  "slug": "escova-dental",
+  "name": "Escova dental & acessórios",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Escova dental & acessórios"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/escova-dental-eletrica-acessorios": {
+  "href": "/categorias/escova-dental-eletrica-acessorios",
+  "slug": "escova-dental-eletrica-acessorios",
+  "name": "Escova dental elétrica & acessórios",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Escova dental elétrica & acessórios"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/fio-e-fita-dental": {
+  "href": "/categorias/fio-e-fita-dental",
+  "slug": "fio-e-fita-dental",
+  "name": "Fio e fita dental",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Fio e fita dental"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/higiene-bucal-infantil": {
+  "href": "/categorias/higiene-bucal-infantil",
+  "slug": "higiene-bucal-infantil",
+  "name": "Higiene Bucal Infantil",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Higiene Bucal Infantil"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/irrigadores-e-fios-dentais-eletricos": {
+  "href": "/categorias/irrigadores-e-fios-dentais-eletricos",
+  "slug": "irrigadores-e-fios-dentais-eletricos",
+  "name": "Irrigadores e Fios Dentais Elétricos",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene Bucal",
+   "Irrigadores e Fios Dentais Elétricos"
+  ],
+  "children": [],
+  "parent": "/categorias/higiene-buscal"
+ },
+ "/categorias/linha-de-banho-infantil": {
+  "href": "/categorias/linha-de-banho-infantil",
+  "slug": "linha-de-banho-infantil",
+  "name": "Produtos de Pele e Banho Infantil",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene e Cuidados Infantil",
+   "Produtos de Pele e Banho Infantil"
+  ],
+  "children": [
+   "/categorias/sabonete-infantil"
+  ],
+  "parent": "/categorias/higiene-infantil"
+ },
+ "/categorias/removedores-de-maquiagem": {
+  "href": "/categorias/removedores-de-maquiagem",
+  "slug": "removedores-de-maquiagem",
+  "name": "Demaquilantes e Removedores de Maquiagem",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Demaquilantes e Removedores de Maquiagem"
+  ],
+  "children": [
+   "/categorias/acetona-69cf1266-33bf-40c5-9c14-af13541b02e7",
+   "/categorias/removedores-de-maquiagem-para-os-olhos"
+  ],
+  "parent": "/categorias/maquiagem"
+ },
+ "/categorias/batom-e-gloss": {
+  "href": "/categorias/batom-e-gloss",
+  "slug": "batom-e-gloss",
+  "name": "Maquiagem para Boca e Lábios",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Maquiagem para Boca e Lábios"
+  ],
+  "children": [
+   "/categorias/batom",
+   "/categorias/gloss",
+   "/categorias/lapis-de-boca-e-delineador-para-labios"
+  ],
+  "parent": "/categorias/maquiagem"
+ },
+ "/categorias/paleta-de-sombra-de-maquiagem": {
+  "href": "/categorias/paleta-de-sombra-de-maquiagem",
+  "slug": "paleta-de-sombra-de-maquiagem",
+  "name": "Paleta De Sombra de Maquiagem",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Paleta De Sombra de Maquiagem"
+  ],
+  "children": [],
+  "parent": "/categorias/maquiagem"
+ },
+ "/categorias/pinceis-e-kits-de-maquiagem": {
+  "href": "/categorias/pinceis-e-kits-de-maquiagem",
+  "slug": "pinceis-e-kits-de-maquiagem",
+  "name": "Pinceis e Kits de Maquiagem",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Pinceis e Kits de Maquiagem"
+  ],
+  "children": [],
+  "parent": "/categorias/maquiagem"
+ },
+ "/categorias/eau-de-parfum": {
+  "href": "/categorias/eau-de-parfum",
+  "slug": "eau-de-parfum",
+  "name": "Eau de Parfum",
+  "path": [
+   "Higiene e Beleza",
+   "Perfumes",
+   "Eau de Parfum"
+  ],
+  "children": [],
+  "parent": "/categorias/perfumes"
+ },
+ "/categorias/eau-de-toilette": {
+  "href": "/categorias/eau-de-toilette",
+  "slug": "eau-de-toilette",
+  "name": "Eau de Toilette",
+  "path": [
+   "Higiene e Beleza",
+   "Perfumes",
+   "Eau de Toilette"
+  ],
+  "children": [],
+  "parent": "/categorias/perfumes"
+ },
+ "/categorias/protetor-solar-724f487c-863d-484c-a3f6-4bdf08e0bf2d": {
+  "href": "/categorias/protetor-solar-724f487c-863d-484c-a3f6-4bdf08e0bf2d",
+  "slug": "protetor-solar-724f487c-863d-484c-a3f6-4bdf08e0bf2d",
+  "name": "Protetores Solares Faciais",
+  "path": [
+   "Higiene e Beleza",
+   "Protetores Solares",
+   "Protetores Solares Faciais"
+  ],
+  "children": [],
+  "parent": "/categorias/protetor-solar"
+ },
+ "/categorias/protetores-solares-para-o-corpo": {
+  "href": "/categorias/protetores-solares-para-o-corpo",
+  "slug": "protetores-solares-para-o-corpo",
+  "name": "Protetores Solares para o Corpo",
+  "path": [
+   "Higiene e Beleza",
+   "Protetores Solares",
+   "Protetores Solares para o Corpo"
+  ],
+  "children": [],
+  "parent": "/categorias/protetor-solar"
+ },
+ "/categorias/sabonete-liquido": {
+  "href": "/categorias/sabonete-liquido",
+  "slug": "sabonete-liquido",
+  "name": "Sabonete Líquido para o Corpo",
+  "path": [
+   "Higiene e Beleza",
+   "Sabonetes para o Corpo",
+   "Sabonete Líquido para o Corpo"
+  ],
+  "children": [],
+  "parent": "/categorias/sabonete"
+ },
+ "/categorias/sabonetes-em-barra": {
+  "href": "/categorias/sabonetes-em-barra",
+  "slug": "sabonetes-em-barra",
+  "name": "Sabonetes em Barra para o Corpo",
+  "path": [
+   "Higiene e Beleza",
+   "Sabonetes para o Corpo",
+   "Sabonetes em Barra para o Corpo"
+  ],
+  "children": [],
+  "parent": "/categorias/sabonete"
+ },
+ "/categorias/amazon-echo-alexa-smart-devices": {
+  "href": "/categorias/amazon-echo-alexa-smart-devices",
+  "slug": "amazon-echo-alexa-smart-devices",
+  "name": "Amazon Echo, Alexa, Smart Devices",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Amazon Echo, Alexa, Smart Devices"
+  ],
+  "children": [],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/audio": {
+  "href": "/categorias/audio",
+  "slug": "audio",
+  "name": "Áudio",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Áudio"
+  ],
+  "children": [
+   "/categorias/caixas-de-som",
+   "/categorias/fones-de-ouvido",
+   "/categorias/gravadores-de-audio"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/cameras-de-fotografia-e-video": {
+  "href": "/categorias/cameras-de-fotografia-e-video",
+  "slug": "cameras-de-fotografia-e-video",
+  "name": "Câmeras de Fotografia e Vídeo e Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Câmeras de Fotografia e Vídeo e Acessórios"
+  ],
+  "children": [
+   "/categorias/camera-digital",
+   "/categorias/lentes-de-cameras"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/celulares-e-acessorios": {
+  "href": "/categorias/celulares-e-acessorios",
+  "slug": "celulares-e-acessorios",
+  "name": "Celulares e Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Celulares e Acessórios"
+  ],
+  "children": [
+   "/categorias/acessorios-para-celulares",
+   "/categorias/carregadores-de-celulares",
+   "/categorias/celulares"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/computadores-acessorios": {
+  "href": "/categorias/computadores-acessorios",
+  "slug": "computadores-acessorios",
+  "name": "Computadores & Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios"
+  ],
+  "children": [
+   "/categorias/maletas-e-mochilas-para-notebook-laptops",
+   "/categorias/computadores",
+   "/categorias/monitores-acessorios",
+   "/categorias/mouse",
+   "/categorias/pendrives-e-hard-disks-hds",
+   "/categorias/perifericos-para-computadores",
+   "/categorias/placa-mae-para-computadores",
+   "/categorias/processadores",
+   "/categorias/teclado"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/impressoras-acessorios": {
+  "href": "/categorias/impressoras-acessorios",
+  "slug": "impressoras-acessorios",
+  "name": "Impressoras & Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Impressoras & Acessórios"
+  ],
+  "children": [
+   "/categorias/impressoras",
+   "/categorias/toners-e-tintas-para-impressoras"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/leitores-de-ebooks-e-acessorios": {
+  "href": "/categorias/leitores-de-ebooks-e-acessorios",
+  "slug": "leitores-de-ebooks-e-acessorios",
+  "name": "Leitores de eBooks e Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Leitores de eBooks e Acessórios"
+  ],
+  "children": [],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/pilhas-e-baterias": {
+  "href": "/categorias/pilhas-e-baterias",
+  "slug": "pilhas-e-baterias",
+  "name": "Pilhas e Baterias",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Pilhas e Baterias"
+  ],
+  "children": [
+   "/categorias/pilhas-descartaveis"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/smartwatches-acessorios": {
+  "href": "/categorias/smartwatches-acessorios",
+  "slug": "smartwatches-acessorios",
+  "name": "Smartwatches & Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Smartwatches & Acessórios"
+  ],
+  "children": [],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/tablets-e-acessorios": {
+  "href": "/categorias/tablets-e-acessorios",
+  "slug": "tablets-e-acessorios",
+  "name": "Tablets e Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Tablets e Acessórios"
+  ],
+  "children": [
+   "/categorias/acessorios-para-tablets",
+   "/categorias/canetas-para-tablets",
+   "/categorias/tablets"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/televisores-acessorios": {
+  "href": "/categorias/televisores-acessorios",
+  "slug": "televisores-acessorios",
+  "name": "Televisores & Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Televisores & Acessórios"
+  ],
+  "children": [
+   "/categorias/acessorios-para-televisores",
+   "/categorias/televisores"
+  ],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/wifi-roteadores": {
+  "href": "/categorias/wifi-roteadores",
+  "slug": "wifi-roteadores",
+  "name": "Wifi & Roteadores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Wifi & Roteadores"
+  ],
+  "children": [],
+  "parent": "/categorias/eletronicos"
+ },
+ "/categorias/alcool-gel-e-higienizadores-de-maos": {
+  "href": "/categorias/alcool-gel-e-higienizadores-de-maos",
+  "slug": "alcool-gel-e-higienizadores-de-maos",
+  "name": "Álcool Gel e Higienizadores de Mãos",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com as mãos",
+   "Álcool Gel e Higienizadores de Mãos"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-maos"
+ },
+ "/categorias/cremes-e-locoes-para-as-maos": {
+  "href": "/categorias/cremes-e-locoes-para-as-maos",
+  "slug": "cremes-e-locoes-para-as-maos",
+  "name": "Cremes e loções para as mãos",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com as mãos",
+   "Cremes e loções para as mãos"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-maos"
+ },
+ "/categorias/sabonete-liquido-para-as-maos": {
+  "href": "/categorias/sabonete-liquido-para-as-maos",
+  "slug": "sabonete-liquido-para-as-maos",
+  "name": "Sabonete líquido para as mãos",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com as mãos",
+   "Sabonete líquido para as mãos"
+  ],
+  "children": [],
+  "parent": "/categorias/cuidados-com-a-maos"
+ },
+ "/categorias/desodorante-para-os-pes": {
+  "href": "/categorias/desodorante-para-os-pes",
+  "slug": "desodorante-para-os-pes",
+  "name": "Desodorante para os pés",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com os pés",
+   "Desodorante para os pés"
+  ],
+  "children": [
+   "/categorias/desodorante-para-os-pes-aerosol",
+   "/categorias/desodorante-para-os-pes-talco"
+  ],
+  "parent": "/categorias/cuidados-com-os-pes"
+ },
+ "/categorias/condicionador": {
+  "href": "/categorias/condicionador",
+  "slug": "condicionador",
+  "name": "Condicionador",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Shampoo e Condicionador",
+   "Condicionador"
+  ],
+  "children": [],
+  "parent": "/categorias/shampoo-e-condicionador"
+ },
+ "/categorias/shampoo": {
+  "href": "/categorias/shampoo",
+  "slug": "shampoo",
+  "name": "Shampoo",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com o cabelo",
+   "Shampoo e Condicionador",
+   "Shampoo"
+  ],
+  "children": [],
+  "parent": "/categorias/shampoo-e-condicionador"
+ },
+ "/categorias/sabonete-infantil": {
+  "href": "/categorias/sabonete-infantil",
+  "slug": "sabonete-infantil",
+  "name": "Sabonete Infantil",
+  "path": [
+   "Higiene e Beleza",
+   "Higiene e Cuidados Infantil",
+   "Produtos de Pele e Banho Infantil",
+   "Sabonete Infantil"
+  ],
+  "children": [],
+  "parent": "/categorias/linha-de-banho-infantil"
+ },
+ "/categorias/acetona-69cf1266-33bf-40c5-9c14-af13541b02e7": {
+  "href": "/categorias/acetona-69cf1266-33bf-40c5-9c14-af13541b02e7",
+  "slug": "acetona-69cf1266-33bf-40c5-9c14-af13541b02e7",
+  "name": "Acetona, Água Oxigenada & Removedores de Esmaltes",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Demaquilantes e Removedores de Maquiagem",
+   "Acetona, Água Oxigenada & Removedores de Esmaltes"
+  ],
+  "children": [],
+  "parent": "/categorias/removedores-de-maquiagem"
+ },
+ "/categorias/removedores-de-maquiagem-para-os-olhos": {
+  "href": "/categorias/removedores-de-maquiagem-para-os-olhos",
+  "slug": "removedores-de-maquiagem-para-os-olhos",
+  "name": "Removedores de Maquiagem para Olhos",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Demaquilantes e Removedores de Maquiagem",
+   "Removedores de Maquiagem para Olhos"
+  ],
+  "children": [],
+  "parent": "/categorias/removedores-de-maquiagem"
+ },
+ "/categorias/batom": {
+  "href": "/categorias/batom",
+  "slug": "batom",
+  "name": "Batom",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Maquiagem para Boca e Lábios",
+   "Batom"
+  ],
+  "children": [],
+  "parent": "/categorias/batom-e-gloss"
+ },
+ "/categorias/gloss": {
+  "href": "/categorias/gloss",
+  "slug": "gloss",
+  "name": "Gloss",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Maquiagem para Boca e Lábios",
+   "Gloss"
+  ],
+  "children": [],
+  "parent": "/categorias/batom-e-gloss"
+ },
+ "/categorias/lapis-de-boca-e-delineador-para-labios": {
+  "href": "/categorias/lapis-de-boca-e-delineador-para-labios",
+  "slug": "lapis-de-boca-e-delineador-para-labios",
+  "name": "Lápis de Boca e Delineador para Lábios",
+  "path": [
+   "Higiene e Beleza",
+   "Maquiagem",
+   "Maquiagem para Boca e Lábios",
+   "Lápis de Boca e Delineador para Lábios"
+  ],
+  "children": [],
+  "parent": "/categorias/batom-e-gloss"
+ },
+ "/categorias/caixas-de-som": {
+  "href": "/categorias/caixas-de-som",
+  "slug": "caixas-de-som",
+  "name": "Caixas de Som",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Áudio",
+   "Caixas de Som"
+  ],
+  "children": [],
+  "parent": "/categorias/audio"
+ },
+ "/categorias/fones-de-ouvido": {
+  "href": "/categorias/fones-de-ouvido",
+  "slug": "fones-de-ouvido",
+  "name": "Fones de Ouvido",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Áudio",
+   "Fones de Ouvido"
+  ],
+  "children": [],
+  "parent": "/categorias/audio"
+ },
+ "/categorias/gravadores-de-audio": {
+  "href": "/categorias/gravadores-de-audio",
+  "slug": "gravadores-de-audio",
+  "name": "Gravadores de Áudio",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Áudio",
+   "Gravadores de Áudio"
+  ],
+  "children": [],
+  "parent": "/categorias/audio"
+ },
+ "/categorias/camera-digital": {
+  "href": "/categorias/camera-digital",
+  "slug": "camera-digital",
+  "name": "Câmera digital",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Câmeras de Fotografia e Vídeo e Acessórios",
+   "Câmera digital"
+  ],
+  "children": [],
+  "parent": "/categorias/cameras-de-fotografia-e-video"
+ },
+ "/categorias/lentes-de-cameras": {
+  "href": "/categorias/lentes-de-cameras",
+  "slug": "lentes-de-cameras",
+  "name": "Lentes de Câmeras",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Câmeras de Fotografia e Vídeo e Acessórios",
+   "Lentes de Câmeras"
+  ],
+  "children": [],
+  "parent": "/categorias/cameras-de-fotografia-e-video"
+ },
+ "/categorias/acessorios-para-celulares": {
+  "href": "/categorias/acessorios-para-celulares",
+  "slug": "acessorios-para-celulares",
+  "name": "Acessórios para Celulares",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Celulares e Acessórios",
+   "Acessórios para Celulares"
+  ],
+  "children": [],
+  "parent": "/categorias/celulares-e-acessorios"
+ },
+ "/categorias/carregadores-de-celulares": {
+  "href": "/categorias/carregadores-de-celulares",
+  "slug": "carregadores-de-celulares",
+  "name": "Carregadores de Celulares",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Celulares e Acessórios",
+   "Carregadores de Celulares"
+  ],
+  "children": [],
+  "parent": "/categorias/celulares-e-acessorios"
+ },
+ "/categorias/celulares": {
+  "href": "/categorias/celulares",
+  "slug": "celulares",
+  "name": "Celulares",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Celulares e Acessórios",
+   "Celulares"
+  ],
+  "children": [],
+  "parent": "/categorias/celulares-e-acessorios"
+ },
+ "/categorias/maletas-e-mochilas-para-notebook-laptops": {
+  "href": "/categorias/maletas-e-mochilas-para-notebook-laptops",
+  "slug": "maletas-e-mochilas-para-notebook-laptops",
+  "name": "Cases, Maletas, Mochilas para Notebook (Laptops)",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Cases, Maletas, Mochilas para Notebook (Laptops)"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/computadores": {
+  "href": "/categorias/computadores",
+  "slug": "computadores",
+  "name": "Computadores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Computadores"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/monitores-acessorios": {
+  "href": "/categorias/monitores-acessorios",
+  "slug": "monitores-acessorios",
+  "name": "Monitores & Acessórios",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Monitores & Acessórios"
+  ],
+  "children": [
+   "/categorias/acessorios-para-monitores",
+   "/categorias/monitores"
+  ],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/mouse": {
+  "href": "/categorias/mouse",
+  "slug": "mouse",
+  "name": "Mouse",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Mouse"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/pendrives-e-hard-disks-hds": {
+  "href": "/categorias/pendrives-e-hard-disks-hds",
+  "slug": "pendrives-e-hard-disks-hds",
+  "name": "Pendrives e Hard Disks (HDs)",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Pendrives e Hard Disks (HDs)"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/perifericos-para-computadores": {
+  "href": "/categorias/perifericos-para-computadores",
+  "slug": "perifericos-para-computadores",
+  "name": "Periféricos para Computadores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Periféricos para Computadores"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/placa-mae-para-computadores": {
+  "href": "/categorias/placa-mae-para-computadores",
+  "slug": "placa-mae-para-computadores",
+  "name": "Placa-mãe para Computadores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Placa-mãe para Computadores"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/processadores": {
+  "href": "/categorias/processadores",
+  "slug": "processadores",
+  "name": "Processadores para Computadores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Processadores para Computadores"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/teclado": {
+  "href": "/categorias/teclado",
+  "slug": "teclado",
+  "name": "Teclado",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Teclado"
+  ],
+  "children": [],
+  "parent": "/categorias/computadores-acessorios"
+ },
+ "/categorias/impressoras": {
+  "href": "/categorias/impressoras",
+  "slug": "impressoras",
+  "name": "Impressoras",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Impressoras & Acessórios",
+   "Impressoras"
+  ],
+  "children": [],
+  "parent": "/categorias/impressoras-acessorios"
+ },
+ "/categorias/toners-e-tintas-para-impressoras": {
+  "href": "/categorias/toners-e-tintas-para-impressoras",
+  "slug": "toners-e-tintas-para-impressoras",
+  "name": "Toners e Tintas para Impressoras",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Impressoras & Acessórios",
+   "Toners e Tintas para Impressoras"
+  ],
+  "children": [],
+  "parent": "/categorias/impressoras-acessorios"
+ },
+ "/categorias/pilhas-descartaveis": {
+  "href": "/categorias/pilhas-descartaveis",
+  "slug": "pilhas-descartaveis",
+  "name": "Pilhas Descartáveis",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Pilhas e Baterias",
+   "Pilhas Descartáveis"
+  ],
+  "children": [],
+  "parent": "/categorias/pilhas-e-baterias"
+ },
+ "/categorias/acessorios-para-tablets": {
+  "href": "/categorias/acessorios-para-tablets",
+  "slug": "acessorios-para-tablets",
+  "name": "Acessórios para Tablets",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Tablets e Acessórios",
+   "Acessórios para Tablets"
+  ],
+  "children": [],
+  "parent": "/categorias/tablets-e-acessorios"
+ },
+ "/categorias/canetas-para-tablets": {
+  "href": "/categorias/canetas-para-tablets",
+  "slug": "canetas-para-tablets",
+  "name": "Canetas para Tablets",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Tablets e Acessórios",
+   "Canetas para Tablets"
+  ],
+  "children": [],
+  "parent": "/categorias/tablets-e-acessorios"
+ },
+ "/categorias/tablets": {
+  "href": "/categorias/tablets",
+  "slug": "tablets",
+  "name": "Tablets",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Tablets e Acessórios",
+   "Tablets"
+  ],
+  "children": [],
+  "parent": "/categorias/tablets-e-acessorios"
+ },
+ "/categorias/acessorios-para-televisores": {
+  "href": "/categorias/acessorios-para-televisores",
+  "slug": "acessorios-para-televisores",
+  "name": "Acessórios para Televisores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Televisores & Acessórios",
+   "Acessórios para Televisores"
+  ],
+  "children": [],
+  "parent": "/categorias/televisores-acessorios"
+ },
+ "/categorias/televisores": {
+  "href": "/categorias/televisores",
+  "slug": "televisores",
+  "name": "Televisores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Televisores & Acessórios",
+   "Televisores"
+  ],
+  "children": [],
+  "parent": "/categorias/televisores-acessorios"
+ },
+ "/categorias/desodorante-para-os-pes-aerosol": {
+  "href": "/categorias/desodorante-para-os-pes-aerosol",
+  "slug": "desodorante-para-os-pes-aerosol",
+  "name": "Desodorante para os pés - Aerosol",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com os pés",
+   "Desodorante para os pés",
+   "Desodorante para os pés - Aerosol"
+  ],
+  "children": [],
+  "parent": "/categorias/desodorante-para-os-pes"
+ },
+ "/categorias/desodorante-para-os-pes-talco": {
+  "href": "/categorias/desodorante-para-os-pes-talco",
+  "slug": "desodorante-para-os-pes-talco",
+  "name": "Desodorante para os pés - Talco",
+  "path": [
+   "Higiene e Beleza",
+   "Cuidados com mãos e pés",
+   "Cuidados com os pés",
+   "Desodorante para os pés",
+   "Desodorante para os pés - Talco"
+  ],
+  "children": [],
+  "parent": "/categorias/desodorante-para-os-pes"
+ },
+ "/categorias/acessorios-para-monitores": {
+  "href": "/categorias/acessorios-para-monitores",
+  "slug": "acessorios-para-monitores",
+  "name": "Acessórios para Monitores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Monitores & Acessórios",
+   "Acessórios para Monitores"
+  ],
+  "children": [],
+  "parent": "/categorias/monitores-acessorios"
+ },
+ "/categorias/monitores": {
+  "href": "/categorias/monitores",
+  "slug": "monitores",
+  "name": "Monitores",
+  "path": [
+   "Eletro",
+   "Eletrônicos",
+   "Computadores & Acessórios",
+   "Monitores & Acessórios",
+   "Monitores"
+  ],
+  "children": [],
+  "parent": "/categorias/monitores-acessorios"
+ }
+}
