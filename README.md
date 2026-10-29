@@ -167,7 +167,7 @@ Centralized in `scraping/config.py`, overridable via environment variables (see 
 | `DATABASE_URL` | SQLAlchemy database URL | `sqlite:///market.db` |
 | `PUBLISH_DATABASE_URL` | Cloud Postgres (Neon) the scheduler publishes to | *(unset = don't publish)* |
 | `DEFAULT_QUERY` | Default search term for scraping (empty = all products) | `""` |
-| `DEFAULT_LIMIT` | Max results per site | `1000` |
+| `DEFAULT_LIMIT` | Max results per site | `10000` |
 | `SCRAPE_INTERVAL_HOURS` | Used to derive how long an offer stays "current" (3x this) | `12` |
 | `SCRAPE_MAX_RETRIES` | Max retry attempts for network errors | `3` |
 | `SCRAPE_RETRY_BACKOFF` | Base backoff seconds between retries | `2.0` |

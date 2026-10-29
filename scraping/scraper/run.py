@@ -12,7 +12,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # Must come after sys.path setup
-from scraper.base import BaseScraper
+from scraper.base import DEFAULT_LIMIT, BaseScraper
 from scraper.sites import ALL_SCRAPERS, SCRAPER_MAP
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -34,7 +34,7 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--site", choices=list(SCRAPER_MAP.keys()), help="Site to scrape")
     parser.add_argument("--all", action="store_true", help="Run all sites")
     parser.add_argument("--query", default="", help="Search query (empty = all products)")
-    parser.add_argument("--limit", type=int, default=1000, help="Max results per site")
+    parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help="Max results per site")
     args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
     if args.all:

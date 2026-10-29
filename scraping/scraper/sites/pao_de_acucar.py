@@ -26,7 +26,7 @@ from typing import List, Optional
 
 from bs4 import BeautifulSoup, Tag
 
-from scraper.base import BranchLocation, ProductPrice
+from scraper.base import DEFAULT_LIMIT, BranchLocation, ProductPrice
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class PaoDeAcucarScraper(BaseScraper):
     base_url = "https://www.paodeacucar.com"
     offers_url = base_url
 
-    def scrape(self, query: str = "", limit: int = 1000) -> List[ProductPrice]:
+    def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """Scrape the offers on the home page (``query`` is ignored)."""
         logger.info("[%s] Starting scrape (limit=%d)", self.site_name, limit)
         try:
@@ -102,7 +102,7 @@ class PaoDeAcucarScraper(BaseScraper):
         address = ", ".join(re.sub(r"\s+", " ", p).strip(" -") for p in parts if p and p.strip(" -"))
         return name, address
 
-    def parse_offers(self, soup: BeautifulSoup, limit: int = 1000) -> List[ProductPrice]:
+    def parse_offers(self, soup: BeautifulSoup, limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """Extract one :class:`ProductPrice` per distinct product on the page.
 
         Carousels repeat cards (slick clones them for infinite scrolling), so

@@ -22,7 +22,7 @@ from models import (
     init_db,
     ScrapeAttempt,
 )
-from scraper.base import ProductPrice
+from scraper.base import DEFAULT_LIMIT, ProductPrice
 from scraper.sites import ALL_SCRAPERS
 
 logger = logging.getLogger(__name__)
@@ -203,7 +203,7 @@ def _record_attempt(site_key: str, query: Optional[str], success: bool,
         db.close()
 
 
-def run_and_store(query: str = "", site: Optional[str] = None, limit: int = 1000) -> int:
+def run_and_store(query: str = "", site: Optional[str] = None, limit: int = DEFAULT_LIMIT) -> int:
     """Run one (or all) scrapers for ``query`` and persist results.
 
     Args:
@@ -257,7 +257,7 @@ def run_and_store(query: str = "", site: Optional[str] = None, limit: int = 1000
     return total
 
 
-def run_all_products(site: Optional[str] = None, limit: int = 1000) -> int:
+def run_all_products(site: Optional[str] = None, limit: int = DEFAULT_LIMIT) -> int:
     """Run scrapers for every product currently in the database.
 
     Args:
@@ -285,7 +285,7 @@ def run_all_products(site: Optional[str] = None, limit: int = 1000) -> int:
     return total
 
 
-def run_all_offers(site: Optional[str] = None, limit: int = 1000) -> Dict[str, int]:
+def run_all_offers(site: Optional[str] = None, limit: int = DEFAULT_LIMIT) -> Dict[str, int]:
     """Run scrapers on their offers pages (no query) and persist results.
 
     Args:

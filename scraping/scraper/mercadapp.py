@@ -27,7 +27,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
-from scraper.base import BranchLocation, ProductPrice, valid_ean
+from scraper.base import DEFAULT_LIMIT, BranchLocation, ProductPrice, valid_ean
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class MercadappScraper(BaseScraper):
     )
     product_link_selectors = ("a.product-link", "a")
 
-    def scrape(self, query: str = "", limit: int = 1000) -> List[ProductPrice]:
+    def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """Scrape all offers: from the JSON the page loads, or from its rendered cards if that yields nothing."""
         logger.info("[%s] Starting scrape (limit=%d)", self.site_name, limit)
         products = self._scrape_json(limit)
@@ -157,7 +157,7 @@ class MercadappScraper(BaseScraper):
                 count, unchanged = current, 0.0
         return driver.execute_script("return window.__captured") or []
 
-    def parse_offers(self, bodies: Iterable[str], limit: int = 1000,
+    def parse_offers(self, bodies: Iterable[str], limit: int = DEFAULT_LIMIT,
                      now: Optional[datetime] = None) -> List[ProductPrice]:
         """Products from the offers responses; sold-out, expired and not-yet-started offers are left out."""
         now = now or datetime.now(timezone.utc)

@@ -15,7 +15,7 @@ import re
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from scraper.base import ProductPrice
+from scraper.base import DEFAULT_LIMIT, ProductPrice
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 from scraper.sites.cometa import Encarte
 
@@ -33,7 +33,7 @@ class FrangolandiaFlyers(BaseScraper):
     base_url = "https://frangolandia.com"
     offers_url = base_url + "/encartes/"
 
-    def scrape(self, query: str = "", limit: int = 1000) -> List[ProductPrice]:
+    def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         return []  # flyers only: there are no prices to read
 
     @staticmethod

@@ -22,7 +22,7 @@ import json
 import logging
 from typing import List, Optional, Tuple
 
-from scraper.base import BranchLocation, ProductPrice, valid_ean
+from scraper.base import DEFAULT_LIMIT, BranchLocation, ProductPrice, valid_ean
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,10 @@ def _image_url(images: Optional[list]) -> Optional[str]:
 # anything from there up says nothing and is not kept.
 UNTRACKED_STOCK = 10000
 
+# The search API answers 400 for any page past this one, so a category yields at most MAX_PAGES * page_size
+# (2,500) products however many it has (Atacadão's "mercearia" has about 17,000).
+MAX_PAGES = 50
+
 # Fortaleza's centre: real branches are returned ranked by distance from here, with their own coordinates,
 # so nothing needs geocoding afterward (unlike scraper/mercadapp.py's branch list, which gives only text
 # addresses). Each store's own pickup-point catalogue already seems metro-scoped (Atacadão and Sam's Club
@@ -65,15 +69,14 @@ class VtexScraper(BaseScraper):
     def search_url(self) -> str:
         return self.base_url + "/api/io/_v/api/intelligent-search/product_search"
 
-    def scrape(self, query: str = "", limit: int = 1000) -> List[ProductPrice]:
-        """Collect products from each category (``query`` is ignored)."""
-        per_category = max(1, limit // len(self.categories))
+    def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
+        """Collect products from each category (``query`` is ignored), up to ``limit`` in all."""
         results: List[ProductPrice] = []
         seen = set()
         last_error: Optional[Exception] = None
         for slug in self.categories:
             try:
-                offers = self._category_offers(slug, per_category)
+                offers = self._category_offers(slug, limit)
             except Exception as exc:
                 logger.warning("[%s] Category %s failed: %s", self.site_name, slug, exc)
                 last_error = exc
@@ -94,6 +97,10 @@ class VtexScraper(BaseScraper):
         if self.only_discounted:
             params["sort"] = "discount:desc"
         while len(offers) < cap:
+            if page > MAX_PAGES:
+                logger.warning("[%s] %s: stopped at the API's page limit (%d products read); the category has more",
+                               self.site_name, slug, MAX_PAGES * self.page_size)
+                break
             payload = json.loads(self.fetch_raw(
                 f"{self.search_url}/category-1/{slug}", params={**params, "page": page},
             ))

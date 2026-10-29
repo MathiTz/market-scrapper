@@ -13,7 +13,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'market.db'}")
 
 # --- Scraping ---
 DEFAULT_QUERY = os.getenv("DEFAULT_QUERY", "")
-DEFAULT_LIMIT = int(os.getenv("DEFAULT_LIMIT", "1000"))
+DEFAULT_LIMIT = int(os.getenv("DEFAULT_LIMIT", "10000"))
 SCRAPE_INTERVAL_HOURS = int(os.getenv("SCRAPE_INTERVAL_HOURS", "12"))
 SCRAPE_MAX_RETRIES = int(os.getenv("SCRAPE_MAX_RETRIES", "3"))
 SCRAPE_RETRY_BACKOFF = float(os.getenv("SCRAPE_RETRY_BACKOFF", "2.0"))

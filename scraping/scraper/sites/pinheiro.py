@@ -36,7 +36,7 @@ from html import unescape
 
 from bs4 import BeautifulSoup, Tag
 
-from scraper.base import BranchLocation, ProductPrice, valid_ean
+from scraper.base import DEFAULT_LIMIT, BranchLocation, ProductPrice, valid_ean
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -133,7 +133,7 @@ class PinheiroScraper(BaseScraper):
     base_url = "https://www.lojaonline.pinheirosupermercado.com.br"
     offers_url = base_url + "/ofertas"
 
-    def scrape(self, query: str = "", limit: int = 1000) -> List[ProductPrice]:
+    def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """Scrape the promotions (``query`` is ignored)."""
         logger.info("[%s] Starting scrape (limit=%d)", self.site_name, limit)
         read: Dict[str, Any] = {}
@@ -211,7 +211,7 @@ class PinheiroScraper(BaseScraper):
             branches.append(BranchLocation(external_id=name, name=name, address=address))
         return branches
 
-    def parse_api_offers(self, items: List[Dict[str, Any]], limit: int = 1000) -> List[ProductPrice]:
+    def parse_api_offers(self, items: List[Dict[str, Any]], limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """Products from the offers endpoint's items; sold-out and repeated items are left out."""
         results: List[ProductPrice] = []
         seen = set()
@@ -267,7 +267,7 @@ class PinheiroScraper(BaseScraper):
                 parts.append(f"{quantity} un por {_reais(each)} cada")
         return " · ".join(parts) or None
 
-    def parse_offers(self, soup: BeautifulSoup, limit: int = 1000) -> List[ProductPrice]:
+    def parse_offers(self, soup: BeautifulSoup, limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """Products from the rendered cards (about 20): the fallback when the API is not reachable."""
         results: List[ProductPrice] = []
         seen = set()

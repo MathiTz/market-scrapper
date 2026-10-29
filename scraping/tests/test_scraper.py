@@ -15,6 +15,7 @@ from scraper.sites.mercadinho import MercadinhoScraper
 from scraper.sites.pao_de_acucar import PaoDeAcucarScraper
 from scraper.sites.pinheiro import PinheiroScraper
 from scraper.sites.sams_club import SamsClubScraper
+from scraper.vtex import MAX_PAGES
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -572,6 +573,27 @@ class TestAtacadaoScraper(unittest.TestCase):
     def test_cap_limits_each_category(self, mock_fetch):
         mock_fetch.return_value = self.payload
         self.assertEqual(len(self.scraper._category_offers("mercearia", cap=2)), 2)
+
+    @patch.object(AtacadaoScraper, "fetch_raw")
+    def test_scrape_does_not_split_the_limit_between_categories(self, mock_fetch):
+        # The old rule gave each of the 8 categories limit // 8 products, cutting a big one short.
+        mock_fetch.return_value = self.payload
+        caps = []
+        category_offers = self.scraper._category_offers
+        with patch.object(AtacadaoScraper, "_category_offers",
+                          side_effect=lambda slug, cap: caps.append(cap) or category_offers(slug, cap)):
+            self.scraper.scrape(limit=800)
+        self.assertEqual(set(caps), {800})
+
+    @patch.object(AtacadaoScraper, "fetch_raw")
+    def test_stops_at_the_apis_page_limit_instead_of_asking_for_the_next_page(self, mock_fetch):
+        mock_fetch.return_value = self.payload
+        self.scraper.page_size = len(json.loads(self.payload)["products"])  # a full page every time
+        with self.assertLogs("scraper.vtex", level="WARNING") as logs:
+            self.scraper._category_offers("mercearia", cap=10**6)
+        pages = [call.kwargs["params"]["page"] for call in mock_fetch.call_args_list]
+        self.assertEqual(max(pages), MAX_PAGES)  # page 51 is answered with a 400
+        self.assertIn("page limit", logs.output[0])
 
     def test_registered_with_the_other_scrapers(self):
         from scraper.sites import SCRAPER_MAP

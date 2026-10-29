@@ -28,7 +28,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from scraper import flyer_ocr
-from scraper.base import BranchLocation, ProductPrice
+from scraper.base import DEFAULT_LIMIT, BranchLocation, ProductPrice
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -120,7 +120,7 @@ class CometaScraper(BaseScraper):
         return BranchLocation(external_id=str(branch_id), name=name.removeprefix("Loja ").strip() or name,
                               address=address, lat=lat, lon=lon)
 
-    def scrape(self, query: str = "", limit: int = 1000) -> List[ProductPrice]:
+    def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """OCR every flyer and return the offers whose prices check out.
 
         Flyers without discount badges (price tags only) yield nothing, since

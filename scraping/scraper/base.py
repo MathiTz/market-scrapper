@@ -18,6 +18,9 @@ from selenium.webdriver.chrome.service import Service
 logger = logging.getLogger(__name__)
 
 # Retry configuration - can be overridden via env vars
+# Most offers kept per chain and run. Well above any chain's real size so nothing is cut off silently (it used
+# to be 1000, which Atacadão and Pinheiro both exceeded); the same env var as config.DEFAULT_LIMIT.
+DEFAULT_LIMIT = int(os.getenv("DEFAULT_LIMIT", "10000"))
 MAX_RETRIES = int(os.getenv("SCRAPE_MAX_RETRIES", "3"))
 RETRY_BACKOFF_SECONDS = float(os.getenv("SCRAPE_RETRY_BACKOFF", "2.0"))
 DEFAULT_TIMEOUT = int(os.getenv("SCRAPE_TIMEOUT", "15"))

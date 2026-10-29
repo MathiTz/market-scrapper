@@ -21,7 +21,7 @@ from datetime import datetime
 from html import unescape
 from typing import Dict, List, Optional
 
-from scraper.base import ProductPrice
+from scraper.base import DEFAULT_LIMIT, ProductPrice
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 from scraper.sites.cometa import Encarte
 
@@ -47,7 +47,7 @@ class CenterboxScraper(BaseScraper):
 
     # ---- prices -----------------------------------------------------------------------------------------
 
-    def scrape(self, query: str = "", limit: int = 1000) -> List[ProductPrice]:
+    def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         store_id = self._store_id()
         self.session.headers.update({"x-store-id": store_id, "Origin": self.store_url, "Referer": self.store_url + "/"})
         products: List[ProductPrice] = []
