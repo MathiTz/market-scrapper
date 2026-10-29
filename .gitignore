@@ -11,8 +11,17 @@ venv/
 
 # Database (and local backups of it)
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 backups/
+
+# Mirrored product images (generated; see services/image_mirror.py)
+/scraping/images/
+
+# Review artifacts for the missing-image backfill: the CSV and its URLs are committed, the
+# downloaded files are not (they are already in the mirror, and 11 MB is a permanent cost)
+/scraping/data/missing-images/images/
 
 # Generated output
 diagnostics/

@@ -38,6 +38,6 @@ def _add_missing_columns(bind):
 
 if __name__ == "__main__":
     # Import models so they register with Base metadata
-    from models import Product, Store, StoreLocation, Price, UserList, ListItem, ScrapeAttempt  # noqa: F401
+    from models import Product, Store, StoreLocation, Price, PriceHistory, ScrapeAttempt  # noqa: F401
     init_db()
     print("Database initialized.")

@@ -1,0 +1,30 @@
+num,name,gtin_input,status,matched_name,matched_gtin,note,image_url,file,bytes,dims
+5,Bebida Vegetal Possible Aveia 1L,7898692303188,NONE,,,,,,,
+6,Bebida Vegetal Possible Aveia Amêndoas 1L,7898692303195,NONE,,,,,,,
+7,Bebida a Tal da Castanha sem Lactose 1L Aveia,7898692301290,OK,Bebida a Tal da Castanha sem Lactose 1L Aveia,7898692301290,GTIN exato,https://cdn-cosmos.bluesoft.com.br/products/7898692301290,07_7898692301290.png,726399,1200x1200
+11,Café Solúvel 3 Corações Gourmet Liofilizado Descafeinado 40g,7896045121304,REVIEW,CAFÉ SOLÚVEL LIOFILIZADO 3 CORAÇÕES SACHÊ 40G REFIL,7896045113316,"mesmo fabricante/liofilizado 40g, variante não confirmada",https://cdn-cosmos.bluesoft.com.br/products/7896045113316,11_7896045113316.jpg,148819,600x600
+13,Condicionador Palmolive Bond Repair 315ml,7509546707891,OK,Condicionador Palmolive Bond Repair 315ml,7509546707891,GTIN exato,https://cdn-cosmos.bluesoft.com.br/products/7509546707891,13_7509546707891.png,97380,184x514
+14,Condicionador Palmolive Naturals Lisos Radiantes 315ml,7509546707341,OK,CONDICIONADOR PALMOLIVE NATURALS LISOS RADIANTES FRA...,7891024170335,"nome idêntico, GTIN alternativo",https://cdn-cosmos.bluesoft.com.br/products/7891024170335,14_7891024170335.png,602711,1200x1200
+22,Mini Coxinha La Maison Poptisco Frango 190g,7898968910690,REVIEW,COXINHA DA ASA DE FRANGO CONGELADA SADIA POUCH 1KG,7893000488878,placeholder genérico; La Maison não tem foto,https://cdn-cosmos.bluesoft.com.br/products/7893000488878,22_7893000488878.png,300642,418x528
+23,Ovo Branco Gourmet 10 un,7896982101063,OK,Ovo Branco Gourmet 10 un,7896982101063,GTIN exato,https://cdn-cosmos.bluesoft.com.br/products/7896982101063,23_7896982101063.png,396699,614x393
+25,Shampoo Palmolive Bond Repair 315ml,7509546707884,OK,Shampoo Palmolive Bond Repair 315ml,7509546707884,GTIN exato,https://cdn-cosmos.bluesoft.com.br/products/7509546707884,25_7509546707884.png,112249,208x517
+4,Barra de proteína BOLD sabores 40g,,OK,BARRA DE PROTEÍNA AVELÃ BOLD TUBE PACOTE 40G,7898755180367,marca + 40g (sabor avelã representativo),https://cdn-cosmos.bluesoft.com.br/products/7898755180367,04_7898755180367.png,51612,95x331
+8,Bebida láctea UHT YOPRO 250ml,,REVIEW,YOPRO PACK BEBIDA LÁCTEA UHT COCO 250ML,7891025124221,"mesma marca, pack 12, sabor não confirmado",https://cdn-cosmos.bluesoft.com.br/products/7891025124221,08_7891025124221.jpg,26853,500x500
+9,Bife de Contra Filé Chorizo Resfriado 600g,,REVIEW,CHORIZO BOVINO EM BIFES RESFRIADO SEM OSSO WESSEL,7896103802381,"corte equivalente, marca/peso diferentes",https://cdn-cosmos.bluesoft.com.br/products/7896103802381,09_7896103802381.png,1396799,1200x1200
+10,Biscoito cookies,,REVIEW,BISCOITO COOKIES QUAKER PASSAS,7894321620039,"genérico 'cookies', marca não informada",https://cdn-cosmos.bluesoft.com.br/products/7894321620039,10_7894321620039.png,890341,1200x1200
+12,Chuchu 19kg (peso variável),,REVIEW,CHUCHU BAND 500GR,7898532240116,hortifruti peso variável; foto ilustrativa,https://cdn-cosmos.bluesoft.com.br/products/7898532240116,12_7898532240116.png,292026,600x398
+15,"Lava roupas líquido concentrado 1,2l",,REVIEW,"LAVA-ROUPAS LÍQUIDO CONCENTRADO ARIEL EXPERT 1,2L",7500435115315,formato confere; marca provável Ariel,https://cdn-cosmos.bluesoft.com.br/products/7500435115315,15_7500435115315.jpg,17421,250x250
+16,Filé Mignon em Bife 500g,,REVIEW,FILE MIGNON BIFE SWIFT 1KG,7908625603565,"corte confere, peso diferente",https://cdn-cosmos.bluesoft.com.br/products/7908625603565,16_7908625603565.jpg,229809,1000x1000
+17,Azeite de oliva Gallo,,OK,AZEITE OLIVA GALLO PURO,5601252004065,marca confere (GTIN PT),https://cdn-cosmos.bluesoft.com.br/products/5601252004065,17_5601252004065.png,1227129,1200x1200
+18,Granola Integral Mãe Terra 800g,,REVIEW,GRANOLA INTEGRAL CACAU MÃE TERRA 800G,7896496995219,"marca + 800g, sabor cacau",https://cdn-cosmos.bluesoft.com.br/products/7896496995219,18_7896496995219.jpg,28213,500x500
+19,Granola Mãe Terra Frutas e Mel 250g,,OK,GRANOLA INTEGRAL FRUTAS E MEL VEGANO MÃE TERRA 250G,7896496972104,marca + sabor + peso exatos,https://cdn-cosmos.bluesoft.com.br/products/7896496972104,19_7896496972104.png,2579433,1200x1200
+20,Granola Mãe Terra Zero Açúcares 250g,,REVIEW,GRANOLA TRADICIONAL ZERO AÇÚCAR MÃE TERRA 200G,7891150079670,"zero açúcar confere, 200g vs 250g",https://cdn-cosmos.bluesoft.com.br/products/7891150079670,20_7891150079670.jpg,33043,500x500
+21,Lava-Roupas Líquido Qualitá Tripla Ação 3L,,NONE,,,,,,,
+24,Pão hambúrguer Plusvita,,OK,PÃO PARA HAMBÚRGUER AUSTRALIANO PLUSVITA ARTESANO 420G,7896002311632,foto mostra embalagem PULLMAN Artesano (mesmo grupo da Plusvita); baixa resolução,https://cdn-cosmos.bluesoft.com.br/products/7896002311632,24_7896002311632.png,34648,84x208
+26,Aconchego 6L,,REVIEW,AMACIANTE YPÊ ACONCHEGO 2LT,7896098902929,"mesma linha, 2L vs 6L",https://cdn-cosmos.bluesoft.com.br/products/7896098902929,26_7896098902929.png,668038,1200x1200
+27,Margarina cremosa 500g com sal,,REVIEW,MARGARINA CREMOSA QUALY COM SAL,7893000394247,"cremosa com sal confere, marca provável",https://cdn-cosmos.bluesoft.com.br/products/7893000394247,27_7893000394247.png,642104,947x849
+28,Ketchup Heinz / Maionese Lord,,REVIEW,KETCHUP HEINZ SQUEEZE 397G,7896102503708,ketchup Heinz; item do flyer ambíguo,https://cdn-cosmos.bluesoft.com.br/products/7896102503708,28_7896102503708.png,225047,600x600
+29,Aveia 400g (possível 'Master'),,REVIEW,AVEIA NUTRILEVIS 400G FLOCOS,7898335133196,aveia em flocos 400g genérica,https://cdn-cosmos.bluesoft.com.br/products/7898335133196,29_7898335133196.jpg,65863,704x744
+1,Macarrão espaguete (OCR '8randini/Brandini'),,REVIEW,MACARRAO ESPAGUETE ORSI 8,7896239840028,"espaguete nº8; resolução muito baixa (41x138), marca ilegível",https://cdn-cosmos.bluesoft.com.br/products/7896239840028,01_7896239840028.gif,4964,41x138
+2,Achocolatado em pó GOLD premium sweet 200g,,OK,ACHOCOLATADO PÓ DIET GOLD PREMIUM SWEET 200G,7896060039400,marca + linha + 200g (OCR '2009'),https://cdn-cosmos.bluesoft.com.br/products/7896060039400,02_7896060039400.jpg,25577,370x370
+3,Atum sólido Gomes da Costa,,NONE,,,Cosmos tem o produto mas nenhum atum Gomes da Costa tem foto,,,,
