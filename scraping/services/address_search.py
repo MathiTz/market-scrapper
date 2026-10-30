@@ -41,10 +41,10 @@ def normalize(query: str) -> str:
     return " ".join((query or "").split())
 
 
-def _label(props: dict) -> str:
+def _label(props: dict, named: bool = True) -> str:
     street, number = props.get("street"), props.get("housenumber")
     parts = []
-    if props.get("name") and props["name"] != street:
+    if named and props.get("name") and props["name"] != street:
         parts.append(props["name"])
     if street:
         parts.append(f"{street}, {number}" if number else street)
@@ -60,12 +60,12 @@ def _km_from_center(latitude: float, longitude: float) -> float:
     return 2 * 6371.0088 * math.asin(math.sqrt(a))
 
 
-def _place(feature: dict) -> Optional[dict]:
+def _place(feature: dict, named: bool = True) -> Optional[dict]:
     props, geometry = feature.get("properties") or {}, feature.get("geometry") or {}
     coords = geometry.get("coordinates")
     if geometry.get("type") != "Point" or not coords or len(coords) < 2:
         return None
-    label = _label(props)
+    label = _label(props, named)
     if not label or props.get("osm_id") is None:
         return None
     return {
@@ -173,7 +173,7 @@ def reverse_address(latitude: float, longitude: float) -> Optional[dict]:
     try:
         response = requests.get(
             PHOTON_REVERSE_URL,
-            params={"lat": f"{latitude:.4f}", "lon": f"{longitude:.4f}", "limit": 1},
+            params={"lat": f"{latitude:.4f}", "lon": f"{longitude:.4f}", "limit": 5},
             headers={"User-Agent": USER_AGENT},
             timeout=TIMEOUT_SECONDS,
         )
@@ -181,8 +181,23 @@ def reverse_address(latitude: float, longitude: float) -> Optional[dict]:
         features = response.json().get("features") or []
     except (requests.RequestException, ValueError) as exc:
         raise AddressSearchError(str(exc)) from exc
-    for feature in features:
-        found = _place(feature)
+    # The nearest thing to a position is often a shop or a bank, which is not where a person says they are:
+    # prefer a street address (a house, or the street itself), then anything with a street, and never put a
+    # business name in the label.
+    def props(feature: dict) -> dict:
+        return feature.get("properties") or {}
+
+    def is_address(feature: dict) -> bool:
+        p = props(feature)
+        return bool(p.get("street")) and (not p.get("name") or p.get("osm_key") in ("place", "highway"))
+
+    ranked = (
+        [f for f in features if is_address(f)]
+        + [f for f in features if not is_address(f) and props(f).get("street")]
+        + [f for f in features if not props(f).get("street")]
+    )
+    for feature in ranked:
+        found = _place(feature, named=False)
         if found:
             return found
     return None

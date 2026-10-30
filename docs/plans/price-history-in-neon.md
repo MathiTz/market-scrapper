@@ -80,7 +80,10 @@ History in Neon covers prices, not the rest (products, store locations, scrape a
    23,173 rows for 12,628 product/chain pairs, 6/9/2026 on; a second run sent 0. A failed sync is reported, never fails
    the release, and the next run catches up. Everything stored is kept, including products a chain stopped listing.
    Archived points mean "last seen at this price", new ones "first seen", so a backfilled step is drawn up to a scrape late.
-2. `price_key` on offers, and the Worker/Flask route with a test.
+2. **Done (29/10/2026), not yet deployed.** `price_key` on offers (`services/public_api.py`) and `GET /api/price-history?keys=a,b`
+   (Worker: `api/src/app.ts`, `store.ts`; Flask: `local_api/app.py`), up to 30 keys, answering
+   `{history: {key: {chain: [[observed_at, price_cents], ...]}}}`. Needs `GRANT SELECT ON price_points TO api_reader` in Neon
+   first (`api_reader` currently has no access to the table).
 3. The chart on the product page, then the "mudou" line on cards.
 4. The `market.db` backup.
 

@@ -4403,3 +4403,6 @@ html[data-vt="product"] .product-hero img {
 .stale-offers h3 { margin: 0 0 var(--md-space-1); font-size: var(--md-text-lg); }
 .stale-offers > p { margin: 0 0 var(--md-space-3); }
 .offer-row-stale { background: var(--md-surface-level-2); }
+
+/* Back to the top (components/back-to-top.tsx): floats over the list, above the mobile dock. */
+.back-to-top { position: fixed; right: var(--md-space-4); z-index: var(--md-z-dock); background: var(--md-surface-level-1); box-shadow: var(--md-elevation-2); }

@@ -134,6 +134,8 @@ export type Offer = {
   published: number;
   ttl_hours: number;
   collection_error?: string | null;
+  /** The id of this price's history in GET /api/price-history (a hash of the source product's name). */
+  price_key?: string;
 };
 export const offerSchema = z
   .object({

@@ -39,6 +39,7 @@ import { ProductCard, ProductHero } from "@/components/product-card";
 import { ProductRangeCard } from "@/components/product-range-card";
 import { groupBySize } from "@/lib/group";
 import { OfferRail } from "@/components/offer-rail";
+import { BackToTop } from "@/components/back-to-top";
 import { LoadMore, useIncremental } from "@/components/infinite";
 import { ListAdder } from "@/components/list-adder";
 import { ReceiptCheck } from "@/components/receipt-check";
@@ -2059,6 +2060,7 @@ export default function Market({ demo = false }: { demo?: boolean }) {
           ))}
         </nav>
       </div>
+      <BackToTop bottom={(narrow ? (showSearch ? 168 : 84) : 24) + 16} />
       <Notifications bottom={narrow ? (showSearch ? 168 : 84) : 24} />
     </div>
     </TooltipProvider>

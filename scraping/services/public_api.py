@@ -35,6 +35,7 @@ from models.product import Product
 from models.scrape_attempt import ScrapeAttempt
 from models.store import Store
 from models.store_location import StoreLocation
+from services.price_points import product_key
 
 logger = logging.getLogger(__name__)
 
@@ -526,6 +527,8 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
             "image_url": image, "image_source_url": None,
         })
         observed = _iso_utc(price.scraped_at)
+        # Which price_points series (services/price_points.py) is this price: the member product it came from.
+        price_key = product_key(products_by_id[price.product_id].name)
         cents = round(price.price * 100)
         regular_cents = round(price.regular_price * 100) if price.regular_price else None
         # (offer id, price, conditions, regular price, deal label) for each price a shopper can get
@@ -544,7 +547,7 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
             variants[0][2]["club"] = club.group(1)
         for offer_id, offer_cents, conditions, offer_regular, label in variants:
             offers.append({
-                "id": offer_id, "product_id": str(rep),
+                "id": offer_id, "product_id": str(rep), "price_key": price_key,
                 "retailer_id": str(store.id), "retailer_name": store.name,
                 "context_id": str(store.id), "context_label": f"{store.name} · {store.city or CITY}",
                 "store_phone": None,

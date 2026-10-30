@@ -18,6 +18,7 @@ import json
 import logging
 import math
 import os
+import re
 import tempfile
 import threading
 import time
@@ -35,6 +36,7 @@ from models.scrape_attempt import ScrapeAttempt
 from services.address_search import (
     MAX_QUERY, MIN_QUERY, AddressSearchError, normalize, reverse_address, search_addresses,
 )
+from services.price_points import history_of
 from services.public_api import build_public
 from services.scraper_service import run_and_store, run_all_products, run_all_offers
 from diagnose_sites import run_diagnosis
@@ -261,6 +263,28 @@ def api_public():
     response.set_etag(etag)
     response.headers["Cache-Control"] = f"public, max-age={PUBLIC_CACHE_SECONDS}, stale-while-revalidate=300"
     return response.make_conditional(request)
+
+
+HISTORY_MAX_KEYS = 30
+_PRICE_KEY = re.compile(r"[0-9a-f]{32}")
+
+
+@app.route("/api/price-history")
+def api_price_history():
+    """How the prices of some products moved: ``?keys=<price_key>,<price_key>`` (the offers' ``price_key``),
+    answered as ``{"history": {key: {chain: [[observed_at, price_cents], ...]}}}``. The Worker serves the same
+    from the cloud database's ``price_points``; this one reads the local database."""
+    keys = [k for k in request.args.get("keys", "").split(",") if k]
+    if not keys or len(keys) > HISTORY_MAX_KEYS or not all(_PRICE_KEY.fullmatch(k) for k in keys):
+        return jsonify({"error": f"Informe de 1 a {HISTORY_MAX_KEYS} chaves de preço."}), 400
+    db = get_db()
+    try:
+        history = history_of(db, keys)
+    finally:
+        db.close()
+    response = jsonify({"history": history})
+    response.headers["Cache-Control"] = "public, max-age=300"
+    return response
 
 
 @app.route("/api/location", methods=["POST"])

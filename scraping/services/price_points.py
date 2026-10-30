@@ -23,7 +23,7 @@ import logging
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import psycopg
 from sqlalchemy.orm import Session
@@ -60,8 +60,11 @@ def _cents(price: float) -> int:
     return round(price * 100)
 
 
-def collect(db: Session) -> Dict[Pair, Series]:
-    """The local price series per (product key, chain), for every stored price - listed lately or not."""
+def collect(db: Session, keys: Optional[Iterable[str]] = None) -> Dict[Pair, Series]:
+    """The local price series per (product key, chain), for every stored price - listed lately or not.
+
+    ``keys`` limits it to those products (the history route asks for a few at a time)."""
+    wanted = set(keys) if keys is not None else None
     store_name = {s.id: s.name for s in db.query(Store).all()}
     names = {p.id: p.name for p in db.query(Product).all()}
     history = {(h.product_id, h.store_id): h.blob for h in db.query(PriceHistory).all()}
@@ -72,7 +75,10 @@ def collect(db: Session) -> Dict[Pair, Series]:
         name = names.get(price.product_id)
         if chain is None or name is None or not price.price or price.price <= 0:
             continue
-        entry = series.setdefault((product_key(name), chain), Series())
+        key = product_key(name)
+        if wanted is not None and key not in wanted:
+            continue
+        entry = series.setdefault((key, chain), Series())
         seen = _utc(price.scraped_at or datetime.now(timezone.utc))
         regular = _cents(price.regular_price) if price.regular_price else None
         if entry.current is None or seen >= entry.current[0]:
@@ -100,6 +106,18 @@ def plan(series: Dict[Pair, Series], known: Dict[Pair, Tuple[datetime, int]]) ->
             observed, cents, regular = entry.current
             rows.append((key, chain, observed, cents, regular))
     return rows
+
+
+def history_of(db: Session, keys: Iterable[str]) -> Dict[str, Dict[str, List[list]]]:
+    """``{product_key: {chain: [[observed_at ISO, price_cents], ...]}}`` from the local database: what GET
+    /api/price-history answers (the Worker answers the same from ``price_points``), oldest first."""
+    history: Dict[str, Dict[str, List[list]]] = {}
+    for key, chain, observed, cents, _regular in plan(collect(db, keys), {}):
+        history.setdefault(key, {}).setdefault(chain, []).append([observed.isoformat(), cents])
+    for chains in history.values():
+        for points in chains.values():
+            points.sort()
+    return history
 
 
 def known_points(conn) -> Dict[Pair, Tuple[datetime, int]]:

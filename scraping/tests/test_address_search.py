@@ -184,10 +184,24 @@ class TestReverseAddress(unittest.TestCase):
     def test_returns_the_address_and_rounds_the_position(self, mock_get):
         mock_get.return_value = reply({"features": [PHOTON["features"][0]]})
         found = reverse_address(-3.724689123, -38.502151999)
-        self.assertEqual(found["label"], "Atlantis Beira-Mar · Avenida Beira Mar, 2120 · Meireles · Fortaleza")
+        self.assertEqual(found["label"], "Avenida Beira Mar, 2120 · Meireles · Fortaleza")
         params = mock_get.call_args.kwargs["params"]
         self.assertEqual((params["lat"], params["lon"]), ("-3.7247", "-38.5022"))
         self.assertTrue(mock_get.call_args.args[0].endswith("/reverse"))
+
+    @patch("services.address_search.requests.get")
+    def test_names_the_street_not_the_bank_that_happens_to_be_nearest(self, mock_get):
+        bank = {"geometry": {"type": "Point", "coordinates": [-38.4975, -3.7365]},
+                "properties": {"osm_type": "N", "osm_id": 1, "osm_key": "amenity", "name": "Banco Santander",
+                               "street": "Rua Barbosa de Freitas", "district": "Aldeota", "city": "Fortaleza"}}
+        house = {"geometry": {"type": "Point", "coordinates": [-38.4976, -3.7366]},
+                 "properties": {"osm_type": "W", "osm_id": 2, "osm_key": "place", "street": "Rua Barbosa de Freitas",
+                                "housenumber": "3055", "district": "Aldeota", "city": "Fortaleza"}}
+        mock_get.return_value = reply({"features": [bank, house]})
+        self.assertEqual(reverse_address(-3.7365, -38.4975)["label"], "Rua Barbosa de Freitas, 3055 · Aldeota · Fortaleza")
+        self.assertEqual(mock_get.call_args.kwargs["params"]["limit"], 5)
+        mock_get.return_value = reply({"features": [bank]})  # only a business nearby: its street, without its name
+        self.assertEqual(reverse_address(-3.7365, -38.4975)["label"], "Rua Barbosa de Freitas · Aldeota · Fortaleza")
 
     @patch("services.address_search.requests.get")
     def test_none_when_there_is_no_address(self, mock_get):

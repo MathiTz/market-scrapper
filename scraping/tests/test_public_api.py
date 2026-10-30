@@ -230,6 +230,14 @@ class TestBuildPublic(unittest.TestCase):
                          ("catalog", "BRL", 1, 36))
         self.assertTrue(offer["price_observed_at"].endswith("+00:00"))
 
+    def test_each_offer_names_the_price_history_series_of_its_product(self):
+        from services.price_points import product_key
+
+        cafe = {o["retailer_name"]: o["price_key"] for o in self.build()["offers"] if o["product_id"] == "1"}
+        self.assertEqual(set(cafe.values()), {product_key("Café Torrado Melitta 500g")})
+        self.assertEqual({o["price_key"] for o in self.build()["offers"] if o["product_id"] == "3"},
+                         {product_key("Arroz Branco 1kg")})
+
     def test_brand_gtin_and_photo_are_exposed_when_the_product_row_has_them(self):
         cafe = self.db.query(Product).filter(Product.id == 1).one()
         cafe.brand, cafe.gtin, cafe.image_url = "Melitta", "7891000100103", "https://img.example/cafe.jpg"

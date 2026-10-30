@@ -20,6 +20,11 @@ type Deps = {
 // a stale copy for five more while they refresh it; revalidating with the etag costs almost nothing.
 const CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=300";
 
+// Price history grows by a few rows a day per product, so a few minutes' staleness is invisible.
+const HISTORY_CACHE_CONTROL = "public, max-age=300, stale-while-revalidate=600";
+export const HISTORY_MAX_KEYS = 30;
+const PRICE_KEY = /^[0-9a-f]{32}$/;
+
 export function createApp({ store, fetchImpl = fetch }: Deps) {
   const app = new Hono<{ Bindings: Bindings }>();
   // Payloads are large and change rarely, so each isolate keeps the newest one and only re-reads it
@@ -52,6 +57,20 @@ export function createApp({ store, fetchImpl = fetch }: Deps) {
         "Content-Type": "application/json; charset=utf-8",
       },
     });
+  });
+
+  // How prices moved: ?keys=<price_key>,<price_key> (the offers' price_key) answered as
+  // {"history": {key: {chain: [[observed_at, price_cents], ...]}}}. The local Flask API serves the same shape.
+  app.get("/api/price-history", async (c) => {
+    const keys = (c.req.query("keys") ?? "").split(",").filter(Boolean);
+    if (!keys.length || keys.length > HISTORY_MAX_KEYS || !keys.every((k) => PRICE_KEY.test(k))) {
+      return c.json({ error: `Informe de 1 a ${HISTORY_MAX_KEYS} chaves de preço.` }, 400);
+    }
+    const history: Record<string, Record<string, [string, number][]>> = {};
+    for (const point of await store(c.env).priceHistory([...new Set(keys)])) {
+      ((history[point.key] ??= {})[point.store] ??= []).push([point.observedAt, point.priceCents]);
+    }
+    return c.json({ history }, 200, { "Cache-Control": HISTORY_CACHE_CONTROL });
   });
 
   app.post("/api/location", async (c) => {

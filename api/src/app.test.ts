@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApp } from "./app";
-import type { Snapshot, SnapshotStore } from "./store";
+import type { PricePoint, Snapshot, SnapshotStore } from "./store";
 
 const env = { HYPERDRIVE: { connectionString: "postgres://unused" } };
 
@@ -10,19 +10,84 @@ const snapshot = (etag: string): Snapshot => ({
   payload: `{"products":[{"name":"Café"}],"etag":"${etag}"}`,
 });
 
-function fakeStore(initial: Snapshot | null) {
+function fakeStore(initial: Snapshot | null, points: PricePoint[] = []) {
   let current = initial;
   const store: SnapshotStore = {
     latestMeta: vi.fn(async () => (current ? { etag: current.etag, generatedAt: current.generatedAt } : null)),
     latest: vi.fn(async () => current),
+    priceHistory: vi.fn(async (keys: string[]) => points.filter((p) => keys.includes(p.key))),
   };
   return { store, publish: (next: Snapshot | null) => (current = next) };
 }
 
-const appWith = (initial: Snapshot | null, fetchImpl?: typeof fetch) => {
-  const db = fakeStore(initial);
+const appWith = (initial: Snapshot | null, fetchImpl?: typeof fetch, points: PricePoint[] = []) => {
+  const db = fakeStore(initial, points);
   return { ...db, app: createApp({ store: () => db.store, fetchImpl }) };
 };
+
+const KEY = "a".repeat(32);
+const OTHER = "b".repeat(32);
+const point = (key: string, store: string, observedAt: string, priceCents: number): PricePoint => ({
+  key,
+  store,
+  observedAt,
+  priceCents,
+});
+
+describe("GET /api/price-history", () => {
+  const points = [
+    point(KEY, "Atacadão", "2026-10-01T10:00:00.000Z", 1890),
+    point(KEY, "Atacadão", "2026-10-05T10:00:00.000Z", 2190),
+    point(KEY, "Pinheiro", "2026-10-02T10:00:00.000Z", 2090),
+    point(OTHER, "Atacadão", "2026-10-03T10:00:00.000Z", 500),
+  ];
+
+  it("groups the asked products' points by chain, oldest first", async () => {
+    const { app, store } = appWith(null, undefined, points);
+    const res = await app.request(`/api/price-history?keys=${KEY}`, {}, env);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Cache-Control")).toContain("max-age=300");
+    expect(await res.json()).toEqual({
+      history: {
+        [KEY]: {
+          Atacadão: [
+            ["2026-10-01T10:00:00.000Z", 1890],
+            ["2026-10-05T10:00:00.000Z", 2190],
+          ],
+          Pinheiro: [["2026-10-02T10:00:00.000Z", 2090]],
+        },
+      },
+    });
+    expect(store.priceHistory).toHaveBeenCalledWith([KEY]); // only what was asked for
+  });
+
+  it("answers several products at once and asks the database once per key", async () => {
+    const { app, store } = appWith(null, undefined, points);
+    const res = await app.request(`/api/price-history?keys=${KEY},${OTHER},${KEY}`, {}, env);
+    expect(Object.keys(((await res.json()) as { history: object }).history)).toEqual([KEY, OTHER]);
+    expect(store.priceHistory).toHaveBeenCalledWith([KEY, OTHER]);
+  });
+
+  it("leaves out a product with no points", async () => {
+    const { app } = appWith(null, undefined, points);
+    const res = await app.request(`/api/price-history?keys=${"c".repeat(32)}`, {}, env);
+    expect(await res.json()).toEqual({ history: {} });
+  });
+
+  it.each([
+    ["", "no keys"],
+    ["?keys=", "empty keys"],
+    ["?keys=not-a-key", "a malformed key"],
+    [`?keys=${"A".repeat(32)}`, "an upper-case key"],
+    [`?keys=${KEY};drop`, "a key with junk after it"],
+    [`?keys=${Array.from({ length: 31 }, () => KEY).join(",")}`, "more than 30 keys"],
+  ])("refuses %s (%s) without touching the database", async (query) => {
+    const { app, store } = appWith(null, undefined, points);
+    const res = await app.request(`/api/price-history${query}`, {}, env);
+    expect(res.status).toBe(400);
+    expect(store.priceHistory).not.toHaveBeenCalled();
+  });
+});
 
 describe("GET /api/public", () => {
   it("sends the latest payload untouched, with caching headers", async () => {
@@ -74,6 +139,7 @@ describe("GET /api/public", () => {
         throw new Error("password authentication failed for user secret");
       },
       latest: async () => null,
+      priceHistory: async () => [],
     };
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await createApp({ store: () => store }).request("/api/public", {}, env);
@@ -166,8 +232,37 @@ describe("GET /api/location/reverse", () => {
     const res = await reverse(appWith(null, fetchImpl as unknown as typeof fetch).app, "lat=-3.72468&lon=-38.50215");
     expect(res.status).toBe(200);
     expect(((await res.json()) as { place: { label: string } }).place.label).toBe(
-      "Atlantis Beira-Mar · Avenida Beira Mar, 2120 · Meireles · Fortaleza",
+      "Avenida Beira Mar, 2120 · Meireles · Fortaleza",
     );
+  });
+
+  it("names the street, not the bank or shop that happens to be nearest", async () => {
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        features: [
+          { geometry: { type: "Point", coordinates: [-38.4975, -3.7365] },
+            properties: { osm_type: "N", osm_id: 1, osm_key: "amenity", name: "Banco Santander", street: "Rua Barbosa de Freitas", district: "Aldeota", city: "Fortaleza" } },
+          { geometry: { type: "Point", coordinates: [-38.4976, -3.7366] },
+            properties: { osm_type: "W", osm_id: 2, osm_key: "place", street: "Rua Barbosa de Freitas", housenumber: "3055", district: "Aldeota", city: "Fortaleza" } },
+        ],
+      }),
+    );
+    const res = await reverse(appWith(null, fetchImpl as unknown as typeof fetch).app, "lat=-3.7365&lon=-38.4975");
+    expect(((await res.json()) as { place: { label: string } }).place.label).toBe(
+      "Rua Barbosa de Freitas, 3055 · Aldeota · Fortaleza",
+    );
+    expect(new URL((fetchImpl.mock.calls[0] as unknown as [string])[0]).searchParams.get("limit")).toBe("5");
+  });
+
+  it("falls back to a business's street when no address is among the nearest", async () => {
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        features: [{ geometry: { type: "Point", coordinates: [-38.4975, -3.7365] },
+          properties: { osm_type: "N", osm_id: 1, osm_key: "amenity", name: "Banco Santander", street: "Rua Barbosa de Freitas", district: "Aldeota", city: "Fortaleza" } }],
+      }),
+    );
+    const res = await reverse(appWith(null, fetchImpl as unknown as typeof fetch).app, "lat=-3.7365&lon=-38.4975");
+    expect(((await res.json()) as { place: { label: string } }).place.label).toBe("Rua Barbosa de Freitas · Aldeota · Fortaleza");
   });
 
   it("rounds the position before sending it on (about 11 m)", async () => {

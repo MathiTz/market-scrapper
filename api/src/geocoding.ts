@@ -24,20 +24,20 @@ type Feature = {
   properties?: Record<string, string | number | undefined>;
 };
 
-function label(p: NonNullable<Feature["properties"]>): string {
+function label(p: NonNullable<Feature["properties"]>, named = true): string {
   const street = p.street as string | undefined;
   const parts: string[] = [];
-  if (p.name && p.name !== street) parts.push(String(p.name));
+  if (named && p.name && p.name !== street) parts.push(String(p.name));
   if (street) parts.push(p.housenumber ? `${street}, ${p.housenumber}` : street);
   parts.push(String(p.district || p.locality || ""), String(p.city || ""));
   return [...new Set(parts.filter(Boolean))].join(" · ").slice(0, 240);
 }
 
-function place(feature: Feature): Place | null {
+function place(feature: Feature, named = true): Place | null {
   const p = feature.properties ?? {};
   const coords = feature.geometry?.coordinates;
   if (feature.geometry?.type !== "Point" || !coords || coords.length < 2) return null;
-  const text = label(p);
+  const text = label(p, named);
   if (!text || p.osm_id === undefined) return null;
   return { id: `${p.osm_type ?? ""}${p.osm_id}`, label: text, latitude: coords[1], longitude: coords[0] };
 }
@@ -88,7 +88,7 @@ export async function reverseAddress(
   const params = new URLSearchParams({
     lat: latitude.toFixed(4),
     lon: longitude.toFixed(4),
-    limit: "1",
+    limit: "5",
   });
   let features: Feature[];
   try {
@@ -102,8 +102,19 @@ export async function reverseAddress(
   } catch (error) {
     throw new AddressSearchError(error instanceof Error ? error.message : "address service failed");
   }
-  for (const feature of features) {
-    const found = place(feature);
+  // The nearest thing to a position is often a shop or a bank ("Banco Santander"), which is not where a person
+  // says they are: prefer a street address (a house, or the street itself), then anything with a street, and
+  // never put a business name in the label.
+  const properties = (f: Feature) => f.properties ?? {};
+  const isAddress = (f: Feature) =>
+    !!properties(f).street && (!properties(f).name || ["place", "highway"].includes(String(properties(f).osm_key)));
+  const ranked = [
+    ...features.filter(isAddress),
+    ...features.filter((f) => !isAddress(f) && properties(f).street),
+    ...features.filter((f) => !properties(f).street),
+  ];
+  for (const feature of ranked) {
+    const found = place(feature, false);
     if (found) return found;
   }
   return null;

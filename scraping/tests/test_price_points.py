@@ -9,7 +9,7 @@ os.environ["DATABASE_URL"] = "sqlite://"  # never touch the real market.db
 
 from models import Price, PriceHistory, Product, SessionLocal, Store, init_db  # noqa: E402
 from scraper.base import ProductPrice  # noqa: E402
-from services.price_points import Series, collect, plan, product_key, sync  # noqa: E402
+from services.price_points import Series, collect, history_of, plan, product_key, sync  # noqa: E402
 from services.scraper_service import save_scraped_results  # noqa: E402
 
 T0 = datetime(2026, 10, 1, tzinfo=timezone.utc)
@@ -91,6 +91,24 @@ class TestCollectAndSync(unittest.TestCase):
         finally:
             db.close()
 
+    def test_history_of_answers_only_the_asked_products_grouped_by_chain(self):
+        wanted, other = "Cafe Historico Pedido 500g", "Cafe Historico Outro 500g"
+        for price in (9.0, 8.5):
+            save_scraped_results([ProductPrice(store_name="Loja A", product_name=wanted, price=price, url="u")])
+        save_scraped_results([ProductPrice(store_name="Loja B", product_name=wanted, price=9.9, url="u")])
+        save_scraped_results([ProductPrice(store_name="Loja A", product_name=other, price=3.0, url="u")])
+        db = SessionLocal()
+        try:
+            history = history_of(db, [product_key(wanted)])
+        finally:
+            db.close()
+        self.assertEqual(list(history), [product_key(wanted)])
+        chains = history[product_key(wanted)]
+        self.assertEqual({chain: [cents for _, cents in points] for chain, points in chains.items()},
+                         {"Loja A": [900, 850], "Loja B": [990]})
+        self.assertEqual(chains["Loja A"], sorted(chains["Loja A"]))  # oldest first, ISO times
+        self.assertTrue(chains["Loja A"][0][0].endswith("+00:00"))
+
     def test_sync_inserts_idempotently_and_dry_run_writes_nothing(self):
         conn = MagicMock()
         conn.__enter__.return_value = conn
@@ -108,6 +126,29 @@ class TestCollectAndSync(unittest.TestCase):
             self.assertIn("ON CONFLICT DO NOTHING", sql)
         finally:
             db.close()
+
+
+class TestPriceHistoryRoute(unittest.TestCase):
+    def setUp(self):
+        from local_api.app import app
+
+        init_db()
+        self.client = app.test_client()
+        self.addCleanup(TestCollectAndSync.wipe)
+
+    def test_it_returns_the_history_of_the_asked_keys(self):
+        name = "Leite Historico Rota 1L"
+        save_scraped_results([ProductPrice(store_name="Loja Rota", product_name=name, price=5.0, url="u")])
+        res = self.client.get(f"/api/price-history?keys={product_key(name)},{'0' * 32}")
+        self.assertEqual(res.status_code, 200)
+        self.assertIn("max-age", res.headers["Cache-Control"])
+        history = res.get_json()["history"]
+        self.assertEqual(list(history), [product_key(name)])  # a key with no points is left out
+        self.assertEqual(history[product_key(name)]["Loja Rota"][0][1], 500)
+
+    def test_bad_requests_are_refused(self):
+        for query in ("", "?keys=", "?keys=not-a-key", f"?keys={'a' * 31}", "?keys=" + ",".join(["a" * 32] * 31)):
+            self.assertEqual(self.client.get("/api/price-history" + query).status_code, 400, query)
 
 
 if __name__ == "__main__":
