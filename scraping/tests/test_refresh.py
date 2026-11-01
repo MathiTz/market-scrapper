@@ -83,11 +83,12 @@ class TestRun(unittest.TestCase):
         self.live = MagicMock(return_value=3)
         self.sync_locations = MagicMock(return_value={})
         self.sync_points = MagicMock(return_value=7)
+        self.sync_catalogue = MagicMock(return_value=5)
         self.data = snapshot_data()
         self.snapshot = {"payload": json.dumps(self.data), "etag": "e", "generated_at": "now"}
         for target, replacement in [
             ("scrape_chain", self.scrape), ("publish", self.publish), ("published_offer_count", self.live),
-            ("build_snapshot", MagicMock(return_value=self.snapshot)), ("sync_price_points", self.sync_points), ("sync_store_locations", self.sync_locations),
+            ("build_snapshot", MagicMock(return_value=self.snapshot)), ("sync_price_points", self.sync_points), ("sync_catalogue", self.sync_catalogue), ("sync_store_locations", self.sync_locations),
         ]:
             patcher = patch.object(refresh, target, replacement)
             patcher.start()
@@ -196,6 +197,14 @@ class TestRun(unittest.TestCase):
         self.sync_points.side_effect = RuntimeError("neon is down")
         self.assertEqual(self.run_refresh(), 0)
         self.assertIn("price history NOT saved", self.text())
+
+    def test_the_catalogue_is_saved_after_the_publish_and_its_failure_does_not_fail_the_release(self):
+        self.assertEqual(self.run_refresh(), 0)
+        self.assertIn("5 product(s) saved", self.text())
+        self.sync_catalogue.side_effect = RuntimeError("neon is down")
+        self.lines.clear()
+        self.assertEqual(self.run_refresh(), 0)
+        self.assertIn("catalogue NOT saved", self.text())
 
     def test_nothing_is_saved_to_the_history_when_the_publish_is_blocked_or_skipped(self):
         self.live.return_value = 10_000

@@ -30,6 +30,7 @@ import config
 from models import ScrapeAttempt, SessionLocal, init_db
 from scraper.sites import SCRAPER_MAP
 from services.public_api import _listed_runs
+from services.catalogue import sync as sync_catalogue
 from services.price_points import sync as sync_price_points
 from services.publish import Finding, build_snapshot, check_snapshot, publish, published_offer_count
 from services.scraper_service import run_all_offers
@@ -168,6 +169,13 @@ def run(only: Optional[List[str]] = None, skip_scrape: bool = False, publish_dat
         out(f"    price history: {sync_price_points(dsn, db)} new point(s) saved.")
     except Exception as exc:
         out(f"    price history NOT saved this time ({exc}); the next run will catch up.")
+    finally:
+        db.close()
+    db = SessionLocal()
+    try:
+        out(f"    catalogue: {sync_catalogue(dsn, db)} product(s) saved or updated.")
+    except Exception as exc:
+        out(f"    catalogue NOT saved this time ({exc}); the next run will catch up.")
     finally:
         db.close()
     return 0

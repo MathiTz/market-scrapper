@@ -21,3 +21,22 @@ CREATE TABLE IF NOT EXISTS price_points (
     regular_price_cents INTEGER,
     PRIMARY KEY (product_key, store, observed_at)
 );
+
+-- Every product the local database has ever stored, keyed like price_points (md5 of the lower-cased name), so a
+-- price history can always be read back as a product even after no chain lists it. Written by
+-- services/catalogue.py after a publish; first_seen/last_seen are when any chain was first/last seen selling it.
+CREATE TABLE IF NOT EXISTS products (
+    product_key TEXT        PRIMARY KEY,
+    name        TEXT        NOT NULL,  -- as the chain prints it
+    brand       TEXT,
+    category    TEXT        NOT NULL,
+    subcategory TEXT        NOT NULL DEFAULT '',
+    amount      INTEGER     NOT NULL,  -- grams or millilitres per pack; 1 when the name states no size
+    unit        TEXT        NOT NULL CHECK (unit IN ('g', 'ml', 'un')),
+    pack_count  INTEGER     NOT NULL DEFAULT 1,
+    gtin        TEXT,                  -- EAN/GTIN when a chain's source gave one
+    image_url   TEXT,
+    first_seen  TIMESTAMPTZ NOT NULL,
+    last_seen   TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS products_gtin ON products (gtin) WHERE gtin IS NOT NULL;
