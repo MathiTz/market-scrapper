@@ -63,6 +63,27 @@ class TestSyncStoreLocations(unittest.TestCase):
         self.assertEqual(result, {"mercadinho": 1})
         self.assertEqual([b.name for b in self.branches("Mercadinho São Luiz")], ["Oliveira Paiva"])
 
+    def test_a_branch_in_another_state_is_not_saved_even_with_coordinates(self):
+        curitiba = BranchLocation(
+            external_id="c1", name="Atacadão - Curitiba",
+            address="Rod. Contorno Leste BR-116 8849, Costeira, SÃO JOSÉ DOS PINHAIS, PR", lat=-3.76, lon=-38.52,
+        )
+        with patch.object(AtacadaoScraper, "fetch_locations", return_value=[curitiba, ATACADAO_FATIMA]):
+            result = sync_store_locations(site_key="atacadao")
+        self.assertEqual(result, {"atacadao": 1})
+        self.assertEqual([b.name for b in self.branches("Atacadão")], ["Atacadão - FORTALEZA FATIMA"])
+
+    def test_a_fortaleza_address_geocoded_far_from_fortaleza_is_dropped(self):
+        casa_blanca = BranchLocation(
+            external_id="p1", name="Coco", address="Av. Eng. Santana Jr., 2277, Shopping Casa Blanca Mall, Fortaleza",
+        )
+        with patch.object(MercadinhoScraper, "fetch_locations", return_value=[casa_blanca, OLIVEIRA_PAIVA]), \
+                patch("services.store_locations.geocode_address",
+                      side_effect=[{"latitude": -5.49, "longitude": -39.85}, {"latitude": -3.73, "longitude": -38.49}]):
+            result = sync_store_locations(site_key="mercadinho")
+        self.assertEqual(result, {"mercadinho": 1})
+        self.assertEqual([b.name for b in self.branches("Mercadinho São Luiz")], ["Oliveira Paiva"])
+
     def test_running_twice_updates_the_same_row_rather_than_duplicating_it(self):
         with patch.object(MercadinhoScraper, "fetch_locations", return_value=[OLIVEIRA_PAIVA]), \
                 patch("services.store_locations.geocode_address", return_value={"latitude": -3.73, "longitude": -38.49}):

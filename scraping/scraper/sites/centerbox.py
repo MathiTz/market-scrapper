@@ -10,6 +10,8 @@
 * **Flyers** - ``www.grupocenterbox.com.br/ofertas`` lists "Ofertas da semana" (this week's pages, one image
   each: "... - Frente" / "... - Verso" are two sides of the same flyer) above an archive of "Ofertas
   anteriores". Only this week's are listed, as the same ``Encarte`` Cometa's flyers use, shown as images.
+* **Real branches** - ``www.grupocenterbox.com.br/lojas/`` (paginated, ``/lojas/page/N/``) lists every branch as
+  "Centerbox Supermercados – Loja <name>" followed by its street address and CEP; see :meth:`fetch_locations`.
 """
 
 import json
@@ -21,7 +23,7 @@ from datetime import datetime
 from html import unescape
 from typing import Dict, List, Optional
 
-from scraper.base import DEFAULT_LIMIT, ProductPrice
+from scraper.base import DEFAULT_LIMIT, BranchLocation, ProductPrice
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 from scraper.sites.cometa import Encarte
 
@@ -35,6 +37,10 @@ _FLYER_ITEM = re.compile(
     r'<div class="offers__item">\s*<h3[^>]*>(.*?)</h3>\s*<img[^>]*src="([^"]+)"', re.DOTALL)
 _SIDE = re.compile(r"\s*[–-]\s*(?:Frente|Verso|\d+)\s*$", re.IGNORECASE)
 _FILE_DATE = re.compile(r"(20\d\d-\d\d-\d\d)")
+MAX_BRANCH_PAGES = 10
+# "<h.. >Centerbox Supermercados – Loja Santa Maria</h..>" then, in the next element, "R. José Moreira, 670 - ..., 60873-195".
+_BRANCH = re.compile(
+    r"Centerbox Supermercados\s*[–-]\s*Loja\s+([^<]+?)\s*<.*?>\s*([^<]*?\d{5}-\d{3})\s*<", re.DOTALL)
 
 
 class CenterboxScraper(BaseScraper):
@@ -92,6 +98,35 @@ class CenterboxScraper(BaseScraper):
             brand=(item.get("brand") or "").strip() or None,
             image_url=_IMAGE_BASE + image if image else None,
         )
+
+    # ---- branches ---------------------------------------------------------------------------------------
+
+    def fetch_locations(self) -> List[BranchLocation]:
+        """The chain's real branches, from the paginated "Nossas lojas" listing (the city filter is client-side)."""
+        branches: Dict[str, BranchLocation] = {}
+        for page in range(1, MAX_BRANCH_PAGES + 1):
+            url = f"{self.base_url}/lojas/" + (f"page/{page}/" if page > 1 else "")
+            try:
+                found = self.parse_locations(self.fetch_raw(url))
+            except Exception as exc:  # past the last page the site answers 404
+                if page == 1:
+                    raise
+                logger.info("[%s] Branch list ended at page %d (%s)", self.site_name, page - 1, exc)
+                break
+            if not found or all(b.external_id in branches for b in found):
+                break
+            branches.update({b.external_id: b for b in found})
+        logger.info("[%s] %d real branch(es) found", self.site_name, len(branches))
+        return list(branches.values())
+
+    @staticmethod
+    def parse_locations(page_html: str) -> List[BranchLocation]:
+        found = []
+        for name, address in _BRANCH.findall(unescape(page_html)):
+            name, address = name.strip(), re.sub(r"\s+", " ", address).strip()
+            if name and address:
+                found.append(BranchLocation(external_id=name, name=f"Centerbox {name}", address=address))
+        return found
 
     # ---- flyers -----------------------------------------------------------------------------------------
 

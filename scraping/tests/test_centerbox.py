@@ -81,5 +81,26 @@ class TestCenterboxFlyers(unittest.TestCase):
         self.assertEqual([f.posted_at[:10] for f in self.flyers], ["2026-09-22", "2026-09-24"])
 
 
+LOJAS_PAGE = """
+<h3>Centerbox Supermercados – Loja Santa Maria</h3><p>R. José Moreira, 670 - Parque Santa Maria, Fortaleza - CE, 60873-195</p>
+<a>Saiba como chegar</a>
+<h3>Centerbox Supermercados &#8211; Loja Caucaia</h3><p>Av. Edson da Mota Correa, 1125 - Centro, Caucaia - CE, 61600-040</p>
+"""
+
+
+class TestCenterboxBranches(unittest.TestCase):
+    def test_each_branch_is_its_name_and_street_address(self):
+        branches = CenterboxScraper.parse_locations(LOJAS_PAGE)
+        self.assertEqual([b.external_id for b in branches], ["Santa Maria", "Caucaia"])
+        self.assertEqual(branches[0].name, "Centerbox Santa Maria")
+        self.assertTrue(branches[0].address.startswith("R. José Moreira, 670") and branches[0].address.endswith("60873-195"))
+
+    def test_pages_are_read_until_one_adds_nothing(self):
+        pages = {"/lojas/": LOJAS_PAGE, "/lojas/page/2/": LOJAS_PAGE.replace("Caucaia", "Curió").replace("Santa Maria", "Genibaú")}
+        with patch.object(CenterboxScraper, "fetch_raw", side_effect=lambda url, **_: pages.get(url[url.index("/lojas"):], "")):
+            branches = CenterboxScraper().fetch_locations()
+        self.assertEqual([b.external_id for b in branches], ["Santa Maria", "Caucaia", "Genibaú", "Curió"])
+
+
 if __name__ == "__main__":
     unittest.main()

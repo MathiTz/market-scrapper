@@ -13,14 +13,20 @@ removed. A branch that really did close will still go once two or three ordinary
 """
 
 import logging
+import re
 from typing import Dict, List, Optional
 
 from models import SessionLocal, Store, StoreLocation, init_db
 from scraper.base import BranchLocation
 from scraper.sites import ALL_SCRAPERS, SCRAPER_MAP
-from services.address_search import AddressSearchError, geocode_address
+from services.address_search import AddressSearchError, _km_from_center, geocode_address
 
 logger = logging.getLogger(__name__)
+
+# A geocoded point this far from Fortaleza's centre for an address that says "Fortaleza" is a wrong match (Photon
+# once put "Av. Eng. Santana Jr., 2277, Shopping Casa Blanca Mall, Fortaleza" 200 km inland), not a distant branch.
+MAX_KM_FOR_FORTALEZA_ADDRESS = 40
+_UF_AT_END = re.compile(r"[,\s-]([A-Z]{2})\s*$")
 
 MIN_SHARE_OF_EXISTING = 0.5  # a run finding fewer than this share of the known branches is treated as partial
 
@@ -72,6 +78,12 @@ def _store_branches(store_name: str, branches: List[BranchLocation]) -> int:
         }
         saved, found_ids = 0, set()
         for branch in branches:
+            uf = _UF_AT_END.search(branch.address.strip())
+            if uf and uf.group(1) != "CE":
+                # The chains' sites sometimes list a branch in another state (Atacadão's "Curitiba", in Paraná,
+                # with Fortaleza's coordinates): not a place a Fortaleza shopper can reach, whatever the source says.
+                logger.info("[%s] Skipping branch %r outside Ceará (%s)", store_name, branch.name, branch.address)
+                continue
             lat, lon = branch.lat, branch.lon
             if lat is None or lon is None:
                 place = _geocode(branch.address, hint=branch.name)
@@ -79,6 +91,9 @@ def _store_branches(store_name: str, branches: List[BranchLocation]) -> int:
                     logger.warning("[%s] Could not geocode branch %r (%s)", store_name, branch.name, branch.address)
                     continue
                 lat, lon = place["latitude"], place["longitude"]
+                if "fortaleza" in branch.address.casefold() and _km_from_center(lat, lon) > MAX_KM_FOR_FORTALEZA_ADDRESS:
+                    logger.warning("[%s] Geocoding put %r far from Fortaleza; skipping it", store_name, branch.name)
+                    continue
             row = (
                 db.query(StoreLocation)
                 .filter(StoreLocation.store_id == store.id, StoreLocation.external_id == branch.external_id)

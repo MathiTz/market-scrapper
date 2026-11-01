@@ -1,9 +1,20 @@
 """Database setup and session management."""
 
+import sys
+
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from config import DATABASE_URL
+
+# `python -m unittest discover -s tests` (without `-t .`) never imports the tests package, so tests/__init__.py
+# does not point them at an in-memory database and their cleanup deletes the real market.db's rows. Refuse that
+# loudly instead of wiping the data (release.sh runs `discover -s tests -t .`, which is safe).
+if sys.argv and sys.argv[0] in ("python -m unittest", "python3 -m unittest") and DATABASE_URL not in ("sqlite://", "sqlite:///"):
+    raise RuntimeError(
+        f"Refusing to run tests against {DATABASE_URL}. Run them with `python -m unittest discover -s tests -t .` "
+        "(or name a module, e.g. `python -m unittest tests.test_centerbox`) so they use an in-memory database."
+    )
 
 engine = create_engine(DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
