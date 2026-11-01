@@ -128,7 +128,7 @@ describe("compareReceipt: matching a receipt line to a list item", () => {
     const plain = product("abacate", "Abacate Quilo", { amount: 1000, unit: "g" });
     const hass = product("hass", "Abacate Hass Quilo", { amount: 1000, unit: "g" });
     const weighed = line("ABACATE", { unit: "KG", qty: 0.85, unit_price: 5.99, total: 5.09 });
-    expect(compare([weighed], [plain, hass], [offer("abacate", 599), offer("hass", 899)]).comparisons).toEqual([]);
+    expect(compare([weighed], [plain, hass], [offer("abacate", 599), offer("hass", 605)]).comparisons).toEqual([]);
   });
 
   it("reports what the list has that the receipt does not, and what the receipt has that the list does not", () => {
@@ -143,6 +143,78 @@ describe("compareReceipt: matching a receipt line to a list item", () => {
     expect(report.comparisons).toEqual([]);
     expect(report.notOnReceipt).toEqual([]);
     expect(report.unmatched).toHaveLength(1);
+  });
+});
+
+const GTIN = "7894900011517";
+const coded = (id: string, name: string, extra: Partial<Product> = {}) => product(id, name, { gtin: GTIN, gtin_evidence: "loja", ...extra });
+
+describe("compareReceipt: the barcode a line prints", () => {
+  it("recognises the product by its barcode whatever the name says", () => {
+    const coke = coded("coke", "Refrigerante Coca-Cola Original 2l", { brand: "Coca-Cola" });
+    const report = compare([line("QQ XYZ 123", { code: GTIN })], [coke], [offer("coke", 999)]);
+    expect(report.comparisons).toMatchObject([{ productId: "coke", via: "code", onList: true }]);
+  });
+
+  it("settles what the name leaves tied between two list items", () => {
+    const italac = coded("italac", "Leite Integral Italac 1l");
+    const itambe = product("itambe", "Leite Integral Itambé 1l", { gtin: "7891000100103", gtin_evidence: "loja" });
+    const report = compare([line("LEITE INTEGRAL 1L", { code: GTIN })], [italac, itambe], [offer("italac", 549), offer("itambe", 559)]);
+    expect(report.comparisons.map((c) => c.productId)).toEqual(["italac"]);
+  });
+
+  it("finds it though the receipt pads the barcode with zeros", () => {
+    const coke = coded("coke", "Refrigerante Coca-Cola Original 2l");
+    const report = compare([line("X", { code: `0${GTIN}` })], [coke], [offer("coke", 999)]);
+    expect(report.comparisons).toHaveLength(1);
+  });
+
+  it("looks outside the list only when asked, and says the product was not on it", () => {
+    const coke = coded("coke", "Refrigerante Coca-Cola Original 2l");
+    const read = receipt(line("X", { code: GTIN }));
+    const offers = [offer("coke", 999)];
+    expect(compareReceipt(read, [], catalog(coke), offers, now).unmatched).toHaveLength(1);
+    expect(compareReceipt(read, [], catalog(coke), offers, now, "catalogue").comparisons).toMatchObject([{ productId: "coke", via: "code", onList: false }]);
+  });
+
+  it("falls back to the name when the code is not one we know", () => {
+    const report = compare([line("LEITE INT ITALAC 1L", { code: "7890000000008" })], [leite], [offer("leite", 549)]);
+    expect(report.comparisons).toMatchObject([{ productId: "leite", via: "name" }]);
+  });
+});
+
+describe("compareReceipt: names cut short or abbreviated", () => {
+  const queijo = product("queijo", "Queijo Mussarela Fatiado Tirolez 150g", { amount: 150, unit: "g", brand: "Tirolez" });
+  it("reads QJ as queijo and a clipped word as the start of the real one", () => {
+    const report = compare([line("QJ MUSS FAT TIROLEZ 150G")], [queijo], [offer("queijo", 899)]);
+    expect(report.comparisons).toHaveLength(1);
+  });
+
+  it("forgives one misread letter in a long word", () => {
+    const report = compare([line("QJ MUSSARELA FATIADO TIROLEZ 150G".replace("TIROLEZ", "TIROLES"))], [queijo], [offer("queijo", 899)]);
+    expect(report.comparisons).toHaveLength(1);
+  });
+
+  it("does not take a different product for it", () => {
+    const report = compare([line("QJ PARM RALADO SADIA 150G")], [queijo], [offer("queijo", 899)]);
+    expect(report.comparisons).toEqual([]);
+  });
+
+  it("uses the price paid to tell sizes apart when the name cuts off before the size", () => {
+    const small = product("small", "Refrigerante Coca Cola Original 600ml", { brand: "Coca-Cola", amount: 600 });
+    const big = product("big", "Refrigerante Coca Cola Original 2,5l", { brand: "Coca-Cola", amount: 2500 });
+    const offers = [offer("small", 699), offer("big", 1299)];
+    const at = (total: number) =>
+      compare([line("REF COCA COLA ORIGIN", { unit_price: total, total })], [small, big], offers).comparisons.map((c) => c.productId);
+    expect(at(12.99)).toEqual(["big"]);
+    expect(at(6.99)).toEqual(["small"]);
+    expect(at(9.5)).toEqual([]); // fits neither clearly
+  });
+
+  it("will not pick between packs of different brands by price alone", () => {
+    const a = product("a", "Leite Integral Italac 1l", { brand: "Italac" });
+    const b = product("b", "Leite Integral Itambé 1l", { brand: "Itambé" });
+    expect(compare([line("LEITE INTEGRAL 1L")], [a, b], [offer("a", 549), offer("b", 549)]).comparisons).toEqual([]);
   });
 });
 

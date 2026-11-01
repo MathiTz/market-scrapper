@@ -19,6 +19,7 @@ no markdown, with this exact shape:
   "items": [
     {
       "line": string,          // item number printed at the left, e.g. "007"; "" if unreadable
+      "code": string,          // the product code / barcode printed on the line ("Código"), digits only; "" if not shown
       "name": string,          // product name as printed (uppercase abbreviations as-is)
       "qty": number,           // quantity (un) or weight (kg); 1 if not shown
       "unit": "un"|"unid"|"kg"|null,
@@ -31,9 +32,25 @@ no markdown, with this exact shape:
 
 Rules:
 - TRANSCRIBE ONLY: copy the digits literally; do NOT calculate or correct.
+- The code is the long number (usually 13 digits) printed on the line, next to the name; copy every digit.
+  A short internal number (under 8 digits) is not a barcode: leave code "".
 - Ignore partial/cut lines at the very top or bottom of the crop.
 - Ignore any line that is clearly a subtotal/tax/payment line.
 Return JSON only."""
+
+
+def clean_code(value: object) -> str | None:
+    """A barcode (EAN-8, UPC-A, EAN-13 or GTIN-14) from what the model transcribed, or None.
+
+    Digits only, and the GS1 check digit must hold: a single misread digit fails it, and no code is better
+    than a code that names another product.
+    """
+    digits = re.sub(r"\D", "", str(value or ""))
+    if len(digits) not in (8, 12, 13, 14) or set(digits) == {"0"}:
+        return None
+    body, check = digits[:-1], int(digits[-1])
+    total = sum(int(d) * (3 if i % 2 == 0 else 1) for i, d in enumerate(reversed(body)))
+    return digits if (10 - total % 10) % 10 == check else None
 
 
 def parse_reply_json(text: str) -> list[Item]:
@@ -56,6 +73,7 @@ def parse_reply_json(text: str) -> list[Item]:
                 line_no = int(line_str)
 
         name = str(it.get("name") or "")
+        code = clean_code(it.get("code"))
         qty = float(it["qty"]) if it.get("qty") is not None else None
         unit = str(it["unit"]) if it.get("unit") is not None else None
         unit_price = float(it["unit_price"]) if it.get("unit_price") is not None else None
@@ -75,6 +93,7 @@ def parse_reply_json(text: str) -> list[Item]:
             Item(
                 line_no=line_no,
                 name=name,
+                code=code,
                 qty=qty,
                 unit=unit,
                 unit_price=unit_price,

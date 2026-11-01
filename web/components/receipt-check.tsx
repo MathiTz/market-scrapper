@@ -10,13 +10,15 @@ import {
   type ReceiptReport,
   type ReceiptResult,
 } from "@/lib/receipt";
+import { compareBasket, type BasketReport } from "@/lib/receipt-basket";
+import { ReceiptBasket } from "@/components/receipt-basket";
 import { readReceipt, receiptFileProblem, ReceiptError, RECEIPT_TYPES } from "@/lib/receipt-api";
 import { Button } from "@/components/ui/button";
 
 type State =
   | { status: "idle" }
   | { status: "reading" }
-  | { status: "done"; report: ReceiptReport; degraded: boolean; hasBadMath: boolean; lines: number }
+  | { status: "done"; report: ReceiptReport; basket: BasketReport; degraded: boolean; hasBadMath: boolean; lines: number }
   | { status: "error"; message: string };
 
 const verdicts: Record<PriceVerdict, { label: string; tone: "green" | "amber" | "" }> = {
@@ -38,6 +40,7 @@ function Row({ c }: { c: ReceiptComparison }) {
         <strong>{c.productName}</strong>
         <span className="receipt-line-text">
           No cupom: {item.name}
+          {!c.onList && " · fora da sua lista"}
           {item.qty != null && item.unit_price != null && ` · ${quantity(item.qty)} × ${reais(item.unit_price)}`}
         </span>
       </div>
@@ -61,8 +64,8 @@ function Row({ c }: { c: ReceiptComparison }) {
 
 function summary(report: ReceiptReport, lines: number): string {
   const matched = report.comparisons.length;
-  if (!matched) return "Nenhuma linha do cupom corresponde a itens da sua lista.";
-  const found = `${matched} de ${lines} ${lines === 1 ? "linha" : "linhas"} do cupom ${matched === 1 ? "corresponde" : "correspondem"} a itens da sua lista.`;
+  if (!matched) return "Não reconhecemos nenhuma linha do cupom entre os produtos que acompanhamos.";
+  const found = `Reconhecemos ${matched} de ${lines} ${lines === 1 ? "linha" : "linhas"} do cupom.`;
   if (report.overpaidCents > 0)
     return `${found} Nesses itens você pagou ${money(report.overpaidCents)} a mais que o menor preço que temos.`;
   const compared = report.comparisons.filter((c) => c.verdict !== "no-price").length;
@@ -120,7 +123,8 @@ export function ReceiptCheck({
       setState({ status: "error", message: failure?.message ?? "Não foi possível ler o cupom agora." });
       return;
     }
-    const report = compareReceipt(result, lines, productById, offers);
+    const report = compareReceipt(result, lines, productById, offers, new Date(), "catalogue");
+    const basket = compareBasket(report.comparisons, productById, offers);
     capture("receipt_check_completed", {
       receipt_lines: result.items.length,
       matched_lines: report.comparisons.length,
@@ -129,6 +133,7 @@ export function ReceiptCheck({
     setState({
       status: "done",
       report,
+      basket,
       degraded: result.degraded || result.flags.missing_lines.length > 0,
       hasBadMath: result.flags.bad_math.length > 0,
       lines: result.items.length,
@@ -143,8 +148,8 @@ export function ReceiptCheck({
         <div>
           <h2 id={titleId}>Conferir com o cupom</h2>
           <p>
-            Já fez as compras? Envie uma foto do cupom fiscal e comparamos o que você pagou com os preços que temos para
-            os itens da sua lista.
+            Já fez as compras? Envie uma foto do cupom fiscal e comparamos o que você pagou com os preços que temos: pelo código de barras
+            do cupom, quando ele aparece, ou pelo nome do produto.
           </p>
         </div>
       </div>
@@ -223,12 +228,12 @@ export function ReceiptCheck({
               ))}
             </ul>
           )}
+          <ReceiptBasket report={state.basket} />
           {state.report.unmatched.length > 0 && (
             <details className="receipt-more">
               <summary>
                 {state.report.unmatched.length}{" "}
-                {state.report.unmatched.length === 1 ? "linha do cupom não está" : "linhas do cupom não estão"} na sua
-                lista
+                {state.report.unmatched.length === 1 ? "linha do cupom não foi reconhecida" : "linhas do cupom não foram reconhecidas"}
               </summary>
               <ul>
                 {state.report.unmatched.map((item, index) => (

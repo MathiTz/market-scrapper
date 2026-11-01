@@ -48,6 +48,9 @@ class Item:
 
     line_no: int | None = None
     name: str = ""
+    # The product's barcode (EAN/GTIN) when the receipt prints it - NFC-e lines do ("Código"): digits only, and
+    # only when it passes the GS1 check digit, so a misread digit gives None rather than a wrong product.
+    code: str | None = None
     qty: float | None = None
     unit: str | None = None
     unit_price: float | None = None

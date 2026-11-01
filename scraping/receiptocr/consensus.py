@@ -112,12 +112,20 @@ def merge_line_group(
         )
     )
 
+    # A barcode passed its check digit in every reading that has one, so the most-voted is the line's.
+    code_votes: dict[str, float] = {}
+    for it, w in zip(items, weights):
+        if it.code:
+            code_votes[it.code] = code_votes.get(it.code, 0.0) + w
+    code = max(code_votes, key=code_votes.get) if code_votes else None
+
     line_no = next((it.line_no for it in items if it.line_no is not None), None)
     unit = next((it.unit for it in items if it.unit), None)
 
     merged = Item(
         line_no=line_no,
         name=name,
+        code=code,
         qty=qty,
         unit=unit,
         unit_price=up,

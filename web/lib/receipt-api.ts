@@ -43,6 +43,7 @@ const reais = z.number().nullable();
 const lineSchema = z.object({
   line_no: z.number().int().nullable(),
   name: z.string(),
+  code: z.string().nullable().default(null), // an older server does not send it
   qty: reais,
   unit: z.string().nullable(),
   unit_price: reais,

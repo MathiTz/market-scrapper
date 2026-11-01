@@ -4406,3 +4406,17 @@ html[data-vt="product"] .product-hero img {
 
 /* Back to the top (components/back-to-top.tsx): floats over the list, above the mobile dock. */
 .back-to-top { position: fixed; right: var(--md-space-4); z-index: var(--md-z-dock); background: var(--md-surface-level-1); box-shadow: var(--md-elevation-2); }
+
+/* Where the receipt's items would have been cheapest (components/receipt-basket.tsx). */
+.receipt-basket { margin-top: var(--md-space-6); }
+.receipt-chains { list-style: none; margin: 0 0 var(--md-space-3); padding: 0; border: 1px solid var(--md-border-subtle); border-radius: var(--md-radius-sm); }
+.receipt-chain { border-bottom: 1px solid var(--md-border-subtle); }
+.receipt-chain:last-child { border-bottom: 0; }
+.receipt-chain summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--md-space-1) var(--md-space-4); padding: var(--md-space-4); cursor: pointer; }
+.receipt-chain-name { flex: 1 1 10rem; font-weight: 700; }
+.receipt-chain-note { flex-basis: 100%; font-size: var(--md-text-sm); color: var(--md-text-secondary); }
+.receipt-chain-lines { list-style: none; margin: 0; padding: 0 var(--md-space-4) var(--md-space-3); display: grid; gap: var(--md-space-2); }
+.receipt-chain-lines li { display: flex; justify-content: space-between; gap: var(--md-space-4); font-size: var(--md-text-sm); overflow-wrap: anywhere; }
+.receipt-chain-lines li strong { flex-shrink: 0; }
+.receipt-chain-missing { margin: 0; padding: 0 var(--md-space-4) var(--md-space-4); font-size: var(--md-text-sm); }
+.receipt-chain-partial .price { color: var(--md-text-secondary); font-weight: 400; }

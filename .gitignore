@@ -23,6 +23,9 @@ backups/
 # downloaded files are not (they are already in the mirror, and 11 MB is a permanent cost)
 /scraping/data/missing-images/images/
 
+# Real receipt photos used to try the OCR by hand: they show a CPF, so they never go in the repo
+/scraping/tests/fixtures/receipts-private/
+
 # Generated output
 diagnostics/
 
