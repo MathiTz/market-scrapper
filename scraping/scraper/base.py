@@ -29,7 +29,7 @@ def proxy_for(site_key: str) -> Optional[str]:
     """The proxy one chain's requests go through, or None: ``PROXY_ATACADAO=socks5h://127.0.0.1:1080``.
 
     Some chains refuse a datacenter or foreign address; a server elsewhere can reach them through a tunnel to a
-    Brazilian connection Set per chain, so the others keep their direct connection."""
+    Brazilian connection. Set per chain, so the others keep their direct connection."""
     return os.getenv(f"PROXY_{site_key.upper()}") or None
 
 
