@@ -23,6 +23,8 @@ from datetime import datetime
 from html import unescape
 from typing import Dict, List, Optional
 
+import requests
+
 from scraper.base import DEFAULT_LIMIT, BranchLocation, ProductPrice
 from scraper.scrapling_scraper import ScraplingBaseScraper as BaseScraper
 from scraper.sites.cometa import Encarte
@@ -30,6 +32,8 @@ from scraper.sites.cometa import Encarte
 logger = logging.getLogger(__name__)
 
 PAGE_SIZE = 20
+RATE_LIMIT_TRIES = 4
+RATE_LIMIT_WAIT_SECONDS = 30  # times the attempt number
 PAUSE_SECONDS = 1.0  # between pages: the API rate-limits (429) a client that pages through its whole list at speed
 _STORE_ID = re.compile(r'\\?"store\\?":\{\\?"id\\?":\\?"([0-9a-f]{24})')
 _IMAGE_BASE = "https://assets.ibecom.com.br/ib.item.image.medium/m-"
@@ -59,7 +63,7 @@ class CenterboxScraper(BaseScraper):
         products: List[ProductPrice] = []
         page = 1
         while len(products) < limit:
-            payload = json.loads(self.fetch_raw(self.api_url, params={"page": page, "limit": PAGE_SIZE, "sort": "popular"}))
+            payload = json.loads(self._offers_page(page))
             items = payload.get("data") or []
             if not items:
                 break
@@ -68,6 +72,19 @@ class CenterboxScraper(BaseScraper):
             time.sleep(PAUSE_SECONDS)
         logger.info("[%s] %d offer(s) read from %d page(s)", self.site_name, len(products), page - 1)
         return products[:limit]
+
+    def _offers_page(self, page: int) -> str:
+        """One page of offers; a 429 (the API's rate limit, Cloudflare's 1015) is waited out, not failed on."""
+        for attempt in range(1, RATE_LIMIT_TRIES + 1):
+            try:
+                return self.fetch_raw(self.api_url, params={"page": page, "limit": PAGE_SIZE, "sort": "popular"})
+            except requests.HTTPError as err:
+                limited = err.response is not None and err.response.status_code == 429
+                if not limited or attempt == RATE_LIMIT_TRIES:
+                    raise
+                wait = RATE_LIMIT_WAIT_SECONDS * attempt
+                logger.warning("[%s] rate limited on page %d; waiting %ds", self.site_name, page, wait)
+                time.sleep(wait)
 
     def _store_id(self) -> str:
         found = _STORE_ID.search(self.fetch_raw(self.store_url + "/"))

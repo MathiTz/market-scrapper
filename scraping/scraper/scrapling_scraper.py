@@ -24,6 +24,9 @@ from scraper.base import (
 logger = logging.getLogger(__name__)
 
 
+PROXY_RENDER_TIMEOUT_MS = 120_000
+
+
 def _scroll_page(page):
     """Playwright page action: scroll down in steps to trigger lazy loading.
 
@@ -114,6 +117,8 @@ class ScraplingBaseScraper(BaseScraper):
             fetch_kwargs["page_action"] = page_action
         elif scroll:
             fetch_kwargs["page_action"] = _scroll_page
+        if self.proxy:  # a tunnel is slow: the page's own load event can take minutes to come
+            fetch_kwargs.setdefault("timeout", PROXY_RENDER_TIMEOUT_MS)
         last_exc = None
         for attempt in range(1, self.max_retries + 1):
             try:

@@ -3,7 +3,8 @@ beautifulsoup4==4.12.3
 lxml>=6.0
 selenium==4.21.0
 webdriver-manager==4.0.1
-scrapling[fetchers]
+scrapling[fetchers]==0.2.99
+curl_cffi>=0.7  # a Chrome-like TLS handshake, for filters that turn away Python's (Centerbox, from a server)
 SQLAlchemy>=2.0.55
 Flask==3.0.3
 APScheduler==3.10.4

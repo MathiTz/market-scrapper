@@ -4,7 +4,9 @@ import json
 import os
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+import requests
 
 os.environ["DATABASE_URL"] = "sqlite://"
 
@@ -57,6 +59,36 @@ class TestCenterboxPrices(unittest.TestCase):
             products = scraper.scrape()
         self.assertEqual(len(products), 4)  # five items, one out of stock
         self.assertEqual(scraper.session.headers["x-store-id"], "69d4fcef05d07daf70e2a599")
+
+    def test_a_rate_limited_page_is_waited_out_and_read_again(self):
+        limited = requests.HTTPError("429", response=MagicMock(status_code=429))
+        answers = [limited, limited, json.dumps({"data": self.items[:1]}), json.dumps({"data": []})]
+
+        def fetch_raw(url, params=None):
+            if params is None:
+                return HOME
+            answer = answers.pop(0)
+            if isinstance(answer, Exception):
+                raise answer
+            return answer
+
+        with patch.object(CenterboxScraper, "fetch_raw", side_effect=fetch_raw), \
+                patch("scraper.sites.centerbox.time.sleep") as sleep:
+            products = CenterboxScraper().scrape()
+        self.assertEqual(len(products), 1)
+        self.assertEqual([c.args[0] for c in sleep.call_args_list][:2], [30, 60])  # longer each time
+
+    def test_a_rate_limit_that_never_lifts_is_a_failure(self):
+        limited = requests.HTTPError("429", response=MagicMock(status_code=429))
+
+        def fetch_raw(url, params=None):
+            if params is None:
+                return HOME
+            raise limited
+
+        with patch.object(CenterboxScraper, "fetch_raw", side_effect=fetch_raw), patch("scraper.sites.centerbox.time.sleep"):
+            with self.assertRaises(requests.HTTPError):
+                CenterboxScraper().scrape()
 
     def test_no_store_id_in_the_home_page_is_a_failure_not_an_empty_scrape(self):
         with patch.object(CenterboxScraper, "fetch_raw", return_value="<html></html>"):

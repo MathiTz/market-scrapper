@@ -197,11 +197,32 @@ class BaseScraper(ABC):
         return BeautifulSoup(resp.text, "lxml")
 
     def fetch_raw(self, url: str, params: Optional[dict] = None) -> str:
-        """Fetch a URL and return raw text (for JSON APIs)."""
+        """Fetch a URL and return raw text (for JSON APIs).
+
+        A 403 is tried once more with a Chrome-like TLS handshake (:meth:`_fetch_like_chrome`)."""
         logger.info("Fetching raw %s with params=%s", url, params)
-        resp = self._fetch_with_retry(
-            "get", url, params=params, timeout=self.timeout
-        )
+        try:
+            return self._fetch_with_retry("get", url, params=params, timeout=self.timeout).text
+        except requests.HTTPError as err:
+            if err.response is None or err.response.status_code != 403:
+                raise
+            return self._fetch_like_chrome(url, params, err)
+
+    def _fetch_like_chrome(self, url: str, params: Optional[dict], refused: requests.HTTPError) -> str:
+        """Some filters turn away Python's TLS handshake (Centerbox's does, from a Linux server) yet let a
+        browser's through; ``curl_cffi`` imitates Chrome's. Without it installed the original refusal stands."""
+        try:
+            from curl_cffi import requests as chrome
+        except ImportError:
+            raise refused
+        logger.warning("%s refused the plain client (403); retrying with a Chrome-like handshake", url)
+        proxies = {"http": self.proxy, "https": self.proxy} if self.proxy else None
+        resp = chrome.get(url, params=params, headers=dict(self.session.headers), proxies=proxies,
+                          impersonate="chrome", timeout=self.timeout)
+        if resp.status_code >= 400:
+            failed = requests.Response()
+            failed.status_code, failed.url = resp.status_code, url
+            raise requests.HTTPError(f"{resp.status_code} Error for url: {url}", response=failed)
         return resp.text
 
     def render(self, url: str, wait_seconds: int = 5, scroll: bool = False) -> BeautifulSoup:
