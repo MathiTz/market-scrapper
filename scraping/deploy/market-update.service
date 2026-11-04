@@ -1,0 +1,10 @@
+[Unit]
+Description=Pull the latest code from GitHub (and install changed requirements)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# git finds the deploy key through ~/.ssh/config, which needs HOME.
+Environment=HOME=/root
+ExecStart=/opt/market-scrapper/scraping/deploy/update.sh
