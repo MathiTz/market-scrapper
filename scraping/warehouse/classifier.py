@@ -50,8 +50,9 @@ def _post(url: str, body: dict, *, headers: Optional[dict] = None, timeout: floa
 SYSTEM_PROMPT = (
     "You classify Brazilian supermarket products into a fixed category tree. "
     "Choose the single most specific category that fits the product. "
-    "Products that are not food or drink (cleaning, hygiene, household, electronics) must use "
-    f"the category '{config.OUTSIDE_SLUG}'. "
+    "The tree has four branches - food and drink, hygiene and beauty, cleaning, and electronics - "
+    "so pick the branch that fits (a detergent is a product like any other, not an exception). "
+    f"Use '{config.OUTSIDE_SLUG}' only when the product fits none of the branches. "
     "Reply with JSON only, exactly in this shape: "
     '{"items":[{"i":1,"slug":"<slug from the list>","confidence":0.0,"reason":"<short>"}]}. '
     "The 'slug' value must be copied verbatim from the list; never invent one."

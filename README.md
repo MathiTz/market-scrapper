@@ -168,6 +168,7 @@ Centralized in `scraping/config.py`, overridable via environment variables (see 
 | `PUBLISH_DATABASE_URL` | Cloud Postgres (Neon) the scheduler publishes to | *(unset = don't publish)* |
 | `DEFAULT_QUERY` | Default search term for scraping (empty = all products) | `""` |
 | `DEFAULT_LIMIT` | Max results per site | `10000` |
+| `COSMOS_API_TOKEN` | Cosmos Bluesoft token, enables barcode→NCM lookups (optional; paid) | *(unset)* |
 | `SCRAPE_INTERVAL_HOURS` | Used to derive how long an offer stays "current" (3x this) | `12` |
 | `SCRAPE_MAX_RETRIES` | Max retry attempts for network errors | `3` |
 | `SCRAPE_RETRY_BACKOFF` | Base backoff seconds between retries | `2.0` |
@@ -217,6 +218,38 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
 - **Python tests:** `cd scraping && venv/bin/python -m unittest discover -s tests`.
 - **Without the cloud at all:** `scraping/run.py` (Flask) serves the same `/api/public` shape for local
   development.
+
+## NCM (classificação fiscal)
+
+Every product in the warehouse gets an NCM — the Brazilian fiscal code — in `silver_products.ncm_code`.
+It is resolved in three layers, cheapest first (`scraping/warehouse/ncm.py`):
+
+1. **Barcode** (`map_gtin_ncm`) — the answer for that exact GTIN, from a paid provider or an imported
+   CSV. A GTIN does **not** encode an NCM: this is a paid lookup, and there is no free equivalent
+   (Cosmos Bluesoft needs a token; Open Food Facts returns no NCM). The table makes it a one-time cost
+   per barcode, and the import means a provider can be swapped for a spreadsheet.
+2. **Category leaf** (`map_category_ncm`) — one curated code per Cosmos category, from
+   `scraping/data/ncm/category-ncm.csv`. This is what gives the ~26% of products whose chain gave no
+   barcode a code anyway.
+3. **Product name** — for the products the Cosmos tree has no node for at all (fruit, diapers, rubbish
+   bags), the model codes the name directly, with the same propose-and-repair as the category map.
+   `python -m warehouse_etl --ncm-unmapped` runs that pass; its source is `product`.
+
+Every code is validated against `scraping/data/ncm/ncm.csv`, a snapshot of the official table (10,437
+items, 957 headings, 96 chapters): a code that does not exist is never stored.
+
+```bash
+cd scraping
+python warehouse_ncm_fetch.py                               # refresh the official table (BrasilAPI)
+python warehouse_ncm_bootstrap.py                           # draft the leaf map; then review the CSV
+python -m warehouse_etl --ncm-only                          # apply the maps to classified products
+python -m warehouse_etl --ncm-unmapped                      # code the products no map can reach
+python -m warehouse_etl --ncm-gtin-csv data/ncm/gtin.csv    # import gtin,ncm answers
+python -m warehouse_etl --status                            # coverage, by source
+```
+
+Rows in `category-ncm.csv` with `source=overlap` or `confidence` under 0.6 are the ones to read first:
+a wrong code on a leaf is a wrong code on every product under it.
 
 ## What a store's list is
 

@@ -19,6 +19,10 @@ _MIGRATIONS = {
         "image_url": "TEXT",
         "last_snapshot_key": "INTEGER",
         "last_seen_at": "TEXT",
+        "ncm_code": "TEXT",
+        "ncm_source": "TEXT",
+        "ncm_confidence": "REAL",
+        "ncm_updated_at": "TEXT",
     },
 }
 
@@ -79,18 +83,24 @@ def _rekey_silver_products(connection) -> None:
             updated_at             TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
             image_url              TEXT,
             last_snapshot_key      INTEGER,
-            last_seen_at           TEXT
+            last_seen_at           TEXT,
+            ncm_code               TEXT,
+            ncm_source             TEXT,
+            ncm_confidence         REAL,
+            ncm_updated_at         TEXT
         );
         insert or replace into silver_products
             (canonical_product_key, source_product_id, raw_name, display_name, raw_brand, gtin,
              identity_tokens_json, amount, unit, pack_count, total_base_amount, is_variable_weight,
              category_slug, category_path, category_source, category_confidence,
-             review_status, updated_at, image_url, last_snapshot_key, last_seen_at)
+             review_status, updated_at, image_url, last_snapshot_key, last_seen_at,
+             ncm_code, ncm_source, ncm_confidence, ncm_updated_at)
         select canonical_product_key, source_product_id, raw_name, display_name, raw_brand, gtin,
              identity_tokens_json, amount, unit, pack_count, total_base_amount, is_variable_weight,
              category_slug, category_path, category_source, category_confidence,
              review_status, updated_at,
-             image_url, last_snapshot_key, last_seen_at
+             image_url, last_snapshot_key, last_seen_at,
+             ncm_code, ncm_source, ncm_confidence, ncm_updated_at
         from silver_products_old order by updated_at;
         drop table silver_products_old;
         create index if not exists idx_silver_products_cat on silver_products(category_slug);
