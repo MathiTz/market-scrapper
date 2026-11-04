@@ -16,7 +16,7 @@ export function ListAdder({
   onProduct,
 }: {
   products: Product[];
-  priceOf: (productId: string) => number | null;
+  priceOf: (productId: string) => { cents: number; retailer: string } | null;
   onProduct: (product: Product) => void;
 }) {
   const [text, setText] = useState("");
@@ -111,7 +111,11 @@ export function ListAdder({
                   }}
                 >
                   <span>{product.name}</span>
-                  {price !== null && <small>a partir de {money(price)}</small>}
+                  {price && (
+                    <small>
+                      a partir de {money(price.cents)} · {price.retailer}
+                    </small>
+                  )}
                 </li>
               );
             })}

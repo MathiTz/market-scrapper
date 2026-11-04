@@ -714,10 +714,10 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     [data, offers, view],
   );
   const priceIndex = useMemo(() => {
-    const cheapest = new Map<string, number>();
+    const cheapest = new Map<string, { cents: number; retailer: string }>();
     if (view === "list")
       for (const o of rankOffers(offers))
-        if (!cheapest.has(o.product_id)) cheapest.set(o.product_id, o.price_cents!);
+        if (!cheapest.has(o.product_id)) cheapest.set(o.product_id, { cents: o.price_cents!, retailer: o.retailer_name });
     return cheapest;
   }, [offers, view]);
   const productById = useMemo(
