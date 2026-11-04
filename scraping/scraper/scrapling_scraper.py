@@ -74,7 +74,7 @@ class ScraplingBaseScraper(BaseScraper):
         for attempt in range(1, self.max_retries + 1):
             try:
                 # Fetcher.get is a classmethod
-                page = Fetcher.get(url)
+                page = Fetcher.get(url, **self.proxy_kwargs)
                 html = str(page.html_content)  # not page.text: that is the element text ("None") on a Response
                 return BeautifulSoup(html, "lxml")
             except Exception as e:
@@ -122,6 +122,7 @@ class ScraplingBaseScraper(BaseScraper):
                     url,
                     headless=True,
                     wait=wait_seconds * 1000,
+                    **self.proxy_kwargs,
                     **fetch_kwargs,
                 )
                 html = str(page.html_content)  # not page.text: that is the element text ("None") on a Response

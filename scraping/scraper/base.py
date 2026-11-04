@@ -25,6 +25,14 @@ MAX_RETRIES = int(os.getenv("SCRAPE_MAX_RETRIES", "3"))
 RETRY_BACKOFF_SECONDS = float(os.getenv("SCRAPE_RETRY_BACKOFF", "2.0"))
 DEFAULT_TIMEOUT = int(os.getenv("SCRAPE_TIMEOUT", "15"))
 
+def proxy_for(site_key: str) -> Optional[str]:
+    """The proxy one chain's requests go through, or None: ``PROXY_ATACADAO=socks5h://127.0.0.1:1080``.
+
+    Some chains refuse a datacenter or foreign address; a server elsewhere can reach them through a tunnel to a
+    Brazilian connection Set per chain, so the others keep their direct connection."""
+    return os.getenv(f"PROXY_{site_key.upper()}") or None
+
+
 # Lazy-load scrolling used by render(scroll=True)
 SCROLL_STEPS = 14
 SCROLL_STEP_PX = 900
@@ -143,7 +151,15 @@ class BaseScraper(ABC):
     def __init__(self, session: Optional[requests.Session] = None) -> None:
         self.session = session or requests.Session()
         self.session.headers.update(self.headers)
+        self.proxy = proxy_for(self.site_key)
+        if self.proxy:
+            self.session.proxies.update({"http": self.proxy, "https": self.proxy})
         self._driver = None
+
+    @property
+    def proxy_kwargs(self) -> dict:
+        """``proxy=`` for Scrapling's fetchers; a browser resolves names itself, so ``socks5h`` is just ``socks5``."""
+        return {"proxy": self.proxy.replace("socks5h://", "socks5://")} if self.proxy else {}
 
     def __del__(self) -> None:
         self.close()
