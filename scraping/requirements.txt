@@ -4,6 +4,10 @@ lxml>=6.0
 selenium==4.21.0
 webdriver-manager==4.0.1
 scrapling[fetchers]==0.2.99
+# Scrapling 0.2.99's browser stack, as tested: newer camoufox / rebrowser_playwright renamed options it still sends
+# (BrowserType.launch() got an unexpected keyword argument 'allow_webgl')
+camoufox==0.5.6
+rebrowser-playwright==1.52.0
 curl_cffi>=0.7  # a Chrome-like TLS handshake, for filters that turn away Python's (Centerbox, from a server)
 SQLAlchemy>=2.0.55
 Flask==3.0.3
