@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { conditionLabel, lastKnownOffers, ordinary, rankOffers, type Offer } from "./domain";
+import { conditionLabel, lastKnownOffers, ordinary, productSchema, rankOffers, type Offer } from "./domain";
 
 describe("conditionLabel", () => {
   it("says a club price is only for members, without repeating the word", () => {
@@ -67,5 +67,40 @@ describe("lastKnownOffers", () => {
     const club = offer(400, { conditions: { ...ordinary(), club: "Clube" } });
     expect(lastKnownOffers([club, offer(500)], false, now).map((o) => o.price_cents)).toEqual([500]);
     expect(lastKnownOffers([club, offer(500)], true, now).map((o) => o.price_cents)).toEqual([400, 500]);
+  });
+});
+
+describe("productSchema and the optional NCM", () => {
+  const base = {
+    id: "p1",
+    name: "Arroz 1kg",
+    brand: "Marca Exemplo",
+    category: "Mercearia",
+    subcategory: "Arroz",
+    variant: "Tipo 1",
+    amount: 1000,
+    unit: "g" as const,
+    pack_count: 1,
+    gtin: null,
+    gtin_evidence: null,
+  };
+
+  it("parses a snapshot published before the field existed", () => {
+    const parsed = productSchema.parse(base);
+    expect(parsed.ncm).toBeNull();
+    expect(parsed.category_slug).toBeNull();
+    expect(parsed.category_department).toBeNull();
+  });
+
+  it("keeps the warehouse category when the snapshot carries one", () => {
+    const parsed = productSchema.parse({ ...base, category_slug: "cervejas", category_department: "Bebidas" });
+    expect(parsed.category_slug).toBe("cervejas");
+    expect(parsed.category_department).toBe("Bebidas");
+  });
+
+  it("accepts an 8-digit code and rejects anything else", () => {
+    expect(productSchema.parse({ ...base, ncm: "10063021" }).ncm).toBe("10063021");
+    expect(productSchema.safeParse({ ...base, ncm: "1006" }).success).toBe(false);
+    expect(productSchema.safeParse({ ...base, ncm: "abcdefgh" }).success).toBe(false);
   });
 });

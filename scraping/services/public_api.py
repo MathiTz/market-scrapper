@@ -456,7 +456,14 @@ def _first_of(members: List[Product], attr: str) -> Optional[str]:
 def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
                  category: str = "", product: str = "", encartes: Optional[list] = None) -> dict:
     """The payload for ``GET /api/public``; parameters filter as the UI's search does."""
+    # Imported here, not at module scope: identity and the NCM index import this module in turn.
+    from services.category_index import category_by_key
+    from services.identity import canonical_key
+    from services.ncm_index import ncm_by_key
+
     now = datetime.now(timezone.utc).isoformat()
+    ncm_index = ncm_by_key()
+    category_index = category_by_key()
 
     # One retailer per chain name: the lowest store id.
     canonical: Dict[str, Store] = {}
@@ -519,11 +526,19 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
         gtins = {m.gtin for m in members if m.gtin}
         image = _first_of(members, "image_url") or next((photo_of_gtin[g] for g in gtins if g in photo_of_gtin), None)
         brand = _first_of(members, "brand") or next((brand_of_gtin[g] for g in gtins if g in brand_of_gtin), None)
+        identity = canonical_key({"name": source.name, "gtin": source.gtin})
+        warehouse_category = category_index.get(identity) or (None, None)
         products.setdefault(rep, {
             "id": str(rep), "name": display_name(source.name), "brand": brand or "",
             "category": cat, "subcategory": subcategorize(source.name),
             "variant": "", "amount": amount, "unit": unit, "pack_count": pack,
             "gtin": gtin, "gtin_evidence": "Código de barras (EAN) informado pela loja." if gtin else None,
+            # The warehouse's fiscal classification and category, joined at publish time
+            # (services/ncm_index.py, services/category_index.py): null in snapshots without a
+            # warehouse, so the UI must treat both as optional and fall back to its own rules.
+            "ncm": ncm_index.get(identity),
+            "category_slug": warehouse_category[0],
+            "category_department": warehouse_category[1],
             "image_url": image, "image_source_url": None,
         })
         observed = _iso_utc(price.scraped_at)

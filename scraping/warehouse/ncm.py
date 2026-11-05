@@ -255,6 +255,88 @@ def resolve(category_slug: Optional[str], gtin: Optional[str],
 # --------------------------------------------------------------------------- storage
 
 
+def read_heading_departments(path: Optional[Path] = None) -> Dict[str, str]:
+    """``{ncm: department}`` for the headings the Cosmos tree has no node for.
+
+    Only the products outside the taxonomy use it: the warehouse's categories are the Cosmos tree, and
+    this is the fallback that gives a chip to what that tree never had (fresh fruit, nappies, pet food,
+    cleaning tools) without inventing nodes in it. Keys are 4 digits for a heading or 8 for a single
+    item; the longest match wins, so ``21069030`` can mean "Suplementos" while the rest of heading 2106
+    stays unmapped.
+    """
+    path = Path(path or config.NCM_HEADING_DEPARTMENTS_CSV)
+    mapping: Dict[str, str] = {}
+    if not path.is_file():
+        return mapping
+    with open(path, encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            code = normalize_code(row.get("ncm"))
+            department = (row.get("department") or "").strip()
+            if code and department:
+                mapping[code] = department
+    return mapping
+
+
+def department_for(ncm_code: Optional[str], mapping: Dict[str, str]) -> Optional[str]:
+    """The department a product's NCM falls back to, matching the longest key first."""
+    if not ncm_code:
+        return None
+    for length in (8, 6, 4):
+        found = mapping.get(ncm_code[:length])
+        if found:
+            return found
+    return None
+
+
+def _name_key(name: str) -> str:
+    return " ".join(_fold(name or "").split())
+
+
+def read_product_overrides(path: Optional[Path] = None) -> Dict[str, str]:
+    """``{cleaned product name: ncm}`` hand corrections, for answers the model got evidently wrong.
+
+    Keyed by the product name because that is what a human can read and review in the CSV; the ETL
+    matches it against ``silver_products.raw_name`` accent- and case-insensitively. One wrong code is
+    worth correcting here rather than teaching the heading map a lie (9404 is cushions, not nappies).
+    """
+    path = Path(path or config.NCM_PRODUCT_OVERRIDES_CSV)
+    overrides: Dict[str, str] = {}
+    if not path.is_file():
+        return overrides
+    with open(path, encoding="utf-8-sig", newline="") as handle:
+        for line, row in enumerate(csv.DictReader(handle), start=2):
+            name = (row.get("name") or "").strip()
+            code = normalize_code(row.get("ncm_code"))
+            if not name:
+                continue
+            if code is None:
+                raise ValueError(f"{path}:{line}: {name!r} has no valid NCM: {row.get('ncm_code')!r}")
+            overrides[_name_key(name)] = code
+    return overrides
+
+
+def apply_product_overrides(connection, overrides: Optional[Dict[str, str]] = None,
+                            table: Optional[Table] = None) -> int:
+    """Give the corrected products their code, overriding whatever the model or a leaf map said."""
+    overrides = read_product_overrides() if overrides is None else overrides
+    if not overrides:
+        return 0
+    table = table or Table.load()
+    for name, code in overrides.items():
+        if not table.is_valid(code):
+            raise ValueError(f"product override {name!r} points at unknown NCM {code!r}")
+    rows = connection.execute("select canonical_product_key, raw_name from silver_products").fetchall()
+    updates = [(overrides[_name_key(row[1])], row[0])
+               for row in rows if _name_key(row[1]) in overrides]
+    if updates:
+        connection.executemany(
+            """update silver_products
+                  set ncm_code=?, ncm_source='manual', ncm_confidence=1.0,
+                      ncm_updated_at=strftime('%Y-%m-%dT%H:%M:%SZ','now')
+                where canonical_product_key=?""", updates)
+    return len(updates)
+
+
 def seed(connection, table: Table, mapping: Dict[str, CategoryCode]) -> int:
     """Mirror the official table and the category map into the warehouse. Returns rows written."""
     written = connection.executemany(

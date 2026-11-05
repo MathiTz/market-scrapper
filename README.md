@@ -248,6 +248,21 @@ python -m warehouse_etl --ncm-gtin-csv data/ncm/gtin.csv    # import gtin,ncm an
 python -m warehouse_etl --status                            # coverage, by source
 ```
 
+Two small tables keep the data honest: `data/ncm/heading-department.csv` gives a department to the
+products the Cosmos tree has no node for (fruit, nappies, pet food, supplements, cleaning tools), and
+`data/ncm/product-overrides.csv` corrects a product whose code the model got demonstrably wrong
+(keyed by name; `--ncm-only` applies both).
+
+The publisher also joins the warehouse's category tree into the snapshot (`products[].category_slug`,
+`products[].category_department`, `products[].ncm`; see `scraping/services/category_index.py` and
+`ncm_index.py`). The UI can then build "Alternativas" from the fiscal classification instead of only the
+subcategory (`VITE_ALTERNATIVES_NCM=1`, `?alternativas=ncm`) and show the warehouse's departments as the
+category chips instead of the nine keyword categories (`VITE_CATEGORIES_WAREHOUSE=1`,
+`?categorias=warehouse`). Both switches are opt-in per build or per URL, so one deployment can compare;
+without a warehouse, or without a flag, the site behaves exactly as before. Products the Cosmos tree has
+no node for still get a department from their NCM heading (`data/ncm/heading-department.csv`), so fruit,
+nappies, pet food and cleaning tools are not left without a chip.
+
 Rows in `category-ncm.csv` with `source=overlap` or `confidence` under 0.6 are the ones to read first:
 a wrong code on a leaf is a wrong code on every product under it.
 

@@ -55,6 +55,21 @@ export const productSchema = z
       .nullable()
       .default(null),
     gtin_evidence: z.string().max(1000).nullable().default(null),
+    // The product's NCM - the Brazilian fiscal classification - when the publisher could join one from
+    // the warehouse (scraping/services/ncm_index.py). Null in snapshots published without it, so every
+    // consumer must treat it as optional and fall back to what it did before.
+    ncm: z
+      .string()
+      .regex(/^\d{8}$/)
+      .nullable()
+      .default(null),
+    // The warehouse's Cosmos category (scraping/services/category_index.py), joined at publish time like
+    // `ncm`. `category_department` is the level the chip row groups by (the food branch's departments, or
+    // the branch itself for the smaller ones); `category_slug` is the leaf. Both are null for a product the
+    // Cosmos tree has no node for, and for any product scraped after the last warehouse run - such a product
+    // keeps the keyword `category` above and is reachable through "Todas" and search, never a guessed chip.
+    category_slug: z.string().max(200).nullable().default(null),
+    category_department: z.string().max(200).nullable().default(null),
   })
   .refine(
     (p) => !p.gtin || !!p.gtin_evidence,

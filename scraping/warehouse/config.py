@@ -23,6 +23,10 @@ TAXONOMY_CSV = TAXONOMY_DIR / "categorias.csv"
 NCM_DIR = _path(os.getenv("NCM_DIR", ""), BASE_DIR / "data" / "ncm")
 NCM_TABLE_CSV = NCM_DIR / "ncm.csv"
 NCM_CATEGORY_CSV = NCM_DIR / "category-ncm.csv"
+# NCM -> department for the products the Cosmos tree has no node for (see warehouse/ncm.py).
+NCM_HEADING_DEPARTMENTS_CSV = NCM_DIR / "heading-department.csv"
+# Hand corrections for a product whose model answer is demonstrably wrong, keyed by its name.
+NCM_PRODUCT_OVERRIDES_CSV = NCM_DIR / "product-overrides.csv"
 
 # A barcode's own NCM can only come from a paid provider (a GTIN does not encode one). Kept here
 # so enabling it is an .env change, not a code change.

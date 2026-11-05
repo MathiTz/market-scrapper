@@ -9,14 +9,13 @@ Read-only on the source, idempotent on the target, and every label keeps its pro
 
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
-import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Sequence
 
+from services.identity import canonical_key, normalize_gtin
 from services.public_api import clean, display_name, match_tokens, parse_size
 from warehouse import config, db, ncm
 from warehouse.classifier import CloudClassifier, Result, path_of, signature
@@ -45,26 +44,6 @@ def load_products(connection, limit: Optional[int] = None,
     if limit:
         query = f"{query} limit {int(limit)}"
     return [dict(row) for row in connection.execute(query, params)]
-
-
-def normalize_gtin(gtin: Optional[str]) -> Optional[str]:
-    """14-digit EAN, or None when the value is missing, malformed or an internal PLU."""
-    digits = re.sub(r"\D", "", gtin or "")
-    if len(digits) not in (8, 12, 13, 14):
-        return None
-    if len(digits) == 13 and digits.startswith("2"):  # GS1 variable-measure prefix
-        return None
-    return digits.zfill(14)
-
-
-def canonical_key(product: dict) -> str:
-    gtin = normalize_gtin(product.get("gtin"))
-    if gtin:
-        return f"gtin:{gtin}"
-    tokens = sorted(match_tokens(product["name"]))
-    amount, unit, pack = parse_size(product["name"])
-    material = "|".join(tokens) + f"|{amount}{unit}x{pack}"
-    return "tok:" + hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
 
 
 # --------------------------------------------------------------------------- dimensions
@@ -347,6 +326,9 @@ def apply_ncm() -> int:
             """update silver_products
                   set ncm_code=?, ncm_source=?, ncm_confidence=?, ncm_updated_at=?
                 where canonical_product_key=?""", updates)
+        corrected = ncm.apply_product_overrides(connection, table=table)
+        if corrected:
+            print(f"ncm: {corrected} product(s) corrected from product-overrides.csv")
         connection.execute(
             """insert into etl_watermarks (pipeline_name, last_run_started_at, last_run_completed_at, last_status, rows_processed)
                values ('ncm', ?, ?, 'ok', ?)
@@ -415,6 +397,7 @@ def fill_unmapped_ncm(workers: int = 4, limit: Optional[int] = None) -> int:
             """update silver_products
                   set ncm_code=?, ncm_source='product', ncm_confidence=?, ncm_updated_at=?
                 where canonical_product_key=?""", updates)
+        ncm.apply_product_overrides(connection, table=table)
         connection.commit()
         print(f"coded {len(updates)}/{len(rows)} product(s) from their name")
         report_ncm(connection)

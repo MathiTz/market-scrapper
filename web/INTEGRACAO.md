@@ -14,6 +14,23 @@ O ponto de troca é fetch("/api/public?" + params). Pode-se adaptar a URL/respos
 | channel | string | catalog, physical, flyer ou vazio |
 | category | string | Categoria ou vazio |
 
+`product.ncm`: string de 8 dígitos ou `null`. A classificação fiscal que o publicador junta do warehouse
+  (`services/ncm_index.py`) no momento de publicar; `null` quando o snapshot saiu de uma máquina sem warehouse,
+  então o campo é opcional e nada pode depender dele. Com ele, a tela de detalhe monta "Alternativas" por NCM
+  **e** subcategoria (as duas), em vez de só a subcategoria; a troca é opt-in (`VITE_ALTERNATIVES_NCM=1`, ou
+  `?alternativas=ncm` para comparar na mesma build) e, sem o NCM, o comportamento anterior continua.
+
+`product.category_slug` / `product.category_department`: a categoria do warehouse (árvore Cosmos) para o
+  produto, juntada na publicação como o `ncm` (`services/category_index.py`); `null` quando o produto não tem
+  nó na taxonomia ou foi raspado depois da última rodada do warehouse; nesse caso sem nó, o
+  `category_department` ainda pode vir do NCM (`data/ncm/heading-department.csv`: frutas em Hortifruti,
+  fraldas em "Fraldas e Absorventes", ração em "Pet"), enquanto o `category_slug` fica `null`. O
+  `department` é o nível que vira chip na tela (os oito departamentos de alimentos, ou o ramo inteiro para
+  Higiene e Beleza / Limpeza); o `slug` é a folha. Com o switch ligado (`VITE_CATEGORIES_WAREHOUSE=1`, ou
+  `?categorias=warehouse` para comparar na mesma build) os chips vêm desses departamentos presentes no
+  snapshot, em vez da lista fixa de `categories`; produto sem departamento continua no `category` por palavra-
+  chave e aparece em "Todas" e na busca, nunca num chip chutado.
+
 `product.subcategory`: string, pode ser vazia. Tipo mais específico que `category` (ex.: "Hidratante", "Sabonete" em vez de um "Higiene e beleza" compartilhado) - vazio quando o ETL não achou uma palavra específica o bastante (veja `subcategorize()` em `services/public_api.py`). A tela de detalhe usa isso para "Alternativas", caindo de volta para `category` quando vazio.
 | conditions | string | true para incluir condições especiais |
 | product | string | ID de produto compartilhado ou vazio |

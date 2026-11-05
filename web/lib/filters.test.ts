@@ -272,3 +272,51 @@ describe("relevance order", () => {
     expect(sorted("")).toEqual(["p0", "p2", "p1"]); // 31% off, 30% off, no discount
   });
 });
+
+describe("alternativesOf with the NCM switch on", () => {
+  const priced = new Set(["rice", "rice-near", "rice-big", "rice-other-ncm", "soy", "bread"]);
+  const product = (
+    id: string,
+    ncm: string | null,
+    subcategory: string,
+    amount = 1000,
+    unit: "g" | "ml" | "un" = "g",
+  ) => ({ id, name: id, category: "Mercearia", subcategory, ncm, amount, unit }) as unknown as Product;
+
+  it("requires both the NCM and the subcategory", () => {
+    const active = product("rice", "10063021", "Arroz");
+    const list = [
+      active,
+      product("rice-near", "10063021", "Arroz", 900), // same NCM and kind: the new list
+      product("rice-other-ncm", "10063011", "Arroz", 1000), // same kind, other NCM: out
+      product("soy", "10063021", "Soja", 1000), // same NCM, other kind: out
+    ];
+    expect(alternativesOf(list, active, priced, true).map((p) => p.id)).toEqual(["rice-near"]);
+  });
+
+  it("orders by closest pack size in the same unit", () => {
+    const active = product("rice", "10063021", "Arroz", 1000);
+    const list = [active, product("rice-big", "10063021", "Arroz", 5000), product("rice-near", "10063021", "Arroz", 900)];
+    expect(alternativesOf(list, active, priced, true).map((p) => p.id)).toEqual(["rice-near", "rice-big"]);
+  });
+
+  it("keeps the subcategory list when the product has no NCM", () => {
+    const active = product("rice", null, "Arroz");
+    const list = [active, product("rice-other-ncm", "10063011", "Arroz")];
+    expect(alternativesOf(list, active, priced, true).map((p) => p.id)).toEqual(["rice-other-ncm"]);
+  });
+
+  it("keeps the subcategory list when no same-NCM product has a price", () => {
+    const active = product("rice", "10063021", "Arroz");
+    const list = [active, product("rice-other-ncm", "10063011", "Arroz"), product("bread", "19059090", "Pão")];
+    expect(alternativesOf(list, active, new Set(["rice", "rice-other-ncm"]), true).map((p) => p.id)).toEqual([
+      "rice-other-ncm",
+    ]);
+  });
+
+  it("ignores the NCM entirely when the switch is off", () => {
+    const active = product("rice", "10063021", "Arroz");
+    const list = [active, product("rice-other-ncm", "10063011", "Arroz")];
+    expect(alternativesOf(list, active, priced, false).map((p) => p.id)).toEqual(["rice-other-ncm"]);
+  });
+});

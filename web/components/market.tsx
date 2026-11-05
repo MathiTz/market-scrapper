@@ -59,6 +59,7 @@ import {
   type ProductFilters,
   type SortKey,
 } from "@/lib/filters";
+import { departmentsOf, inDepartment } from "@/lib/categories";
 import { useDebounced } from "@/lib/use-debounced";
 import { StoreContact } from "@/components/store-contact";
 import { OfferRow } from "@/components/offer-row";
@@ -490,6 +491,18 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   // This whole derived block is memoized: `data` only changes when the *debounced* `search`
   // (or the snapshot) changes, so between keystrokes these stay stable and the catalog isn't
   // re-filtered on every render — that was the source of the typing lag.
+  // Warehouse categories are opt-in, the same way as the NCM alternatives: a build flag, or the URL to
+  // compare both lists on one deployment. See libraries/categories.ts for why the chips come from the
+  // products rather than from the payload's static list.
+  const categoriesFromWarehouse = useMemo(() => {
+    const chosen = new URLSearchParams(window.location.search).get("categorias");
+    return chosen ? chosen === "warehouse" : import.meta.env.VITE_CATEGORIES_WAREHOUSE === "1";
+  }, []);
+  const warehouseDepartments = useMemo(
+    () => (categoriesFromWarehouse ? departmentsOf(result.data?.products ?? []) : []),
+    [categoriesFromWarehouse, result.data],
+  );
+
   const {
     filteredOffers,
     productOffers,
@@ -503,7 +516,8 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   } = useMemo(() => {
     const products = (data?.products || []).filter(
       (p) =>
-        (!category || p.category === category) &&
+        (!category ||
+          (categoriesFromWarehouse ? inDepartment(p, category) : p.category === category)) &&
         (!nearby || offers.some((o) => o.product_id === p.id)) &&
         (!networks.length ||
           offers.some(
@@ -672,9 +686,15 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   // grid but wrong here: a product opened while "queijo" is still typed must still see every alternative,
   // not just the other ones whose name happens to contain "queijo".
   const allProducts = result.data?.products ?? [];
+  // Off unless the build opts in (VITE_ALTERNATIVES_NCM=1), the same pattern as the receipt OCR flag, with
+  // ?alternativas=ncm|category to compare both lists on one deployment - see alternativesOf.
+  const alternativesByNcm = useMemo(() => {
+    const chosen = new URLSearchParams(window.location.search).get("alternativas");
+    return chosen ? chosen === "ncm" : import.meta.env.VITE_ALTERNATIVES_NCM === "1";
+  }, []);
   const altProducts = useMemo(
-    () => (active ? alternativesOf(allProducts, active, pricedIds) : []),
-    [allProducts, active, pricedIds],
+    () => (active ? alternativesOf(allProducts, active, pricedIds, alternativesByNcm) : []),
+    [allProducts, active, pricedIds, alternativesByNcm],
   );
   const alternatives = useIncremental(altProducts.length, 24, detailResetKey);
   const outsideOffers =
@@ -1265,9 +1285,11 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                   >
                     {[
                       "Todas",
-                      ...(data?.categories.length
-                        ? data.categories
-                        : ["Mercearia", "Limpeza", "Bebidas", "Higiene"]),
+                      ...(categoriesFromWarehouse && warehouseDepartments.length
+                        ? warehouseDepartments
+                        : data?.categories.length
+                          ? data.categories
+                          : ["Mercearia", "Limpeza", "Bebidas", "Higiene"]),
                     ].map((c) => {
                       const on = category === c || (c === "Todas" && !category);
                       return (

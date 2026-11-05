@@ -216,6 +216,61 @@ class EtlWriteTest(unittest.TestCase):
         self.assertEqual((row["ncm_code"], row["ncm_source"]), ("10063010", "gtin"))
 
 
+class OverrideTest(unittest.TestCase):
+    def setUp(self):
+        self.folder = tempfile.TemporaryDirectory()
+        self.addCleanup(self.folder.cleanup)
+        self.database = Path(self.folder.name) / "warehouse.db"
+        with patch.object(config, "WAREHOUSE_DB", self.database):
+            db.init()
+            self.connection = db.connect()
+            self.addCleanup(self.connection.close)
+
+    def _csv(self, rows):
+        handle = tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8")
+        csv.writer(handle).writerows([["name", "ncm_code", "reason"]] + rows)
+        handle.close()
+        return Path(handle.name)
+
+    def test_reads_the_hand_corrections(self):
+        path = self._csv([["Fralda Huggies P 32 un", "96190000", "test"]])
+        self.assertEqual(ncm.read_product_overrides(path), {"fralda huggies p 32 un": "96190000"})
+
+    def test_a_typo_in_the_table_fails_the_load(self):
+        path = self._csv([["Fralda Huggies P 32 un", "99999999", "typo"]])
+        self.assertEqual(ncm.read_product_overrides(path), {"fralda huggies p 32 un": "99999999"})
+        self.connection.execute(
+            """insert into silver_products (canonical_product_key, raw_name, display_name, identity_tokens_json)
+               values ('gtin:1', 'Fralda Huggies P 32 un', 'Fralda Huggies P 32 un', '[]')""")
+        self.connection.commit()
+        with self.assertRaises(ValueError):
+            ncm.apply_product_overrides(self.connection, {"fralda huggies p 32 un": "99999999"})
+
+    def test_applies_by_name_ignoring_case_and_accents(self):
+        self.connection.execute(
+            """insert into silver_products (canonical_product_key, raw_name, display_name, identity_tokens_json, ncm_code)
+               values ('gtin:1', 'Fralda Descartável Huggies Rápida Absorção P 32 un', 'x', '[]', '94049000')""")
+        self.connection.execute(
+            """insert into silver_products (canonical_product_key, raw_name, display_name, identity_tokens_json, ncm_code)
+               values ('gtin:2', 'Arroz 5kg', 'x', '[]', '10063021')""")
+        self.connection.commit()
+        overrides = ncm.read_product_overrides(self._csv([
+            ["fralda descartavel huggies rapida absorcao p 32 un", "96190000", "test"]]))
+        written = ncm.apply_product_overrides(self.connection, overrides)
+        self.assertEqual(written, 1)
+        rows = {r["canonical_product_key"]: (r["ncm_code"], r["ncm_source"])
+                for r in self.connection.execute("select * from silver_products")}
+        self.assertEqual(rows["gtin:1"], ("96190000", "manual"))
+        self.assertEqual(rows["gtin:2"], ("10063021", None))
+
+    def test_the_committed_overrides_are_valid(self):
+        overrides = ncm.read_product_overrides()
+        table = Table.load()
+        self.assertTrue(overrides)
+        for name, code in overrides.items():
+            self.assertTrue(table.is_valid(code), name)
+
+
 class ImportTest(unittest.TestCase):
     def test_import_rejects_a_code_outside_the_table(self):
         handle = tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8")

@@ -169,10 +169,43 @@ export function productsWithPrice<T extends { id: string }>(products: T[], offer
  * not something to compare against, and showing it as an unpriced card ("Sem preço atual") only made the
  * list longer without making it more useful.
  */
-export function alternativesOf(products: Product[], active: Product, pricedIds: ReadonlySet<string>): Product[] {
+export function alternativesOf(
+  products: Product[],
+  active: Product,
+  pricedIds: ReadonlySet<string>,
+  byNcm = false,
+): Product[] {
+  // Opt-in (VITE_ALTERNATIVES_NCM=1, or ?alternativas=ncm to compare on the same build): "the same kind"
+  // becomes the same NCM - the fiscal classification the warehouse assigns, the closest thing to "the
+  // same product type" the data actually has - *and* the same subcategory. Both, because an NCM alone is
+  // coarser than it looks: 22029900 ("outras bebidas não alcoólicas") holds coconut water, soy drink and
+  // isotonics, and the subcategory is what keeps a catch-all code from making those "alternatives".
+  // A product with no NCM, or no subcategory to pair one with, keeps the list it had before; so does an
+  // NCM bucket with no priced member, since an empty panel is worse than a broader one.
+  if (byNcm && active.ncm && active.subcategory) {
+    const sameNcm = products.filter(
+      (p) =>
+        p.id !== active.id &&
+        p.ncm === active.ncm &&
+        p.subcategory === active.subcategory &&
+        pricedIds.has(p.id),
+    );
+    if (sameNcm.length) return byCloseness(sameNcm, active);
+  }
   if (!active.subcategory && active.category === "Outros") return [];
   const sameKind = active.subcategory
     ? (p: Product) => p.subcategory === active.subcategory
     : (p: Product) => p.category === active.category;
   return products.filter((p) => p.id !== active.id && sameKind(p) && pricedIds.has(p.id));
+}
+
+/** Closest package size first, in the same unit, so a 500 g pot sits next to a 400 g one, not a 5 kg bag. */
+function byCloseness(list: Product[], active: Product): Product[] {
+  const distance = (p: Product) => Math.abs(Math.log(p.amount / active.amount));
+  return [...list].sort(
+    (a, b) =>
+      Number(b.unit === active.unit) - Number(a.unit === active.unit) ||
+      distance(a) - distance(b) ||
+      a.id.localeCompare(b.id),
+  );
 }
