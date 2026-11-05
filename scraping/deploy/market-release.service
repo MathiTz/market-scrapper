@@ -1,0 +1,13 @@
+[Unit]
+Description=Scrape every chain, validate, publish to Neon and sync price history
+After=network-online.target exit-tunnel.service
+Wants=network-online.target exit-tunnel.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/market-scrapper/scraping
+# refresh.py reads .env itself (PUBLISH_DATABASE_URL, PROXY_<CHAIN>) and exits non-zero when validation blocks
+# a publish, so a bad scrape shows up as a failed unit and never reaches the site.
+ExecStart=/opt/market-scrapper/scraping/venv/bin/python refresh.py
+TimeoutStartSec=3h
+Nice=5

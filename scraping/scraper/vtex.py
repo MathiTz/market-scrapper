@@ -37,6 +37,11 @@ def _clean_field(value: Optional[str]) -> Optional[str]:
 _ean = valid_ean
 
 
+def _slug(url: str) -> str:
+    """The last path part of a category link (``https://x.com/mercearia/arroz`` -> ``arroz``)."""
+    return url.split("?")[0].rstrip("/").rsplit("/", 1)[-1]
+
+
 def _image_url(images: Optional[list]) -> Optional[str]:
     """The first photo VTEX offers for this SKU, or None."""
     if not images:
@@ -64,17 +69,40 @@ class VtexScraper(BaseScraper):
     page_size = 50
     only_discounted = True
     categories: Tuple[str, ...] = ()
+    # The search API stops at MAX_PAGES pages, so a department with more products than that loses the rest.
+    # With this on, each department is read one subcategory at a time (``mercearia/category-2/arroz``), which
+    # fits under the limit; the departments keep to ``categories``. Off, ``categories`` are read as they are.
+    split_subcategories = False
 
     @property
     def search_url(self) -> str:
         return self.base_url + "/api/io/_v/api/intelligent-search/product_search"
+
+    def _category_paths(self) -> List[str]:
+        """The category paths to read: ``categories``, or the subcategories of each when ``split_subcategories``."""
+        if not self.split_subcategories:
+            return list(self.categories)
+        try:
+            tree = json.loads(self.fetch_raw(self.base_url + "/api/catalog_system/pub/category/tree/2"))
+        except Exception as exc:
+            logger.warning("[%s] Could not read the category tree (%s); reading whole departments", self.site_name, exc)
+            return list(self.categories)
+        children = {_slug(d.get("url", "")): [_slug(c.get("url", "")) for c in d.get("children") or []] for d in tree}
+        paths: List[str] = []
+        for department in self.categories:
+            subs = [s for s in children.get(department, []) if s]
+            if subs:
+                paths.extend(f"{department}/category-2/{sub}" for sub in subs)
+            else:
+                paths.append(department)  # no subcategories listed: read the department whole
+        return paths
 
     def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
         """Collect products from each category (``query`` is ignored), up to ``limit`` in all."""
         results: List[ProductPrice] = []
         seen = set()
         last_error: Optional[Exception] = None
-        for slug in self.categories:
+        for slug in self._category_paths():
             try:
                 offers = self._category_offers(slug, limit)
             except Exception as exc:

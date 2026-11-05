@@ -1,0 +1,9 @@
+[Unit]
+Description=Update the code every night, away from the 06:00 and 18:00 releases
+
+[Timer]
+OnCalendar=*-*-* 23:30:00 America/Fortaleza
+Persistent=true
+
+[Install]
+WantedBy=timers.target

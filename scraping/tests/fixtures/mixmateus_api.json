@@ -1,0 +1,114 @@
+{
+ "cities": [
+  {
+   "idcidade": "crateus",
+   "estado": "CE",
+   "descricao": " Crateús"
+  },
+  {
+   "idcidade": "caucaia",
+   "estado": "CE",
+   "descricao": "Caucaia"
+  },
+  {
+   "idcidade": "fortaleza",
+   "estado": "CE",
+   "descricao": "Fortaleza"
+  },
+  {
+   "idcidade": "sobral",
+   "estado": "CE",
+   "descricao": "Sobral"
+  }
+ ],
+ "stores": {
+  "crateus": [
+   {
+    "idloja": "mateus-crateus",
+    "cidade": "crateus",
+    "nome_exibicao": "Mateus Supermercados Crateús",
+    "endereco": "Rua Doutor Herminio Bezerra, Nº 550, Bairro Fátima 2. Crateús - CE.",
+    "mapa": "98992020090",
+    "marca": "SM"
+   }
+  ],
+  "caucaia": [
+   {
+    "idloja": "mix-mateus-caucaia",
+    "cidade": "caucaia",
+    "nome_exibicao": "Mix Mateus Caucaia",
+    "endereco": "Av. Dom Almeida Lustosa, 1989. Jurema - Caucaia/CE",
+    "mapa": "98992020090",
+    "marca": "MA"
+   }
+  ],
+  "fortaleza": [
+   {
+    "idloja": "mix-henrique-jorge",
+    "cidade": "fortaleza",
+    "nome_exibicao": "Mix Mateus Henrique Jorge",
+    "endereco": "Fortaleza-Ce/ Bairro: Henrique Jorge - Av. Senador Fernandes Távora, 2100.",
+    "mapa": "98992020090",
+    "marca": "MA"
+   },
+   {
+    "idloja": "mix-jose-walter",
+    "cidade": "fortaleza",
+    "nome_exibicao": "Mix Mateus José Walter ",
+    "endereco": "Avenida Presidente Costa e Silva, 2646, José Walter",
+    "mapa": "98992020090",
+    "marca": "MA"
+   },
+   {
+    "idloja": "mix-messejana",
+    "cidade": "fortaleza",
+    "nome_exibicao": "Mix Mateus Messejana",
+    "endereco": "BR-116, 9800 – Messejana, Fortaleza – CE, 60821-000, Brasil",
+    "mapa": "98992020090",
+    "marca": "MA"
+   }
+  ],
+  "sobral": [
+   {
+    "idloja": "mix-sobral",
+    "cidade": "sobral",
+    "nome_exibicao": "Mix Mateus Sobral",
+    "endereco": " R. Júlio César, 200 - Sobral, CE, 62042-120",
+    "mapa": "98992020090",
+    "marca": "MA"
+   }
+  ]
+ },
+ "encartes": [
+  {
+   "id_encarte": 20924,
+   "descricao": "Itambé",
+   "arquivo": "uploads/encartes/1793824150_6aeb95961261f.pdf",
+   "marca": "MA",
+   "validade": "2026-11-15 23:59:00",
+   "valido": "15/11/2026 23:59",
+   "inicio": "2026-11-04 18:00:00",
+   "inicial": "04/11/2026 18:00"
+  },
+  {
+   "id_encarte": 20926,
+   "descricao": "Seara",
+   "arquivo": "uploads/encartes/1793824200_6aeb95c86fe04.pdf",
+   "marca": "MA",
+   "validade": "2026-11-11 23:59:00",
+   "valido": "11/11/2026 23:59",
+   "inicio": "2026-11-04 18:00:00",
+   "inicial": "04/11/2026 18:00"
+  },
+  {
+   "id_encarte": 20763,
+   "descricao": "Regular",
+   "arquivo": "uploads/encartes/1793620425_6ae879c9d21e2.pdf",
+   "marca": "MA",
+   "validade": "2026-11-05 23:59:00",
+   "valido": "05/11/2026 23:59",
+   "inicio": "2026-11-01 18:00:00",
+   "inicial": "01/11/2026 18:00"
+  }
+ ]
+}

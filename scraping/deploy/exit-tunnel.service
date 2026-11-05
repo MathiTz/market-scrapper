@@ -1,0 +1,12 @@
+[Unit]
+Description=SOCKS tunnel to the Sao Paulo exit node (reached by PROXY_<CHAIN>=socks5h://127.0.0.1:1081)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/ssh -N -D 127.0.0.1:1081 -i /root/.ssh/exit_node -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes root@172.233.4.164
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

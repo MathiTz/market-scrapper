@@ -1,0 +1,12 @@
+[Unit]
+Description=Look for supermarket chains in the Fortaleza area that we have no scraper for
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/market-scrapper/scraping
+# Reads OpenStreetMap through Overpass and saves candidates in market.db (table candidate_chains); nothing is published.
+ExecStart=/opt/market-scrapper/scraping/venv/bin/python -m services.store_discovery --state CE --city Fortaleza Caucaia Maracanaú Eusébio Aquiraz
+TimeoutStartSec=30min
+Nice=10

@@ -67,6 +67,7 @@ D3_THRESHOLD = float(os.getenv("D3_THRESHOLD", "0.8"))
 VTEX_SEARCH = {
     "Atacadão": "https://www.atacadao.com.br/api/io/_v/api/intelligent-search/product_search",
     "Sams Club": "https://www.samsclub.com.br/api/io/_v/api/intelligent-search/product_search",
+    "GBarbosa": "https://www.gbarbosa.com.br/api/io/_v/api/intelligent-search/product_search",
 }
 
 

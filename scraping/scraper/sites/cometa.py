@@ -44,6 +44,7 @@ class Encarte:
     pdf_url: Optional[str]
     pages: List[str] = field(default_factory=list)  # every page image, when the flyer has more than a cover
     posted_at: Optional[str] = None  # ISO date it was published, for sources that give no validity window
+    valid_until: Optional[str] = None  # ISO datetime the flyer ends, for sources that give one
 
 
 class CometaScraper(BaseScraper):
