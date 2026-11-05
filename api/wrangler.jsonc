@@ -16,5 +16,14 @@
       // For local development set WRANGLER_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE instead.
       "id": "3b1314bbb12b4f508438496ca1e6c547"
     }
+    // Accounts write (users, sessions, user_preferences, saved_lists), so they need a login allowed to
+    // write those tables: run scraping/db/accounts_role.sql, then
+    //   npx wrangler hyperdrive create mercado-em-dia-accounts --connection-string="<accounts role>"
+    // and add the returned id here. Without this binding the API falls back to HYPERDRIVE, which is fine
+    // only when that connection may write (local development).
+    // (the comma after the block above belongs to that new entry)
+    // , { "binding": "ACCOUNTS_HYPERDRIVE", "id": "<id>" }
   ]
+  // Google sign-in: npx wrangler secret put GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (optional).
+  // ACCOUNTS_PUBLIC_URL is only needed behind a proxy whose request origin is not the public one.
 }

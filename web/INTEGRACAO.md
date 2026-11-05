@@ -61,9 +61,34 @@ Substitua a rota 501 pelo serviço real. GPS usa navigator.geolocation; distânc
 Lista em localStorage, sem API: med-list-demo ou med-list-real; região em med-region. Itens: product_id, name, quantity.
 Links de oferta usam produto, oferta e regiao; encartes usam flyerShareUrl em lib/flyers.ts. Preserve parâmetros ao integrar domínio e rotas.
 Compartilhamento depende de Web Share/clipboard. Download externo depende da origem e do navegador.
-Lista não sincroniza entre dispositivos; isso exige implementação adicional.
+Com conta (seção 4), a lista continua em `localStorage` e ganha cópias no servidor: `POST /api/account/lists`
+salva a lista atual e `GET /api/account/lists` devolve as listas salvas, que podem ser abertas em outro aparelho.
 
-## 4. Administração — opcional
+## 4. Conta do usuário
+Cadastro por e-mail e senha, ou Google. A sessão é um cookie `HttpOnly` (`med_session`, `SameSite=Lax`); o
+navegador não guarda token em JavaScript. O local preferido ("Perto de você") fica na conta e é aplicado ao
+abrir o site quando não há uma referência escolhida nesta aba.
+
+| Rota | Corpo | Resposta |
+|---|---|---|
+| POST /api/auth/register | `{email, password, name?}` | 201 `{user, preferences}`; 400/409 com `{error}` |
+| POST /api/auth/login | `{email, password}` | 200 `{user, preferences}`; 401 genérico |
+| POST /api/auth/logout | — | 200 `{ok:true}` |
+| GET /api/auth/me | — | `{user, preferences, google}`; `user:null` deslogado |
+| GET /api/auth/google/start | — | 302 para o Google; 503 sem `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` |
+| GET /api/auth/google/callback | `?code&state` | 302 para `/conta?entrou=google` ou `/conta?erro=...` |
+| GET /api/account/preferences | — | `{preferences:{region, location}}`; 401 sem sessão |
+| PUT /api/account/preferences | `{region, location}` | `{preferences}`; 400 se o local for inválido |
+| GET /api/account/lists | — | `{lists:[{id,name,lines,created_at,updated_at}]}` |
+| POST /api/account/lists | `{name, lines}` | 201 `{list}`; 409 acima de 20 listas |
+| PUT /api/account/lists/:id | `{name, lines}` | `{list}`; 404 se não for da conta |
+| DELETE /api/account/lists/:id | — | `{ok:true}`; 404 se não for da conta |
+
+`location` é `null` ou `{label, latitude, longitude, radius_km}` (raio inteiro de 1 a 50 km). `lines` é a mesma
+lista do `localStorage`: `[{product_id, name, quantity, checked}]`, até 200 itens. Erros sempre vêm como
+`{"error":"Mensagem legível"}`. Respostas de conta nunca são cacheadas.
+
+## 5. Administração — opcional
 Código e CSS originais incluídos; prévia fica no login.
 - GET /api/session → {"actor":null} ou identificador string.
 - POST /api/session recebe username e password; sucesso HTTP 2xx; erro JSON com error.
@@ -71,9 +96,11 @@ Código e CSS originais incluídos; prévia fica no login.
 - GET /api/admin retorna arrays retailers, store_contexts, products, offers, review_items, flyers, collection_runs e audit_log.
 - POST /api/admin recebe {"action":"...","data":{...}}.
 Os formulários e chamadas act em components/admin.tsx definem campos e ações. O painel usa registros dinâmicos; alinhar contrato administrativo ao modelo do backend.
-As rotas de sessão incluídas são respostas demonstrativas: não autenticam. Não há rota /api/admin. Implementar autorização e sessão no backend antes de habilitar telas internas.
+As rotas de sessão incluídas são respostas demonstrativas: não autenticam e não são a conta do usuário
+(`/api/session` é o login administrativo, ainda sem backend). Não há rota /api/admin. Implementar autorização
+administrativa antes de habilitar telas internas.
 
-## 5. Sequência sugerida
+## 6. Sequência sugerida
 1. Executar /demo e conferir referências.
 2. Copiar componentes, CSS, ícone e utilitários para o projeto de destino.
 3. Mapear modelos do backend para Data, usando fixtures como exemplo.

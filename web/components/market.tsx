@@ -21,6 +21,7 @@ import {
   Clock,
   TriangleAlert,
   Undo2,
+  UserRound,
 } from "lucide-react";
 import {
   BRAND,
@@ -42,6 +43,9 @@ import { OfferRail } from "@/components/offer-rail";
 import { BackToTop } from "@/components/back-to-top";
 import { LoadMore, useIncremental } from "@/components/infinite";
 import { ListAdder } from "@/components/list-adder";
+import { SavedLists } from "@/components/saved-lists";
+import { displayName, nearbyFromPreferences } from "@/lib/account";
+import { useAccount } from "@/lib/account-api";
 import { ReceiptCheck } from "@/components/receipt-check";
 import { StaleFlag } from "@/components/stale-flag";
 import { receiptOcrEnabled } from "@/lib/receipt-api";
@@ -172,6 +176,10 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   } | null>(null);
   const [sharedNotice, setSharedNotice] = useState("");
   const [nearby, setNearby] = useState<Nearby | null>(null);
+  const account = useAccount();
+  const signedIn = Boolean(account.data?.user);
+  // The account's preferred place is applied once per visit, and never over a reference chosen here.
+  const appliedPreferredPlace = useRef(false);
   const nearbyKey = "med-nearby-" + (demo ? "demo" : "real");
   const basePath = demo ? "/demo" : "/";
   const sharedOpened = useRef(false);
@@ -230,6 +238,14 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       else sessionStorage.removeItem(nearbyKey);
     } catch {}
   }, [nearby, nearbyKey, loaded]);
+  useEffect(() => {
+    // Demo data has no account, and a reference already chosen in this tab wins over the saved one.
+    if (!loaded || account.isPending || demo || appliedPreferredPlace.current) return;
+    appliedPreferredPlace.current = true;
+    if (nearby) return;
+    const preferred = nearbyFromPreferences(account.data?.preferences ?? null);
+    if (preferred) setNearby(preferred);
+  }, [account.data, account.isPending, demo, loaded, nearby]);
   useEffect(() => {
     if (!loaded) return;
     const saved = writeList(browserStorage(), listKey, lines);
@@ -934,6 +950,14 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             </span>
           </p>
         )}
+        <a
+          className="header-account"
+          href="/conta"
+          aria-label={signedIn ? `Sua conta: ${account.data?.user?.email}` : "Entrar na sua conta"}
+        >
+          <UserRound size={19} aria-hidden="true" />
+          <span>{signedIn ? displayName(account.data!.user!) : "Entrar"}</span>
+        </a>
       </header>
       <main className="main" id="conteudo" tabIndex={-1}>
         {offline && !active && view !== "today" && (
@@ -1781,7 +1805,11 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             {view === "list" && (
               <>
                 <div className="page-title">
-                  <p className="overline">Sem cadastro, guardada neste aparelho</p>
+                  <p className="overline">
+                    {!demo && signedIn
+                      ? "Guardada neste aparelho · cópia na sua conta"
+                      : "Sem cadastro, guardada neste aparelho"}
+                  </p>
                   <h1>Minha lista.</h1>
                   <p>
                     {lines.length} {lines.length === 1 ? "item" : "itens"} para
@@ -1795,6 +1823,15 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     diretamente com a loja.
                   </p>
                 </div>
+                {!demo && (
+                  <SavedLists
+                    current={lines}
+                    onOpen={(saved) => {
+                      setLines(saved);
+                      setUndo(null);
+                    }}
+                  />
+                )}
                 {storageMessage(storageIssue) && (
                   <div className="notice amber storage-notice" role="status">
                     <TriangleAlert size={19} aria-hidden="true" />

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { accountRoutes, postgresAccountStore, type AccountBindings, type AccountStore } from "./accounts";
 import {
   AddressSearchError,
   MAX_QUERY,
@@ -9,11 +10,21 @@ import {
 } from "./geocoding";
 import type { Snapshot, SnapshotStore } from "./store";
 
-export type Bindings = { HYPERDRIVE: { connectionString: string } };
+export type Bindings = {
+  HYPERDRIVE: { connectionString: string };
+  /** Optional writable connection for accounts; without it the read connection is used (local dev only). */
+  ACCOUNTS_HYPERDRIVE?: { connectionString: string };
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  ACCOUNTS_PUBLIC_URL?: string;
+};
 
 type Deps = {
   store: (env: Bindings) => SnapshotStore;
+  /** Account storage; defaults to Postgres through the same (or the ACCOUNTS_) connection. */
+  accounts?: (env: AccountBindings) => AccountStore;
   fetchImpl?: typeof fetch;
+  now?: () => Date;
 };
 
 // Data changes when a scrape is published (hours apart): browsers reuse it for a minute and may show
@@ -25,8 +36,12 @@ const HISTORY_CACHE_CONTROL = "public, max-age=300, stale-while-revalidate=600";
 export const HISTORY_MAX_KEYS = 30;
 const PRICE_KEY = /^[0-9a-f]{32}$/;
 
-export function createApp({ store, fetchImpl = fetch }: Deps) {
+export function createApp({ store, accounts, fetchImpl = fetch, now }: Deps) {
   const app = new Hono<{ Bindings: Bindings }>();
+  const accountStore =
+    accounts ??
+    ((env: AccountBindings) =>
+      postgresAccountStore((env.ACCOUNTS_HYPERDRIVE ?? env.HYPERDRIVE)!.connectionString));
   // Payloads are large and change rarely, so each isolate keeps the newest one and only re-reads it
   // from the database when the etag changes.
   let cached: Snapshot | null = null;
@@ -111,7 +126,10 @@ export function createApp({ store, fetchImpl = fetch }: Deps) {
     }
   });
 
-  // Placeholder for the admin login: the UI expects these answers until real accounts exist.
+  // Accounts: sign-in (e-mail/password and Google), saved lists and the preferred location.
+  app.route("/api", accountRoutes({ store: accountStore, fetchImpl, now }));
+
+  // Placeholder for the *admin* login, which is not the same thing as a shopper's account.
   app.get("/api/session", (c) => c.json({ actor: null }));
   app.delete("/api/session", (c) => c.json({ ok: true }));
   app.post("/api/session", (c) => c.json({ error: "Login depende da integração com o backend." }, 501));

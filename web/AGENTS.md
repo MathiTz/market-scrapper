@@ -6,7 +6,7 @@ A Vite + React + TypeScript single-page app. There is no Next.js here.
 - The UI loads one complete snapshot from `GET /api/public` and searches and filters it in the browser. Shopping lists live in `localStorage`.
 - In production the API is the Hono app in `../api` (Cloudflare Workers reading Postgres). `../scraping/local_api/app.py` (Flask) serves the same routes for local development. `vite.config.ts` proxies `/api` to `API_URL` (default Flask on `http://127.0.0.1:5050`; use `http://127.0.0.1:8787` for the Hono API under `wrangler dev`). Keep both backends' routes in step.
 - Routes are chosen in `app/main.tsx`: `/` (real data), `/demo` (fictional data), `/demo?vitrine=1` (the
-  components sheet, every primitive in every state; never on `/`) and `/admin`.
+  components sheet, every primitive in every state; never on `/`), `/conta` (the shopper's account) and `/admin`.
 - Design tokens live in `tokens/tokens.json` and are compiled to `app/tokens.css` by `npm run tokens` (runs
   before `dev` and `build`). Colours are authored in OKLCH and resolved to sRGB hex by `tokens/build.mjs`
   (a binary-search gamut mapping, not something to hand-compute) - never hand-edit `app/tokens.css`, it is
@@ -27,6 +27,11 @@ A Vite + React + TypeScript single-page app. There is no Next.js here.
   a tie between sizes); with `scope: "catalogue"` it looks beyond the list.
   Under the result, "Onde sairia mais barato" (`components/receipt-basket.tsx`, `lib/receipt-basket.ts`) prices the same lines at each
   chain: the product bought, else a similar one (same subcategory and measure, same defining words) costed by its price per kg/L.
+- Accounts (`components/account.tsx`, `components/saved-lists.tsx`, `lib/account.ts`, `lib/account-api.ts`):
+  e-mail/password and Google sign-in; the account keeps copies of shopping lists and the preferred
+  "Perto de você" place. The list still lives in `localStorage` first - an account adds copies, it does not
+  replace the browser's. The API routes are `api/src/accounts.ts` in production and
+  `scraping/local_api/accounts.py` locally; keep both in step. See `docs/CONTAS.md`.
 - Run `npm run dev` (port 3000), `npm run typecheck`, `npm test` and `npm run build`.
 
 ## Contribution guidelines

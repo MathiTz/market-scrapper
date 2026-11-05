@@ -8,6 +8,7 @@ from models.price import Price
 from models.price_history import PriceHistory
 from models.product_image import ProductImage
 from models.scrape_attempt import ScrapeAttempt
+from models.user import SavedList, User, UserPreference, UserSession
 
 __all__ = [
     "Base",
@@ -21,4 +22,8 @@ __all__ = [
     "PriceHistory",
     "ProductImage",
     "ScrapeAttempt",
+    "User",
+    "UserSession",
+    "UserPreference",
+    "SavedList",
 ]

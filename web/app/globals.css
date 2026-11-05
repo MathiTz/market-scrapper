@@ -4420,3 +4420,451 @@ html[data-vt="product"] .product-hero img {
 .receipt-chain-lines li strong { flex-shrink: 0; }
 .receipt-chain-missing { margin: 0; padding: 0 var(--md-space-4) var(--md-space-4); font-size: var(--md-text-sm); }
 .receipt-chain-partial .price { color: var(--md-text-secondary); font-weight: 400; }
+
+/* ---------------------------------------------------------------------------------------------
+   Accounts (/conta) and lists kept in the account. Same tokens and primitives as the rest of the
+   app: no new colours, radii or sizes enter here.
+   --------------------------------------------------------------------------------------------- */
+
+.header-account {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-space-2);
+  padding: 10px 14px;
+  border: 1px solid var(--md-border-subtle);
+  border-radius: var(--md-radius-pill);
+  color: var(--md-text-primary);
+  font-size: var(--md-text-sm);
+  font-weight: var(--md-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.header-account:hover {
+  background: var(--md-interactive-ghost-fill-hover);
+  border-color: var(--md-border-default);
+}
+.header-account:focus-visible {
+  outline: 3px solid var(--md-focus-ring);
+  outline-offset: 2px;
+}
+
+.list-account-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-space-2);
+  margin: 0 0 var(--md-space-4);
+  padding: var(--md-space-3) var(--md-space-4);
+  border: 1px dashed var(--md-border-subtle);
+  border-radius: var(--md-radius-sm);
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.list-account-hint svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--md-text-brand);
+}
+.list-account-hint a {
+  color: var(--md-text-link);
+  font-weight: var(--md-weight-semibold);
+}
+
+.saved-lists {
+  margin: 0 0 var(--md-space-6);
+  padding: var(--md-space-5);
+  background: var(--md-surface-level-1);
+  border: 1px solid var(--md-border-subtle);
+  border-radius: var(--md-radius-sm);
+}
+.saved-lists-head h3 {
+  margin: 0 0 var(--md-space-1);
+  font-size: var(--md-text-lg);
+}
+.saved-lists-head p {
+  margin: 0 0 var(--md-space-4);
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.saved-lists-save {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--md-space-3);
+  margin-bottom: var(--md-space-4);
+}
+.saved-lists-save .field {
+  flex: 1;
+  min-width: 0;
+}
+.saved-lists-items {
+  display: grid;
+  gap: var(--md-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.saved-lists-items li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-space-3);
+  padding: var(--md-space-3);
+  border: 1px solid var(--md-border-subtle);
+  border-radius: var(--md-radius-xs);
+  background: var(--md-surface-level-2);
+}
+.saved-lists-items strong {
+  display: block;
+  font-size: var(--md-text-md);
+}
+.saved-lists-items small {
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-xs);
+}
+.saved-lists-actions {
+  display: flex;
+  gap: var(--md-space-1);
+  flex-shrink: 0;
+}
+.saved-lists-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--md-space-2);
+  margin: 0;
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.saved-lists-error {
+  margin: 0 0 var(--md-space-3);
+  color: var(--md-text-error);
+  font-size: var(--md-text-sm);
+}
+
+.account-shell {
+  min-height: 100vh;
+  padding: 0 var(--md-space-5) var(--md-space-12);
+}
+.account-header {
+  max-width: 1000px;
+  margin: auto;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-space-5);
+  border-bottom: 1px solid var(--md-border-subtle);
+}
+.account-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-space-2);
+  color: var(--md-text-brand);
+  font-size: var(--md-text-sm);
+  font-weight: var(--md-weight-semibold);
+  text-decoration: none;
+}
+.account-main {
+  max-width: 1000px;
+  margin: auto;
+  padding-top: var(--md-space-8);
+}
+.account-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--md-space-3);
+  padding: var(--md-space-8) 0;
+  color: var(--md-text-secondary);
+}
+.account-privacy {
+  display: flex;
+  gap: var(--md-space-2);
+  align-items: flex-start;
+  margin-top: var(--md-space-8);
+  padding-top: var(--md-space-4);
+  border-top: 1px solid var(--md-border-subtle);
+  color: var(--md-text-tertiary);
+  font-size: var(--md-text-xs);
+}
+.account-privacy svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.account-guest {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--md-space-10);
+  align-items: start;
+}
+.account-guest-copy h1 {
+  margin: var(--md-space-2) 0 var(--md-space-3);
+  font-size: var(--md-text-3xl);
+  letter-spacing: var(--md-tracking-display);
+}
+.account-guest-copy > p {
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-md);
+}
+.account-guest-copy ul {
+  display: grid;
+  gap: var(--md-space-3);
+  margin: var(--md-space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.account-guest-copy li {
+  display: flex;
+  gap: var(--md-space-2);
+  align-items: flex-start;
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.account-guest-copy li svg {
+  flex-shrink: 0;
+  color: var(--md-text-brand);
+  margin-top: 2px;
+}
+.account-form-card {
+  padding: var(--md-space-6);
+  background: var(--md-surface-level-1);
+  border: 1px solid var(--md-border-subtle);
+  border-radius: var(--md-radius-md);
+}
+.account-form-card h2 {
+  margin: var(--md-space-4) 0 var(--md-space-3);
+  font-size: var(--md-text-xl);
+}
+.account-form-card form {
+  display: grid;
+  gap: var(--md-space-3);
+}
+.account-form-card .btn {
+  justify-self: start;
+}
+.account-tabs {
+  display: flex;
+  gap: var(--md-space-1);
+  padding: 3px;
+  background: var(--md-surface-level-2);
+  border-radius: var(--md-radius-pill);
+}
+.account-tabs button {
+  flex: 1;
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: var(--md-radius-pill);
+  background: transparent;
+  color: var(--md-text-secondary);
+  font-weight: var(--md-weight-semibold);
+  font-size: var(--md-text-sm);
+  cursor: pointer;
+}
+.account-tabs button.selected {
+  background: var(--md-interactive-primary-fill-default);
+  color: var(--md-interactive-primary-text);
+}
+.account-tabs button:focus-visible {
+  outline: 3px solid var(--md-focus-ring);
+  outline-offset: 2px;
+}
+.account-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--md-space-3);
+  margin: var(--md-space-4) 0;
+  color: var(--md-text-tertiary);
+  font-size: var(--md-text-xs);
+}
+.account-divider::before,
+.account-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--md-border-subtle);
+}
+.account-google {
+  display: flex;
+  justify-content: center;
+  text-decoration: none;
+}
+.account-error {
+  margin: 0;
+  color: var(--md-text-error);
+  font-size: var(--md-text-sm);
+}
+.account-title h1 {
+  margin: var(--md-space-2) 0 var(--md-space-2);
+  font-size: var(--md-text-3xl);
+  letter-spacing: var(--md-tracking-display);
+}
+.account-title > p:last-child {
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.account-card {
+  margin-top: var(--md-space-5);
+  padding: var(--md-space-5);
+  background: var(--md-surface-level-1);
+  border: 1px solid var(--md-border-subtle);
+  border-radius: var(--md-radius-md);
+}
+.account-card-head h2 {
+  margin: 0 0 var(--md-space-1);
+  font-size: var(--md-text-xl);
+}
+.account-card-head p {
+  margin: 0 0 var(--md-space-4);
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.account-card .saved-lists {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+/* Inside the card the section is a step below "Listas salvas", not a second card title. */
+.account-card .saved-lists-head h3 {
+  font-size: var(--md-text-md);
+}
+.account-signout {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--md-space-5);
+}
+
+.account-place-saved {
+  display: flex;
+  align-items: center;
+  gap: var(--md-space-3);
+}
+.account-place-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: var(--md-radius-pill);
+  background: var(--md-selected-fill);
+  color: var(--md-text-brand);
+}
+.account-place-saved strong {
+  display: block;
+  font-size: var(--md-text-md);
+}
+.account-place-saved small {
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-xs);
+}
+.account-place-actions {
+  display: flex;
+  gap: var(--md-space-2);
+  margin-top: var(--md-space-3);
+}
+.account-place-empty {
+  margin: 0 0 var(--md-space-3);
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.account-place-current {
+  margin: 0 0 var(--md-space-3);
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.account-place-current strong {
+  color: var(--md-text-primary);
+}
+.account-place-find {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--md-space-2);
+}
+.account-place-find .field {
+  flex: 1;
+  min-width: 0;
+}
+.account-place-results {
+  display: grid;
+  gap: var(--md-space-1);
+  max-height: 220px;
+  overflow: auto;
+  margin: var(--md-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.account-place-results button {
+  display: flex;
+  align-items: center;
+  gap: var(--md-space-2);
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--md-border-subtle);
+  border-radius: var(--md-radius-xs);
+  background: var(--md-surface-level-2);
+  color: var(--md-text-primary);
+  text-align: left;
+  font-size: var(--md-text-sm);
+  cursor: pointer;
+}
+.account-place-results button:hover {
+  border-color: var(--md-border-selected);
+  background: var(--md-selected-fill);
+}
+.account-place-results svg {
+  flex-shrink: 0;
+  color: var(--md-text-brand);
+}
+.account-place-gps {
+  margin: var(--md-space-3) 0;
+}
+.account-place-message {
+  margin: var(--md-space-2) 0 0;
+  color: var(--md-text-secondary);
+  font-size: var(--md-text-sm);
+}
+.account-place-save {
+  display: flex;
+  gap: var(--md-space-2);
+  margin-top: var(--md-space-4);
+}
+
+@media (max-width: 860px) {
+  .account-guest {
+    grid-template-columns: 1fr;
+    gap: var(--md-space-6);
+  }
+}
+
+@media (max-width: 760px) {
+  .header-account {
+    padding: 9px;
+    gap: 0;
+  }
+  .header-account span {
+    display: none;
+  }
+  .account-shell {
+    padding: 0 var(--md-space-4) var(--md-space-10);
+  }
+  .account-header {
+    height: 86px;
+    gap: var(--md-space-3);
+  }
+  .account-back {
+    font-size: var(--md-text-xs);
+  }
+  .account-form-card,
+  .account-card {
+    padding: var(--md-space-4);
+  }
+  .saved-lists-items li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .saved-lists-save,
+  .account-place-find {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

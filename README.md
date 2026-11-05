@@ -54,6 +54,9 @@ mirroring `api/`, plus scrape/health/diagnose endpoints), no HTML pages.
   of day regardless of when the process itself was last started.
 - Automatic retry with backoff, scrape-attempt monitoring, and a validation gate before anything publishes
   (an empty, broken, or much-smaller-than-usual snapshot never goes live - the previous good one stays).
+- Optional **accounts** (`/conta`): e-mail + password or Google sign-in, so a shopper's list copies and
+  their preferred "Perto de você" place follow them between devices. Everything still works without an
+  account; see [web/docs/CONTAS.md](web/docs/CONTAS.md).
 
 ## Tech stack
 
@@ -178,6 +181,12 @@ Centralized in `scraping/config.py`, overridable via environment variables (see 
 | `PORT` | Flask port | `5050` |
 | `DEBUG` | Flask debug mode | `true` |
 
+Account sign-in reads three more variables directly (both backends): `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` enable "Continuar com o Google" (unset = e-mail/password only), and
+`ACCOUNTS_PUBLIC_URL` is the public UI origin used for the Google callback and the origin check when a
+proxy makes the request origin differ from it (e.g. `http://127.0.0.1:3000` with the local Flask API).
+Both backends fall back to the request's own origin.
+
 ## Production: Neon + Cloudflare
 
 Scraping stays on your machine (retail sites block datacenter IPs, not home ones). After each scrape the
@@ -188,9 +197,10 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
   (`scraping/db/schema.sql`). Publishing unchanged data is a no-op, and only the newest 5 snapshots are kept.
 - **`api/`** is the Hono app. It streams the latest snapshot untouched (with `ETag` and `Cache-Control`),
   answers `POST /api/location` (address search through Photon) and serves the built UI from the same
-  Worker. It is read-only.
+  Worker. The catalogue side is strictly read-only; only the account tables are written, through a separate
+  role (see *Accounts* below).
 - **The UI** downloads the snapshot once and searches and filters it in the browser; shopping lists stay in
-  `localStorage`.
+  `localStorage`, and an optional account keeps copies of them plus the preferred location.
 
 ### One-time setup
 
@@ -206,7 +216,13 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
 4. **Cloudflare:** `cd api && npm install && npx wrangler login`, then
    `npx wrangler hyperdrive create mercado-em-dia --connection-string="<read-only connection string>"` and
    put the id it prints in `api/wrangler.jsonc`.
-5. **Deploy:** `cd api && npm run deploy` (builds the UI from `../web`, then deploys the Worker with the
+5. **Accounts (optional):** `scraping/db/accounts_role.sql` creates `api_accounts`, a login allowed to
+   write only `users`, `sessions`, `user_preferences` and `saved_lists`. Create a second Hyperdrive config
+   with that connection string and put its id in the `ACCOUNTS_HYPERDRIVE` binding in `api/wrangler.jsonc`
+   (without it the API falls back to `HYPERDRIVE`, which must then be writable). Set the Google secrets with
+   `npx wrangler secret put GOOGLE_CLIENT_ID` and `... GOOGLE_CLIENT_SECRET` to enable the Google button;
+   e-mail/password works without them.
+6. **Deploy:** `cd api && npm run deploy` (builds the UI from `../web`, then deploys the Worker with the
    UI's files and the API together).
 
 ### Develop and test
@@ -217,7 +233,9 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
 - **UI tests:** `cd web && npm test` and `npm run typecheck`.
 - **Python tests:** `cd scraping && venv/bin/python -m unittest discover -s tests`.
 - **Without the cloud at all:** `scraping/run.py` (Flask) serves the same `/api/public` shape for local
-  development.
+  development, plus the account routes against SQLite. Google sign-in there also needs
+  `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `ACCOUNTS_PUBLIC_URL=http://127.0.0.1:3000` (so the
+  callback returns to the UI, not the API port).
 
 ## NCM (classificação fiscal)
 
