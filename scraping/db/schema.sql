@@ -41,6 +41,23 @@ CREATE TABLE IF NOT EXISTS products (
 );
 CREATE INDEX IF NOT EXISTS products_gtin ON products (gtin) WHERE gtin IS NOT NULL;
 
+-- What every chain lists right now, one row per product and chain, for the full-catalogue search
+-- (GET /api/search). The snapshot cannot carry tens of thousands of products, so it is capped per chain
+-- (config.SNAPSHOT_OFFERS_PER_CHAIN) and the rest lives here. Replaced as a whole after each publish by
+-- services/listings.py, from the same "currently listed" prices the snapshot is built from.
+CREATE TABLE IF NOT EXISTS current_prices (
+    product_key         TEXT        NOT NULL,  -- as in products and price_points
+    store               TEXT        NOT NULL,  -- chain name
+    display_name        TEXT        NOT NULL,  -- the product's name as the app shows it (public_api.display_name)
+    price_cents         INTEGER     NOT NULL CHECK (price_cents > 0),
+    regular_price_cents INTEGER,
+    deal_label          TEXT,
+    source_url          TEXT,
+    observed_at         TIMESTAMPTZ NOT NULL,  -- when the chain was last scraped at this price
+    stock               INTEGER,
+    PRIMARY KEY (product_key, store)
+);
+
 -- ---------------------------------------------------------------------------------------------
 -- Accounts (written by the Hono API, not by the publisher). The API's public read role cannot write
 -- these: point ACCOUNTS_HYPERDRIVE at a connection whose role may INSERT/UPDATE/DELETE here.

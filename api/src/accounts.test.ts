@@ -16,6 +16,7 @@ const snapshots: SnapshotStore = {
   latestMeta: async () => null,
   latest: async () => null,
   priceHistory: async () => [],
+  searchCatalogue: async () => ({ results: [], truncated: false }),
 };
 
 function makeApp(options: {

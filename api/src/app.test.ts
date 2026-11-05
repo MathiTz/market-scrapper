@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApp } from "./app";
-import type { PricePoint, Snapshot, SnapshotStore } from "./store";
+import type { CatalogueResult, PricePoint, Snapshot, SnapshotStore } from "./store";
 
 const env = { HYPERDRIVE: { connectionString: "postgres://unused" } };
 
@@ -10,18 +10,26 @@ const snapshot = (etag: string): Snapshot => ({
   payload: `{"products":[{"name":"Café"}],"etag":"${etag}"}`,
 });
 
-function fakeStore(initial: Snapshot | null, points: PricePoint[] = []) {
+const noResults: CatalogueResult = { results: [], truncated: false };
+
+function fakeStore(initial: Snapshot | null, points: PricePoint[] = [], found: CatalogueResult = noResults) {
   let current = initial;
   const store: SnapshotStore = {
     latestMeta: vi.fn(async () => (current ? { etag: current.etag, generatedAt: current.generatedAt } : null)),
     latest: vi.fn(async () => current),
     priceHistory: vi.fn(async (keys: string[]) => points.filter((p) => keys.includes(p.key))),
+    searchCatalogue: vi.fn(async () => found),
   };
   return { store, publish: (next: Snapshot | null) => (current = next) };
 }
 
-const appWith = (initial: Snapshot | null, fetchImpl?: typeof fetch, points: PricePoint[] = []) => {
-  const db = fakeStore(initial, points);
+const appWith = (
+  initial: Snapshot | null,
+  fetchImpl?: typeof fetch,
+  points: PricePoint[] = [],
+  found: CatalogueResult = noResults,
+) => {
+  const db = fakeStore(initial, points, found);
   return { ...db, app: createApp({ store: () => db.store, fetchImpl }) };
 };
 
@@ -32,6 +40,89 @@ const point = (key: string, store: string, observedAt: string, priceCents: numbe
   store,
   observedAt,
   priceCents,
+});
+
+describe("GET /api/search", () => {
+  const found: CatalogueResult = {
+    results: [
+      {
+        key: KEY,
+        name: "Arroz Camil Branco 1kg",
+        brand: "Camil",
+        category: "Mercearia",
+        subcategory: "Arroz",
+        amount: 1000,
+        unit: "g",
+        pack_count: 1,
+        gtin: null,
+        image_url: null,
+        prices: [
+          {
+            store: "Atacadão",
+            price_cents: 549,
+            regular_price_cents: null,
+            deal_label: null,
+            source_url: null,
+            observed_at: "2026-11-05T12:00:00.000Z",
+            stock: null,
+          },
+        ],
+      },
+    ],
+    truncated: false,
+  };
+
+  it("searches the database by the typed words, accents and case aside, and answers its body", async () => {
+    const { app, store } = appWith(null, undefined, [], found);
+    const res = await app.request("/api/search?q=Arroz%20CAMIL&limit=5", {}, env);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Cache-Control")).toContain("max-age=60");
+    expect(await res.json()).toEqual(found);
+    expect(store.searchCatalogue).toHaveBeenCalledWith(["arroz", "camil"], 5);
+  });
+
+  it("ignores accents when it reads the words", async () => {
+    const { app, store } = appWith(null);
+    await app.request(`/api/search?q=${encodeURIComponent("Feijão-Preto")}`, {}, env);
+    expect(store.searchCatalogue).toHaveBeenCalledWith(["feijao", "preto"], 40);
+  });
+
+  it("caps how many results can be asked for", async () => {
+    const { app, store } = appWith(null);
+    await app.request("/api/search?q=arroz&limit=5000", {}, env);
+    expect(store.searchCatalogue).toHaveBeenCalledWith(["arroz"], 60);
+  });
+
+  it.each(["", "a", "%20%20", "x".repeat(61)])("rejects the unusable query %j without touching the database", async (q) => {
+    const { app, store } = appWith(null);
+    const res = await app.request(`/api/search?q=${q}`, {}, env);
+    expect(res.status).toBe(400);
+    expect(store.searchCatalogue).not.toHaveBeenCalled();
+  });
+
+  it.each(["42P01", "42501"])("says the search is not set up yet when the database answers %s", async (code) => {
+    const store: SnapshotStore = {
+      ...fakeStore(null).store,
+      searchCatalogue: async () => {
+        throw Object.assign(new Error("relation current_prices does not exist"), { code });
+      },
+    };
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const res = await createApp({ store: () => store }).request("/api/search?q=arroz", {}, env);
+    spy.mockRestore();
+    expect(res.status).toBe(503);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(((await res.json()) as { error: string }).error).toContain("busca");
+  });
+
+  it("reports a database failure as a JSON 500", async () => {
+    const store: SnapshotStore = { ...fakeStore(null).store, searchCatalogue: async () => { throw new Error("boom"); } };
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = await createApp({ store: () => store }).request("/api/search?q=arroz", {}, env);
+    spy.mockRestore();
+    expect(res.status).toBe(500);
+    expect(((await res.json()) as { error: string }).error).not.toContain("boom");
+  });
 });
 
 describe("GET /api/price-history", () => {
@@ -140,6 +231,7 @@ describe("GET /api/public", () => {
       },
       latest: async () => null,
       priceHistory: async () => [],
+      searchCatalogue: async () => noResults,
     };
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const res = await createApp({ store: () => store }).request("/api/public", {}, env);

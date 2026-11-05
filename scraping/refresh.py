@@ -31,6 +31,7 @@ from models import ScrapeAttempt, SessionLocal, init_db
 from scraper.sites import SCRAPER_MAP
 from services.public_api import _listed_runs
 from services.catalogue import sync as sync_catalogue
+from services.listings import sync as sync_listings
 from services.price_points import sync as sync_price_points
 from services.publish import Finding, build_snapshot, check_snapshot, publish, published_offer_count
 from services.scraper_service import run_all_offers
@@ -176,6 +177,14 @@ def run(only: Optional[List[str]] = None, skip_scrape: bool = False, publish_dat
         out(f"    catalogue: {sync_catalogue(dsn, db)} product(s) saved or updated.")
     except Exception as exc:
         out(f"    catalogue NOT saved this time ({exc}); the next run will catch up.")
+    finally:
+        db.close()
+    # What is for sale now, for the full-catalogue search. After the catalogue: a listing needs its product row.
+    db = SessionLocal()
+    try:
+        out(f"    current prices: {sync_listings(dsn, db)} listing(s) saved for the search.")
+    except Exception as exc:
+        out(f"    current prices NOT saved this time ({exc}); the search keeps the previous ones.")
     finally:
         db.close()
     return 0

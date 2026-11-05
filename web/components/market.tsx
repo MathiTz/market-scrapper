@@ -51,6 +51,7 @@ import { StaleFlag } from "@/components/stale-flag";
 import { receiptOcrEnabled } from "@/lib/receipt-api";
 import { StoreEstimates } from "@/components/store-estimates";
 import { storeEstimates } from "@/lib/estimates";
+import { CATALOGUE_LIMIT, catalogueToData, searchCatalogue } from "@/lib/catalogue-search";
 import { buildIndex, filterIndexed } from "@/lib/search";
 import { PriceInput } from "@/components/price-input";
 import {
@@ -294,11 +295,48 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     () => buildIndex(result.data?.products ?? [], (p) => `${p.name} ${p.brand}`),
     [result.data],
   );
+  // The snapshot holds a capped selection per chain; the rest of the catalogue is searched on the server once
+  // the typing pauses, and what it finds that the snapshot lacks is added to the results below. If that
+  // search fails, the snapshot's own matches stay on screen.
+  const catalogue = useQuery({
+    queryKey: ["catalogue", typed],
+    queryFn: ({ signal }) => searchCatalogue(typed, signal),
+    enabled: !demo && !!result.data && typed.length >= 2,
+    staleTime: 60_000,
+    retry: false,
+  });
+  const knownPriceKeys = useMemo(
+    () => new Set((result.data?.offers ?? []).flatMap((o) => (o.price_key ? [o.price_key] : []))),
+    [result.data],
+  );
+  const fromCatalogue = useMemo(
+    () =>
+      result.data && catalogue.data && typed
+        ? catalogueToData(catalogue.data.results, result.data.retailers, result.data.regions?.[0] ?? BRAND.city, knownPriceKeys)
+        : null,
+    [result.data, catalogue.data, typed, knownPriceKeys],
+  );
+  // What the person should know about the server search, if anything.
+  const catalogueNote = !typed || demo
+    ? ""
+    : catalogue.isError
+      ? "A busca em todo o catálogo não respondeu agora; estes são só os produtos em destaque."
+      : catalogue.isFetching && !catalogue.data
+        ? "Buscando também em todo o catálogo…"
+        : catalogue.data?.truncated
+          ? `Mostrando os ${CATALOGUE_LIMIT} primeiros do catálogo todo; digite mais palavras para refinar.`
+          : "";
   const data = useMemo(() => {
     const all = result.data;
     if (!all || !search.trim()) return all ?? null;
-    return { ...all, products: filterIndexed(searchIndex, search) };
-  }, [result.data, search, searchIndex]);
+    const own = filterIndexed(searchIndex, search);
+    if (!fromCatalogue) return { ...all, products: own };
+    return {
+      ...all,
+      products: [...own, ...fromCatalogue.products],
+      offers: [...all.offers, ...fromCatalogue.offers],
+    };
+  }, [result.data, search, searchIndex, fromCatalogue]);
   useEffect(() => {
     const d = result.data;
     if (!d || !sharedTarget || sharedOpened.current) return;
@@ -1654,6 +1692,11 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                         .map((key) => ({ value: key, label: sortLabels[key] }))}
                     />
                   </div>
+                )}
+                {catalogueNote && !loading && !error && (
+                  <p className="muted list-progress" role="status">
+                    {catalogueNote}
+                  </p>
                 )}
                 {effectiveSort === "discount-near" && !nearby && !loading && !error && (
                   <p className="sort-hint muted">

@@ -5,3 +5,4 @@ GRANT USAGE ON SCHEMA public TO api_reader;
 GRANT SELECT ON snapshots TO api_reader;
 GRANT SELECT ON price_points TO api_reader;
 GRANT SELECT ON products TO api_reader;
+GRANT SELECT ON current_prices TO api_reader;

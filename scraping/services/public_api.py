@@ -29,6 +29,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
+import config
 from config import SCRAPE_INTERVAL_HOURS
 from models.price import Price
 from models.product import Product
@@ -494,6 +495,56 @@ def _public_image(url: Optional[str], members, mirror_of: Dict[int, str],
     return url  # dead and nothing mirrored: keep what the chain said, the UI will show "Sem foto"
 
 
+def latest_listed_prices(db: Session, retailer_of: Dict[int, Store],
+                         runs: Optional[Dict[str, str]] = None) -> Dict[Tuple[int, int], Price]:
+    """The latest price of each (product id, retailer id) on a chain's current list.
+
+    ``retailer_of`` maps any store id to its chain's one canonical store. A price seen in an earlier run but not
+    in the chain's latest one is no longer on its list and is left out (see ``_listed_runs``). The snapshot and
+    the full-catalogue search (``services/listings.py``) both read this, so they never disagree on what is for sale.
+    """
+    if runs is None:
+        runs = _listed_runs(db, _site_keys())
+    latest: Dict[Tuple[int, int], Price] = {}
+    for price in db.query(Price).order_by(Price.id).all():
+        retailer = retailer_of.get(price.store_id)
+        if retailer is None:
+            continue
+        listed = runs.get(retailer.name)
+        if listed is not None and price.run_id != listed:
+            continue
+        latest[(price.product_id, retailer.id)] = price
+    return latest
+
+
+def most_useful(merged: Dict[Tuple[int, int], Price], cap: int) -> Dict[Tuple[int, int], Price]:
+    """At most ``cap`` (product, retailer) prices per retailer, the ones a shopper gains most from first.
+
+    ``cap`` 0 keeps everything. Discounted prices (a regular price above the price, or a deal label) go first,
+    then products more than one chain sells (the ones that can be compared), then the rest; ties keep the
+    order products were stored in, so the same data always gives the same snapshot.
+    """
+    if cap <= 0:
+        return merged
+    chains: Dict[int, set] = {}
+    for rep, retailer_id in merged:
+        chains.setdefault(rep, set()).add(retailer_id)
+
+    def rank(item):
+        (rep, _), price = item
+        discounted = bool(price.offer) or bool(price.regular_price and price.regular_price > price.price)
+        return (0 if discounted else 1, 0 if len(chains[rep]) > 1 else 1, rep)
+
+    kept: Dict[Tuple[int, int], Price] = {}
+    per_retailer: Dict[int, int] = {}
+    for key, price in sorted(merged.items(), key=rank):
+        retailer_id = key[1]
+        if per_retailer.get(retailer_id, 0) < cap:
+            per_retailer[retailer_id] = per_retailer.get(retailer_id, 0) + 1
+            kept[key] = price
+    return kept
+
+
 def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
                  category: str = "", product: str = "", encartes: Optional[list] = None) -> dict:
     """The payload for ``GET /api/public``; parameters filter as the UI's search does."""
@@ -519,15 +570,7 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
     # Latest price per product and retailer, from the store's current list only (see _listed_runs).
     site_keys = _site_keys()
     runs = _listed_runs(db, site_keys)
-    latest: Dict[Tuple[int, int], Price] = {}
-    for price in db.query(Price).order_by(Price.id).all():
-        retailer = retailer_of.get(price.store_id)
-        if retailer is None:
-            continue
-        listed = runs.get(retailer.name)
-        if listed is not None and price.run_id != listed:
-            continue  # seen in an earlier run but not in the latest one: no longer on the store's list
-        latest[(price.product_id, retailer.id)] = price
+    latest = latest_listed_prices(db, retailer_of, runs)
 
     products_by_id = {p.id: p for p in db.query(Product).all()}
     # The same barcode at another chain: a product with none of its own photo/brand borrows that one's.
@@ -549,6 +592,8 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
         key = (rep_of.get(product_id, product_id), retailer_id)
         if key not in merged or price.id > merged[key].id:
             merged[key] = price
+
+    merged = most_useful(merged, config.SNAPSHOT_OFFERS_PER_CHAIN)
 
     wanted = clean(q)
     offers: List[dict] = []

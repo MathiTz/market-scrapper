@@ -84,11 +84,12 @@ class TestRun(unittest.TestCase):
         self.sync_locations = MagicMock(return_value={})
         self.sync_points = MagicMock(return_value=7)
         self.sync_catalogue = MagicMock(return_value=5)
+        self.sync_listings = MagicMock(return_value=9)
         self.data = snapshot_data()
         self.snapshot = {"payload": json.dumps(self.data), "etag": "e", "generated_at": "now"}
         for target, replacement in [
             ("scrape_chain", self.scrape), ("publish", self.publish), ("published_offer_count", self.live),
-            ("build_snapshot", MagicMock(return_value=self.snapshot)), ("sync_price_points", self.sync_points), ("sync_catalogue", self.sync_catalogue), ("sync_store_locations", self.sync_locations),
+            ("build_snapshot", MagicMock(return_value=self.snapshot)), ("sync_price_points", self.sync_points), ("sync_catalogue", self.sync_catalogue), ("sync_listings", self.sync_listings), ("sync_store_locations", self.sync_locations),
         ]:
             patcher = patch.object(refresh, target, replacement)
             patcher.start()
@@ -206,11 +207,20 @@ class TestRun(unittest.TestCase):
         self.assertEqual(self.run_refresh(), 0)
         self.assertIn("catalogue NOT saved", self.text())
 
+    def test_the_current_prices_are_saved_for_the_search_and_their_failure_does_not_fail_the_release(self):
+        self.assertEqual(self.run_refresh(), 0)
+        self.assertIn("9 listing(s) saved", self.text())
+        self.sync_listings.side_effect = RuntimeError("neon is down")
+        self.lines.clear()
+        self.assertEqual(self.run_refresh(), 0)
+        self.assertIn("current prices NOT saved", self.text())
+
     def test_nothing_is_saved_to_the_history_when_the_publish_is_blocked_or_skipped(self):
         self.live.return_value = 10_000
         self.run_refresh()
         self.run_refresh(publish_data=False)
         self.sync_points.assert_not_called()
+        self.sync_listings.assert_not_called()
 
     def test_a_publish_failure_is_reported_with_status_1(self):
         self.publish.side_effect = RuntimeError("connection refused")

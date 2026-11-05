@@ -8,6 +8,7 @@ import {
   reverseAddress,
   searchAddresses,
 } from "./geocoding";
+import { DEFAULT_LIMIT, limitOf, MAX_QUERY as MAX_SEARCH, MIN_QUERY as MIN_SEARCH, wordsOf } from "./search";
 import type { Snapshot, SnapshotStore } from "./store";
 
 export type Bindings = {
@@ -34,6 +35,9 @@ const CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=300";
 // Price history grows by a few rows a day per product, so a few minutes' staleness is invisible.
 const HISTORY_CACHE_CONTROL = "public, max-age=300, stale-while-revalidate=600";
 export const HISTORY_MAX_KEYS = 30;
+
+// A search result changes only when a scrape is published, so a minute of reuse is invisible.
+const SEARCH_CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=300";
 const PRICE_KEY = /^[0-9a-f]{32}$/;
 
 export function createApp({ store, accounts, fetchImpl = fetch, now }: Deps) {
@@ -86,6 +90,26 @@ export function createApp({ store, accounts, fetchImpl = fetch, now }: Deps) {
       ((history[point.key] ??= {})[point.store] ??= []).push([point.observedAt, point.priceCents]);
     }
     return c.json({ history }, 200, { "Cache-Control": HISTORY_CACHE_CONTROL });
+  });
+
+  // The whole catalogue, not only what the snapshot carries (the snapshot is capped per chain): ?q=arroz&limit=40,
+  // answered from the cloud database's products and current_prices. The Flask API serves the same shape.
+  app.get("/api/search", async (c) => {
+    const words = wordsOf(c.req.query("q") ?? "");
+    if (!words.length) {
+      return c.json({ error: `Digite de ${MIN_SEARCH} a ${MAX_SEARCH} caracteres para buscar.` }, 400);
+    }
+    try {
+      const body = await store(c.env).searchCatalogue(words, limitOf(c.req.query("limit") ?? String(DEFAULT_LIMIT)));
+      return c.json(body, 200, { "Cache-Control": SEARCH_CACHE_CONTROL });
+    } catch (error) {
+      // Before the first publish that writes current_prices, or before api_reader may read it (see
+      // scraping/db/readonly_role.sql), the search is simply not there yet - say so rather than a generic failure.
+      const code = (error as { code?: string })?.code;
+      if (code !== "42P01" && code !== "42501") throw error;
+      console.warn(`Catalogue search is not set up (${code})`);
+      return c.json({ error: "A busca no catálogo completo ainda não está disponível." }, 503, { "Cache-Control": "no-store" });
+    }
   });
 
   app.post("/api/location", async (c) => {

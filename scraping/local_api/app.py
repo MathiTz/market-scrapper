@@ -36,6 +36,7 @@ from models.scrape_attempt import ScrapeAttempt
 from services.address_search import (
     MAX_QUERY, MIN_QUERY, AddressSearchError, normalize, reverse_address, search_addresses,
 )
+from services import catalogue_search
 from services.price_points import history_of
 from services.public_api import build_public
 from services.scraper_service import run_and_store, run_all_products, run_all_offers
@@ -265,6 +266,26 @@ def api_public():
     response.set_etag(etag)
     response.headers["Cache-Control"] = f"public, max-age={PUBLIC_CACHE_SECONDS}, stale-while-revalidate=300"
     return response.make_conditional(request)
+
+
+@app.route("/api/search")
+def api_search():
+    """The full catalogue, not only the snapshot: ``?q=arroz&limit=40`` (see services/catalogue_search.py). The
+    Worker answers the same shape from the cloud database's ``products`` and ``current_prices``."""
+    try:
+        limit = int(request.args.get("limit", catalogue_search.DEFAULT_LIMIT))
+    except ValueError:
+        limit = catalogue_search.DEFAULT_LIMIT
+    db = get_db()
+    try:
+        body = catalogue_search.search(db, request.args.get("q", ""), limit)
+    finally:
+        db.close()
+    if body is None:
+        return jsonify({"error": f"Digite de {catalogue_search.MIN_QUERY} a {catalogue_search.MAX_QUERY} caracteres para buscar."}), 400
+    response = jsonify(body)
+    response.headers["Cache-Control"] = "public, max-age=60"
+    return response
 
 
 HISTORY_MAX_KEYS = 30

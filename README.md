@@ -173,6 +173,7 @@ Centralized in `scraping/config.py`, overridable via environment variables (see 
 | `PUBLISH_DATABASE_URL` | Cloud Postgres (Neon) the scheduler publishes to | *(unset = don't publish)* |
 | `DEFAULT_QUERY` | Default search term for scraping (empty = all products) | `""` |
 | `DEFAULT_LIMIT` | Max results per site | `10000` |
+| `SNAPSHOT_OFFERS_PER_CHAIN` | Max products per chain in the published snapshot (`0` = all). The rest stay searchable through `/api/search`; turn it on only once the deployed UI has that search | `0` |
 | `COSMOS_API_TOKEN` | Cosmos Bluesoft token, enables barcode→NCM lookups (optional; paid) | *(unset)* |
 | `SCRAPE_INTERVAL_HOURS` | Used to derive how long an offer stays "current" (3x this) | `12` |
 | `SCRAPE_MAX_RETRIES` | Max retry attempts for network errors | `3` |
@@ -202,7 +203,13 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
   Worker. The catalogue side is strictly read-only; only the account tables are written, through a separate
   role (see *Accounts* below).
 - **The UI** downloads the snapshot once and searches and filters it in the browser; shopping lists stay in
-  `localStorage`, and an optional account keeps copies of them plus the preferred location.
+  `localStorage`, and an optional account keeps copies of them plus the preferred location. When a search has
+  two or more characters it also asks `GET /api/search?q=...` (accent-insensitive, every word a prefix, 40
+  products at most, cached 60 s) and shows what the whole catalogue has beyond the snapshot, so the snapshot
+  can stay small while every product is findable. If that call fails the UI says so and keeps the snapshot's
+  own matches. The search reads `current_prices` (one row per product and chain: what is for sale now),
+  which `refresh.py` rewrites after each publish (`python -m services.listings`). The Flask twin serves the
+  same route from `market.db`.
 
 ### One-time setup
 
@@ -214,7 +221,9 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
    `--force` to publish past a blocking finding anyway, or `--dry-run FILE` to write the payload to a file
    instead of the database.
 3. **Read-only role for the API:** edit the password in `scraping/db/readonly_role.sql`, run it in Neon's
-   SQL editor, and note that role's connection string (the API must not use the owner's).
+   SQL editor, and note that role's connection string (the API must not use the owner's). On a database
+   that already has the role, run just `GRANT SELECT ON current_prices TO api_reader;` once (after a
+   publish has created the table); until then `/api/search` answers 503 and the UI keeps working on the snapshot.
 4. **Cloudflare:** `cd api && npm install && npx wrangler login`, then
    `npx wrangler hyperdrive create mercado-em-dia --connection-string="<read-only connection string>"` and
    put the id it prints in `api/wrangler.jsonc`.
