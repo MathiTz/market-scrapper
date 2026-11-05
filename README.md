@@ -311,6 +311,21 @@ python -m services.image_health              # re-check the stale URLs
 python -m services.image_mirror --product 1885   # fetch/verify a photo for one product
 ```
 
+## Warehouse baseline
+
+`scraping/data/warehouse-baseline.sql.gz` is a snapshot of `warehouse.db`: the ~15k classified products,
+the Cosmos categories, the NCM table and the classification cache. It is the starting point for tests
+and for a new machine that should not pay to re-classify everything.
+
+```bash
+cd scraping
+python warehouse_sql_dump.py                      # regenerate data/warehouse-baseline.sql.gz
+rm -f warehouse.db && gunzip -c data/warehouse-baseline.sql.gz | sqlite3 warehouse.db
+```
+
+Restoring is only useful on an empty file: the dump creates its own tables. `market.db` stays the
+operational data and is not part of it.
+
 ## What a store's list is
 
 What a store sells changes from one scrape to the next: new products appear and others are dropped. So the
