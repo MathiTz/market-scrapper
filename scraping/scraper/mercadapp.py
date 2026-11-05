@@ -15,6 +15,7 @@ for the chain, used by :meth:`fetch_locations` to list its real branches).
 
 import json
 import logging
+import re
 import time
 from datetime import datetime, timezone
 from typing import Iterable, List, Optional
@@ -77,6 +78,42 @@ _LOCATIONS_CAPTURE_JS = r"""
 """
 
 
+# Runs in the page before its own scripts: remembers the guest session's bearer token (the page logs
+# itself in and renews it) and offers ``__get`` to read the platform's JSON API with it, so the catalog is
+# read through the storefront's own session and nothing has to be imitated.
+_API_JS = r"""
+(() => {
+  window.__auth = null;
+  const real = (v) => /Bearer \w{20,}/.test(String(v));
+  const setHeader = XMLHttpRequest.prototype.setRequestHeader;
+  XMLHttpRequest.prototype.setRequestHeader = function (k, v) {
+    if (String(k).toLowerCase() === 'authorization' && real(v)) window.__auth = v;
+    return setHeader.apply(this, arguments);
+  };
+  const origFetch = window.fetch;
+  window.fetch = function (...args) {
+    try {
+      const h = args[1] && args[1].headers;
+      const v = h && (h.Authorization || h.authorization);
+      if (real(v)) window.__auth = v;
+    } catch (e) {}
+    return origFetch.apply(this, args);
+  };
+  window.__get = async (path) => {
+    const r = await origFetch('https://merconnect.mercadapp.com.br/mapp/' + path,
+      {headers: {Accept: 'application/json', Authorization: window.__auth}});
+    return JSON.stringify({status: r.status, body: r.ok ? await r.text() : null});
+  };
+})();
+"""
+
+_GET_JS = "const done = arguments[arguments.length - 1]; window.__get(arguments[0]).then(done);"
+
+MAX_PAGES = 400  # per category: far more than any shelf has; a stop for a response that never runs out
+PAUSE_SECONDS = 0.25  # between API calls: a burst of them gets the address refused for a while
+RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
+
+
 def _parse_time(value) -> Optional[datetime]:
     """An ISO timestamp with an offset ("2026-09-30T20:00:00.000-03:00") as an aware datetime, or None."""
     try:
@@ -116,15 +153,112 @@ class MercadappScraper(BaseScraper):
     )
     product_link_selectors = ("a.product-link", "a")
 
+    @property
+    def market_id(self) -> str:
+        """The storefront's market (branch) id, from ``.../loja/<id>/ofertas``."""
+        match = re.search(r"/loja/(\d+)", self.offers_url)
+        if not match:
+            raise ValueError(f"{self.offers_url} has no /loja/<id> part")
+        return match.group(1)
+
     def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
-        """Scrape all offers: from the JSON the page loads, or from its rendered cards if that yields nothing."""
+        """The whole catalog; failing that, the offers the page loads; failing that, its rendered cards."""
         logger.info("[%s] Starting scrape (limit=%d)", self.site_name, limit)
+        products = self._scrape_catalog(limit)
+        if products:
+            self._log_sample(products)
+            return products
+        logger.warning("[%s] The catalog could not be read; falling back to the offers", self.site_name)
         products = self._scrape_json(limit)
         if products:
             self._log_sample(products)
             return products
         logger.warning("[%s] No offers captured from the page's JSON; reading the rendered cards", self.site_name)
         return self._scrape_cards(limit)
+
+    # --- the whole catalog -----------------------------------------------------------------------------------
+
+    def _scrape_catalog(self, limit: int) -> List[ProductPrice]:
+        """Every product of the market, category by category, read through the storefront's own session."""
+        driver = None
+        try:
+            driver = self._create_driver()
+            driver.set_script_timeout(60)
+            driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": _API_JS})
+            driver.get(self.offers_url)
+            self._wait_for_session(driver)
+            pages = self._walk_catalog(self._api_getter(driver), limit)
+        except Exception as exc:
+            logger.warning("[%s] Could not read the catalog: %s", self.site_name, exc)
+            return []
+        finally:
+            if driver is not None:
+                driver.quit()
+        products = self.parse_offers(pages, limit=limit)
+        logger.info("[%s] %d page(s) read, %d product(s) in the catalog", self.site_name, len(pages), len(products))
+        return products
+
+    @staticmethod
+    def _wait_for_session(driver, timeout: int = 40) -> None:
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if driver.execute_script("return window.__auth"):
+                return
+            time.sleep(1)
+        raise RuntimeError("the storefront never logged itself in")
+
+    @staticmethod
+    def _api_getter(driver):
+        """``get(path) -> (HTTP status, parsed JSON or None)`` for the platform's API, from inside the page."""
+
+        def get(path: str):
+            answer = json.loads(driver.execute_async_script(_GET_JS, path))
+            body = answer.get("body")
+            return answer["status"], (json.loads(body) if body else None)
+
+        return get
+
+    def _walk_catalog(self, get, limit: int) -> List[dict]:
+        """Every page of items of every category (``get`` as from :meth:`_api_getter`), until ``limit`` items.
+
+        A category with subcategories is read through those; one without is read as itself. A page that
+        brings nothing new ends its category, so a platform that repeats its last page cannot loop forever.
+        """
+        market = self.market_id
+        status, data = self._get_with_retry(get, f"v2/markets/{market}/brand_categories")
+        categories = (data or {}).get("categories") or []
+        if not categories:
+            raise RuntimeError(f"the categories answered HTTP {status} with none")
+        pages: List[dict] = []
+        seen = set()
+        for category in categories:
+            _, data = self._get_with_retry(get, f"v2/markets/{market}/brand_categories/{category['id']}/subcategories")
+            sections = [sub["id"] for sub in (data or {}).get("subcategories") or []] or [category["id"]]
+            for section in sections:
+                for page in range(1, MAX_PAGES + 1):
+                    status, data = self._get_with_retry(get, f"v3/markets/{market}/items?page={page}&category_id={section}")
+                    ids = {item["id"] for mix in (data or {}).get("mixes") or [] for item in mix.get("items") or []}
+                    if data is None:
+                        logger.warning("[%s] Category %s page %d answered HTTP %s; moving on", self.site_name, section, page, status)
+                    if not ids - seen:
+                        break
+                    seen |= ids
+                    pages.append(data)
+                    if len(seen) >= limit:
+                        return pages
+            logger.info("[%s] %s: %d product(s) so far", self.site_name, (category.get("name") or "").strip(), len(seen))
+        return pages
+
+    @staticmethod
+    def _get_with_retry(get, path: str, attempts: int = 3):
+        """One API call, spaced from the last, tried again after a refusal or a server error."""
+        for attempt in range(1, attempts + 1):
+            time.sleep(PAUSE_SECONDS)
+            status, data = get(path)
+            if status not in RETRY_STATUSES or attempt == attempts:
+                return status, data
+            time.sleep(2 * attempt)
+        return status, data  # pragma: no cover
 
     def _scrape_json(self, limit: int) -> List[ProductPrice]:
         try:
@@ -164,7 +298,7 @@ class MercadappScraper(BaseScraper):
         seen, products = set(), []
         for body in bodies:
             try:
-                data = json.loads(body)
+                data = body if isinstance(body, dict) else json.loads(body)
             except (TypeError, ValueError):
                 continue
             for mix in (data.get("mixes") or []) if isinstance(data, dict) else []:
@@ -193,12 +327,20 @@ class MercadappScraper(BaseScraper):
         label = (item.get("offer_title") or "").strip() or (
             f"{round((1 - price / regular) * 100)}% OFF" if discounted else None
         )
+        # Loose goods are sold by the kilo: the item's price is for one typical piece (0.8 kg of avocado),
+        # the shelf price is the kilo's, which is what compares with other chains.
+        per_kilo = item.get("sold_in_kilogram") and item.get("amount_in_kilo")
+        if isinstance(per_kilo, (int, float)) and per_kilo > 0:
+            price = item["kilogram_price"] if isinstance(item.get("kilogram_price"), (int, float)) and item["kilogram_price"] > 0 else price / per_kilo
+            regular = regular / per_kilo if discounted else regular
+            if not re.search(r"\bkg\b", name, re.IGNORECASE):
+                name = f"{name} (kg)"
         return ProductPrice(
             store_name=self.site_name,
             product_name=name,
-            price=float(price),
+            price=round(float(price), 2),
             url=self.offers_url,
-            regular_price=float(regular) if discounted else None,
+            regular_price=round(float(regular), 2) if discounted else None,
             offer=label,
             stock=int(stock) if isinstance(stock, (int, float)) else None,
             gtin=valid_ean(item.get("bar_code")),

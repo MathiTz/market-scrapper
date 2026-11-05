@@ -641,6 +641,7 @@ class TestVtexBranches(unittest.TestCase):
 
 
 class TestMercadinhoScraper(unittest.TestCase):
+    @patch.object(MercadinhoScraper, "_scrape_catalog", return_value=[])
     @patch.object(MercadinhoScraper, "_scrape_json", return_value=[])
     @patch.object(MercadinhoScraper, "_scroll_to_bottom")
     @patch.object(MercadinhoScraper, "_click_show_all")
@@ -656,11 +657,13 @@ class TestMercadinhoScraper(unittest.TestCase):
         from scraper.base import ProductPrice
 
         card = ProductPrice("Mercadinho São Luiz", "Da tela", 1.0, "u")
-        with patch.object(MercadinhoScraper, "_scrape_json", return_value=[card]), \
+        with patch.object(MercadinhoScraper, "_scrape_catalog", return_value=[]), \
+                patch.object(MercadinhoScraper, "_scrape_json", return_value=[card]), \
                 patch.object(MercadinhoScraper, "_scrape_cards") as cards:
             self.assertEqual(scraper.scrape(), [card])
             cards.assert_not_called()
-        with patch.object(MercadinhoScraper, "_scrape_json", return_value=[]), \
+        with patch.object(MercadinhoScraper, "_scrape_catalog", return_value=[]), \
+                patch.object(MercadinhoScraper, "_scrape_json", return_value=[]), \
                 patch.object(MercadinhoScraper, "_scrape_cards", return_value=[card]) as cards:
             self.assertEqual(scraper.scrape(), [card])
             cards.assert_called_once()
