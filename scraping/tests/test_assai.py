@@ -62,6 +62,12 @@ class TestAssai(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 self.scraper.fetch_encartes(now=TODAY)
 
+    def test_imperva_challenge_page_is_reported_as_such_not_as_a_json_error(self):
+        challenge = '<html><body><iframe id="main-iframe" src="/_Incapsula_Resource?SWUDNSAI=31"></iframe></body></html>'
+        with patch.object(AssaiScraper, "render", return_value=as_page(challenge)):
+            with self.assertRaisesRegex(RuntimeError, "Imperva"):
+                self.scraper.fetch_encartes(now=TODAY)
+
     def test_the_flyer_reaches_the_snapshot_with_its_end_and_who_it_is_for(self):
         with patch.object(AssaiScraper, "render", return_value=json_page(OFFERS)):
             encartes = self.scraper.fetch_encartes(now=TODAY)

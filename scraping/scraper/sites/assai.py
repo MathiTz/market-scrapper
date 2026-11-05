@@ -54,7 +54,13 @@ class AssaiScraper(BaseScraper):
     def _flyers_json(self) -> dict:
         soup = self.render(f"{self.flyers_url}?v={time.time_ns()}", wait_seconds=1)
         pre = soup.find("pre")  # the browser wraps a JSON response in <pre>
-        return json.loads(pre.get_text() if pre else soup.get_text())
+        try:
+            return json.loads(pre.get_text() if pre else soup.get_text())
+        except ValueError:
+            # From a datacenter address Imperva never lets the browser through: it answers 200 with its challenge page
+            raise RuntimeError(
+                f"{self.flyers_url} did not answer with JSON but with a page of {len(str(soup))} characters "
+                "(Imperva's challenge?); set PROXY_ASSAI to a Brazilian residential or small-host exit") from None
 
     @staticmethod
     def parse_stores(page_html: str) -> List[dict]:
