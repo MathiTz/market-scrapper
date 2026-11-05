@@ -7,9 +7,12 @@ export const posthogConfigured = Boolean(key && host);
 
 if (!posthogConfigured) {
   if (import.meta.env.DEV) {
+    // A warning, not a throw: every caller already checks `posthogConfigured`, so the app works without
+    // analytics - but throwing here took the whole page down for anyone running `npm run dev` without a
+    // PostHog project, which is the normal state of a fresh checkout.
     const missingVariable = !key ? "VITE_POSTHOG_KEY" : "VITE_POSTHOG_HOST";
-    throw new Error(
-      `${missingVariable} variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once ${missingVariable} is configured`,
+    console.warn(
+      `${missingVariable} variable required by PostHog is missing or un-configured, this causes events to be silently missed. This warning stops appearing once ${missingVariable} is configured`,
     );
   }
 } else {
