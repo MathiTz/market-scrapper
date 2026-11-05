@@ -39,7 +39,7 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
 3. **Exit node.** A Linode (or any VPS) in São Paulo with a firewall that allows SSH only from the server and your own
    address, password login off. On the VPS create a key for the tunnel and authorize it on the exit node restricted to
    forwarding: `no-pty,no-agent-forwarding,no-X11-forwarding,command="/bin/false" ssh-ed25519 ...`.
-4. **`.env`** in `scraping/` (copy `.env.example`): `PUBLISH_DATABASE_URL` and the three `PROXY_` lines. Type the
+4. **`.env`** in `scraping/` (copy `.env.example`): `PUBLISH_DATABASE_URL` and the four `PROXY_` lines. Type the
    connection string yourself on the server.
 5. **Database.** Copy `market.db` once from the machine that last held it, with a consistent copy
    (`sqlite3 market.db ".backup /tmp/copy.db"`, then `scp`) so branch locations, store rows and price history carry
