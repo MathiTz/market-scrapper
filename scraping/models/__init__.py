@@ -8,6 +8,7 @@ from models.price import Price
 from models.price_history import PriceHistory
 from models.product_image import ProductImage
 from models.scrape_attempt import ScrapeAttempt
+from models.candidate_chain import CandidateChain
 
 __all__ = [
     "Base",
@@ -21,4 +22,5 @@ __all__ = [
     "PriceHistory",
     "ProductImage",
     "ScrapeAttempt",
+    "CandidateChain",
 ]

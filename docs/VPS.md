@@ -24,6 +24,7 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
 | `exit-tunnel.service` | Keeps `ssh -D 127.0.0.1:1081` to the exit node up, restarting it if it drops |
 | `market-release.service` / `.timer` | `refresh.py` (scrape every chain, validate, publish, sync price history and catalogue) at 06:00 and 18:00 Fortaleza time |
 | `market-locations.service` / `.timer` | `refresh.py --skip-scrape --sync-locations` at 07:00 and 19:00 Fortaleza, one hour after each release, so the branch lookup never shares the machine with a scrape |
+| `market-discovery.service` / `.timer` | `python -m services.store_discovery` on Sundays at 08:00 Fortaleza: looks on OpenStreetMap for supermarket chains we have no scraper for and saves them in `candidate_chains` (not published) |
 | `market-update.service` / `.timer` / `update.sh` | `git pull --ff-only` at 23:30, plus `pip install` when `requirements.txt` changed |
 
 ## Setting a server up
@@ -44,7 +45,7 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
    (`sqlite3 market.db ".backup /tmp/copy.db"`, then `scp`) so branch locations, store rows and price history carry
    over. **Only one machine may publish**: stop any other scheduler (`scheduler.py` on a laptop) first.
 6. **Units.** `cp scraping/deploy/*.service scraping/deploy/*.timer /etc/systemd/system/`, then
-   `systemctl daemon-reload` and `systemctl enable --now exit-tunnel market-release.timer market-locations.timer market-update.timer`.
+   `systemctl daemon-reload` and `systemctl enable --now exit-tunnel market-release.timer market-locations.timer market-discovery.timer market-update.timer`.
 7. **First run by hand**, to see it work: `systemctl start market-release` and `journalctl -fu market-release`.
 
 ## Day to day
@@ -61,6 +62,18 @@ that fails keeps its last good prices until they pass their time to live (36 hou
 
 Branch locations run on their own timer an hour after each release (they geocode through Photon, which rate-limits).
 To run them by hand: `venv/bin/python refresh.py --skip-scrape --sync-locations`.
+
+## Finding new chains
+
+`services/store_discovery.py` lists the supermarkets and wholesalers OpenStreetMap has for a region, drops those that match a
+chain in `stores` (fuzzy name match, so "Mercadão São Luiz" is the São Luiz we have), groups the rest and keeps them in
+`candidate_chains`, biggest first. It finds where a chain is, not its prices: a chain only appears in the app once it has
+a scraper. For another region: `python -m services.store_discovery --state PE --city Recife Olinda`.
+
+```
+sqlite3 market.db "select branches, name, cities, status from candidate_chains where status='new' order by branches desc limit 20"
+sqlite3 market.db "update candidate_chains set status='planned' where key='assai'"   # or 'ignored'
+```
 
 ## Known limits
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=Store discovery on Sundays at 08:00 Fortaleza time, after the morning release and locations jobs
+
+[Timer]
+OnCalendar=Sun *-*-* 08:00:00 America/Fortaleza
+Persistent=true
+
+[Install]
+WantedBy=timers.target
