@@ -23,6 +23,7 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
 |---|---|
 | `exit-tunnel.service` | Keeps `ssh -D 127.0.0.1:1081` to the exit node up, restarting it if it drops |
 | `market-release.service` / `.timer` | `refresh.py` (scrape every chain, validate, publish, sync price history and catalogue) at 06:00 and 18:00 Fortaleza time |
+| `market-locations.service` / `.timer` | `refresh.py --skip-scrape --sync-locations` at 07:00 and 19:00 Fortaleza, one hour after each release, so the branch lookup never shares the machine with a scrape |
 | `market-update.service` / `.timer` / `update.sh` | `git pull --ff-only` at 23:30, plus `pip install` when `requirements.txt` changed |
 
 ## Setting a server up
@@ -43,7 +44,7 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
    (`sqlite3 market.db ".backup /tmp/copy.db"`, then `scp`) so branch locations, store rows and price history carry
    over. **Only one machine may publish**: stop any other scheduler (`scheduler.py` on a laptop) first.
 6. **Units.** `cp scraping/deploy/*.service scraping/deploy/*.timer /etc/systemd/system/`, then
-   `systemctl daemon-reload` and `systemctl enable --now exit-tunnel market-release.timer market-update.timer`.
+   `systemctl daemon-reload` and `systemctl enable --now exit-tunnel market-release.timer market-locations.timer market-update.timer`.
 7. **First run by hand**, to see it work: `systemctl start market-release` and `journalctl -fu market-release`.
 
 ## Day to day
@@ -58,8 +59,8 @@ systemctl is-active exit-tunnel           # the tunnel
 A failed release leaves the live data untouched: validation refuses an empty, broken or much smaller snapshot. A chain
 that fails keeps its last good prices until they pass their time to live (36 hours).
 
-Branch locations are not part of the timer (they geocode through Photon, which rate-limits). Refresh them now and then
-with `venv/bin/python refresh.py --skip-scrape --sync-locations`.
+Branch locations run on their own timer an hour after each release (they geocode through Photon, which rate-limits).
+To run them by hand: `venv/bin/python refresh.py --skip-scrape --sync-locations`.
 
 ## Known limits
 

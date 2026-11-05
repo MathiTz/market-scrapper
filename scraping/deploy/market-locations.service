@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh store branch addresses and publish them (one hour after each release)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/market-scrapper/scraping
+# --skip-scrape reuses the prices the release just stored, so only the branch lookup (Photon geocoding) runs.
+ExecStart=/opt/market-scrapper/scraping/venv/bin/python refresh.py --skip-scrape --sync-locations
+TimeoutStartSec=2h
+Nice=10
