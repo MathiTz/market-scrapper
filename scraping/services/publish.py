@@ -96,13 +96,43 @@ def _fingerprint(data: dict) -> str:
     return hashlib.sha256(_compact(stable, sort_keys=True).encode("utf-8")).hexdigest()
 
 
+IMAGE_MANIFEST = Path(__file__).resolve().parents[1] / "data" / "image-manifest.json"
+
+
+def _refresh_image_health(db) -> int:
+    """Re-check the image URLs that went stale, so the payload can fall back to the mirror.
+
+    Bounded (``limit``) and best-effort: a publish must not wait on, or fail because of, a CDN.
+    """
+    from models.product import Product
+    from services.image_health import ensure_fresh
+
+    if db is None:  # tests build a snapshot from a patched build_public
+        return 0
+    urls = [product.image_url for product in db.query(Product).all() if product.image_url]
+    return ensure_fresh(urls, limit=500)
+
+
+def _write_image_manifest(data: dict) -> int:
+    """The mirror files this payload points at, for the web build to copy (web/scripts/sync-images.mjs)."""
+    paths = sorted({product["image_url"][1:] for product in data.get("products", [])
+                    if (product.get("image_url") or "").startswith("/images/")})
+    IMAGE_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+    IMAGE_MANIFEST.write_text(json.dumps(paths, ensure_ascii=False), encoding="utf-8")
+    return len(paths)
+
+
 def build_snapshot(db) -> dict:
     """``{payload, etag, generated_at}`` for the current local data.
 
     The etag ignores the timestamps that change on every build, so publishing unchanged data twice is
     recognized as such.
     """
+    checked = _refresh_image_health(db)
     data = build_public(db)
+    mirrored = _write_image_manifest(data)
+    if checked or mirrored:
+        logger.info("images: %s URL(s) re-checked, %s mirror file(s) referenced", checked, mirrored)
     return {"payload": _compact(data), "etag": _fingerprint(data), "generated_at": data["generated_at"]}
 
 

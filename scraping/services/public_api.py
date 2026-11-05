@@ -32,9 +32,11 @@ from sqlalchemy.orm import Session
 from config import SCRAPE_INTERVAL_HOURS
 from models.price import Price
 from models.product import Product
+from models.product_image import ProductImage
 from models.scrape_attempt import ScrapeAttempt
 from models.store import Store
 from models.store_location import StoreLocation
+from services.image_health import is_dead, load as load_image_health
 from services.price_points import product_key
 
 logger = logging.getLogger(__name__)
@@ -453,6 +455,25 @@ def _first_of(members: List[Product], attr: str) -> Optional[str]:
     return next((value for m in members if (value := getattr(m, attr, None))), None)
 
 
+def _public_image(url: Optional[str], members, mirror_of: Dict[int, str],
+                  health: Dict[str, dict]) -> Optional[str]:
+    """The image the page should load: the chain's URL when it works, else our verified copy.
+
+    Chains delete images (or close their whole bucket), and the UI has no fallback - it just says
+    "Sem foto". The mirror under scraping/images holds a checked WebP for most products, and the
+    Worker ships the ones used here (see the manifest written by services/publish.py), so a dead URL
+    becomes "/images/<path>" instead of a blank card. A product with no URL at all gets the same
+    treatment: the mirror is better than nothing.
+    """
+    if url and not is_dead(url, health):
+        return url
+    for member in members:
+        path = mirror_of.get(member.id)
+        if path:
+            return f"/{path}"  # e.g. images/ae/<sha>.webp -> /images/ae/<sha>.webp
+    return url  # dead and nothing mirrored: keep what the chain said, the UI will show "Sem foto"
+
+
 def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
                  category: str = "", product: str = "", encartes: Optional[list] = None) -> dict:
     """The payload for ``GET /api/public``; parameters filter as the UI's search does."""
@@ -464,6 +485,10 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
     now = datetime.now(timezone.utc).isoformat()
     ncm_index = ncm_by_key()
     category_index = category_by_key()
+    image_health = load_image_health()
+    # A verified local copy of the photo, by product id: used when the chain's own URL is gone.
+    mirror_of = {row.product_id: row.path
+                 for row in db.query(ProductImage).filter(ProductImage.status == "ok").all()}
 
     # One retailer per chain name: the lowest store id.
     canonical: Dict[str, Store] = {}
@@ -525,6 +550,7 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
         gtin = _first_of(members, "gtin")
         gtins = {m.gtin for m in members if m.gtin}
         image = _first_of(members, "image_url") or next((photo_of_gtin[g] for g in gtins if g in photo_of_gtin), None)
+        image = _public_image(image, members, mirror_of, image_health)
         brand = _first_of(members, "brand") or next((brand_of_gtin[g] for g in gtins if g in brand_of_gtin), None)
         identity = canonical_key({"name": source.name, "gtin": source.gtin})
         warehouse_category = category_index.get(identity) or (None, None)

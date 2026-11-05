@@ -31,6 +31,10 @@ O ponto de troca é fetch("/api/public?" + params). Pode-se adaptar a URL/respos
   snapshot, em vez da lista fixa de `categories`; produto sem departamento continua no `category` por palavra-
   chave e aparece em "Todas" e na busca, nunca num chip chutado.
 
+`product.image_url`: URL absoluta da loja, ou caminho relativo `/images/...` quando a URL da loja morreu
+  e o publicador usou a cópia verificada que o warehouse espelha localmente; `null` quando não há nenhuma.
+  A UI já aceita os dois (o `src` do `<img>` resolve relativo à origem).
+
 `product.subcategory`: string, pode ser vazia. Tipo mais específico que `category` (ex.: "Hidratante", "Sabonete" em vez de um "Higiene e beleza" compartilhado) - vazio quando o ETL não achou uma palavra específica o bastante (veja `subcategorize()` em `services/public_api.py`). A tela de detalhe usa isso para "Alternativas", caindo de volta para `category` quando vazio.
 | conditions | string | true para incluir condições especiais |
 | product | string | ID de produto compartilhado ou vazio |

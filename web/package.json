@@ -7,15 +7,16 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "predev": "npm run tokens",
+    "predev": "npm run tokens && npm run images",
     "dev": "vite",
     "tokens": "node tokens/build.mjs",
     "tokens:check": "node tokens/check.mjs",
-    "prebuild": "npm run tokens && npm run tokens:check",
+    "prebuild": "npm run tokens && npm run tokens:check && npm run images",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "images": "node scripts/sync-images.mjs"
   },
   "dependencies": {
     "@base-ui-components/react": "1.0.0-rc.0",

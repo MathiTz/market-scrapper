@@ -284,6 +284,26 @@ nappies, pet food and cleaning tools are not left without a chip.
 Rows in `category-ncm.csv` with `source=overlap` or `confidence` under 0.6 are the ones to read first:
 a wrong code on a leaf is a wrong code on every product under it.
 
+## Product images
+
+A product's `image_url` is the chain's own CDN, and those files disappear: a delisted item, a
+re-upload, a bucket that starts answering 403. The UI has no fallback, so a dead URL was a card saying
+"Sem foto".
+
+The publisher now checks the URLs (`scraping/services/image_health.py`, cached in
+`data/image-health.json`, re-checked weekly) and, when one is dead and the local mirror has a verified
+photo of that product, publishes `/images/<path>` instead. Those files ship with the Worker:
+`services/publish.py` writes the list it used to `data/image-manifest.json`, and
+`web/scripts/sync-images.mjs` copies exactly those files into the build (before `dev` and `build`), so
+the page loads the image from us instead of a CDN that may say no.
+
+```bash
+cd scraping
+python -m services.image_health --status     # what is known: ok / dead / unsure
+python -m services.image_health              # re-check the stale URLs
+python -m services.image_mirror --product 1885   # fetch/verify a photo for one product
+```
+
 ## What a store's list is
 
 What a store sells changes from one scrape to the next: new products appear and others are dropped. So the
