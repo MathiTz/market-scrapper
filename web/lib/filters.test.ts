@@ -248,11 +248,14 @@ describe("alternativesOf", () => {
     expect(alternativesOf([hidratante], hidratante, allPriced)).toEqual([]);
   });
 
-  it("excludes a same-kind product with no current price", () => {
+  it("includes a same-kind product with no current price, after the priced ones", () => {
+    // A product the chains are not listing this week is still an alternative; the card says "Sem preço atual".
     const hidratante = withKind("hidratante-ype", "Higiene e beleza", "Hidratante");
     const unpriced = withKind("hidratante-nivea", "Higiene e beleza", "Hidratante");
-    const list = [hidratante, unpriced];
-    expect(alternativesOf(list, hidratante, new Set(["hidratante-ype"]))).toEqual([]);
+    const priced = withKind("hidratante-cetaphil", "Higiene e beleza", "Hidratante");
+    const list = [hidratante, unpriced, priced];
+    expect(alternativesOf(list, hidratante, new Set(["hidratante-ype", "hidratante-cetaphil"])).map((p) => p.id))
+      .toEqual(["hidratante-cetaphil", "hidratante-nivea"]);
   });
 });
 
@@ -306,11 +309,39 @@ describe("alternativesOf with the NCM switch on", () => {
     expect(alternativesOf(list, active, priced, true).map((p) => p.id)).toEqual(["rice-other-ncm"]);
   });
 
-  it("keeps the subcategory list when no same-NCM product has a price", () => {
+  it("widens to the same NCM when the subcategory has no priced peer", () => {
     const active = product("rice", "10063021", "Arroz");
-    const list = [active, product("rice-other-ncm", "10063011", "Arroz"), product("bread", "19059090", "Pão")];
-    expect(alternativesOf(list, active, new Set(["rice", "rice-other-ncm"]), true).map((p) => p.id)).toEqual([
-      "rice-other-ncm",
+    const list = [
+      active,
+      product("rice-branco", "10063021", "Tipo 1"), // same NCM, other keyword: still the same kind
+      product("rice-other-ncm", "10063011", "Arroz"), // same subcategory, other NCM: not the same kind
+    ];
+    expect(alternativesOf(list, active, new Set(["rice", "rice-branco", "rice-other-ncm"]), true).map((p) => p.id))
+      .toEqual(["rice-branco"]);
+  });
+
+  it("never falls back to the subcategory alone", () => {
+    // Real case: a grape-flavoured supplement (NCM 20099000) whose only same-NCM peers were unpriced.
+    // Falling back to the subcategory "Uva" offered a punnet of grapes as an alternative.
+    const active = product("supplement", "20099000", "Uva");
+    const list = [active, product("grapes", "08061000", "Uva"), product("refresco", "20099000", "")];
+    expect(alternativesOf(list, active, new Set(["supplement", "grapes"]), true).map((p) => p.id)).toEqual([
+      "refresco",
+    ]);
+    expect(alternativesOf(list, active, new Set(), true).map((p) => p.id)).toEqual(["refresco"]);
+  });
+
+  it("lists an unpriced sibling of the same NCM, after the priced ones", () => {
+    // A flavour sibling nobody is selling this week is still an alternative; the card says "Sem preço atual".
+    const active = product("uva", "21069030", "Uva");
+    const list = [
+      active,
+      product("morango", "21069030", "Morango"), // same NCM, other flavour, no price
+      product("creatina", "21069030", "Creatina"), // same NCM, priced
+    ];
+    expect(alternativesOf(list, active, new Set(["uva", "creatina"]), true).map((p) => p.id)).toEqual([
+      "creatina",
+      "morango",
     ]);
   });
 

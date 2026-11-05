@@ -154,20 +154,19 @@ export function productsWithPrice<T extends { id: string }>(products: T[], offer
 }
 
 /**
- * The product detail page's "Alternativas": other products of the same *kind* as `active` that also have
- * a current price, excluding itself. Prefers subcategory ("Hidratante" next to other Hidratante, not next
- * to every other product loosely filed under "Higiene e beleza" - fralda, absorvente, shampoo...) and
- * only falls back to the coarse category when the ETL found nothing specific enough to name one (see
- * subcategorize() in services/public_api.py) - a product without a subcategory still gets *some*
- * alternatives, just less precise ones, rather than none. "Outros" is the one exception: it is the ETL's
- * catch-all for a name none of its category keywords recognised, not a real kind of product, so two
- * "Outros" products sharing it in common (a plastic basin and a tub of whey protein, say) are not
- * alternatives to each other - falling back to it the way every other category does produced exactly that,
- * so a product filed there with no subcategory gets no alternatives at all rather than a false "same kind".
+ * The product detail page's "Alternativas": other products of the same *kind* as `active`, excluding
+ * itself. Price is not a filter - a same-kind product the chains are not listing this week is still shown
+ * (its card says "Sem preço atual" or shows the last known price); priced ones just sort first.
  *
- * `pricedIds` excludes anything with no current offer: a same-kind product nobody is currently selling is
- * not something to compare against, and showing it as an unpriced card ("Sem preço atual") only made the
- * list longer without making it more useful.
+ * "Kind" is the subcategory ("Hidratante" next to other Hidratante, not next to every other product
+ * loosely filed under "Higiene e beleza" - fralda, absorvente, shampoo...), falling back to the coarse
+ * category when the ETL found nothing specific enough to name one (see subcategorize() in
+ * services/public_api.py). "Outros" is the exception: it is the ETL's catch-all for a name none of its
+ * keywords recognised, not a real kind of product, so two "Outros" products sharing it in common (a
+ * plastic basin and a tub of whey protein, say) are not alternatives to each other.
+ *
+ * `byNcm` (opt-in) makes the NCM the outer "kind": same NCM, preferably same subcategory too. See its own
+ * comment below for the widening rule and why it never falls back to the subcategory alone.
  */
 export function alternativesOf(
   products: Product[],
@@ -182,28 +181,44 @@ export function alternativesOf(
   // isotonics, and the subcategory is what keeps a catch-all code from making those "alternatives".
   // A product with no NCM, or no subcategory to pair one with, keeps the list it had before; so does an
   // NCM bucket with no priced member, since an empty panel is worse than a broader one.
-  if (byNcm && active.ncm && active.subcategory) {
-    const sameNcm = products.filter(
-      (p) =>
-        p.id !== active.id &&
-        p.ncm === active.ncm &&
-        p.subcategory === active.subcategory &&
-        pricedIds.has(p.id),
-    );
-    if (sameNcm.length) return byCloseness(sameNcm, active);
+  if (byNcm && active.ncm) {
+    // No price filter here on purpose: the same fiscal kind is a statement about what the product *is*,
+    // and a flavour sibling that is not being sold this week is still an alternative to look at (the
+    // card says "Sem preço atual"). Priced ones are ordered first; the rest follow by closeness.
+    const ofSameNcm = products.filter((p) => p.id !== active.id && p.ncm === active.ncm);
+    // Same NCM *and* subcategory is the list. When none of those has a price, the bucket widens to the
+    // same NCM alone - never to the subcategory alone: the subcategory comes from the name's keyword
+    // rules, so it is often a flavour ("Uva", "Morango"), and matching on it put a punnet of grapes in
+    // the alternatives of a grape-flavoured supplement. Better an honest empty panel or a wider fiscal
+    // kind than a different product entirely.
+    const sameKind = ofSameNcm.filter((p) => p.subcategory === active.subcategory);
+    const list = sameKind.length ? sameKind : ofSameNcm;
+    if (list.length) return byCloseness(list, active, pricedIds);
+    return [];
   }
   if (!active.subcategory && active.category === "Outros") return [];
   const sameKind = active.subcategory
     ? (p: Product) => p.subcategory === active.subcategory
     : (p: Product) => p.category === active.category;
-  return products.filter((p) => p.id !== active.id && sameKind(p) && pricedIds.has(p.id));
+  // Everything of that kind, priced or not - a product the chains are not listing this week is still
+  // an alternative; the card says "Sem preço atual". Priced ones come first, the rest keep the
+  // payload order, which is already the sort the list is showing.
+  return pricedFirst(products.filter((p) => p.id !== active.id && sameKind(p)), pricedIds);
 }
 
-/** Closest package size first, in the same unit, so a 500 g pot sits next to a 400 g one, not a 5 kg bag. */
-function byCloseness(list: Product[], active: Product): Product[] {
+/** A stable sort with the products that have a current price first. */
+function pricedFirst(list: Product[], pricedIds: ReadonlySet<string>): Product[] {
+  return [...list].sort((a, b) => Number(pricedIds.has(b.id)) - Number(pricedIds.has(a.id)));
+}
+
+/** Priced first, then closest package size in the same unit, so a 500 g pot sits next to a 400 g one,
+ * not a 5 kg bag. */
+function byCloseness(list: Product[], active: Product, pricedIds?: ReadonlySet<string>): Product[] {
   const distance = (p: Product) => Math.abs(Math.log(p.amount / active.amount));
+  const priced = (p: Product) => (pricedIds?.has(p.id) ?? true ? 1 : 0);
   return [...list].sort(
     (a, b) =>
+      priced(b) - priced(a) ||
       Number(b.unit === active.unit) - Number(a.unit === active.unit) ||
       distance(a) - distance(b) ||
       a.id.localeCompare(b.id),

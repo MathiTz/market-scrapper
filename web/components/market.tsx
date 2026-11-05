@@ -142,6 +142,9 @@ const discountLabels: Record<number, string> = {
 };
 /** "Só para membros…" inside a sentence: only the first letter changes, proper names keep theirs. */
 const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+/** "20099000" as the NCM is written on an invoice: 2009.90.00. */
+const ncmLabel = (code: string) => `${code.slice(0, 4)}.${code.slice(4, 6)}.${code.slice(6, 8)}`;
+
 /** A product name short enough for a toast or a notice. */
 const short = (name: string) => (name.length > 42 ? `${name.slice(0, 40).trimEnd()}…` : name);
 
@@ -1227,15 +1230,17 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             )}
             <h2 className="spaced">Alternativas</h2>
             <p className="muted">
-              {active.subcategory
-                ? `Outros produtos do tipo "${active.subcategory}". São produtos diferentes: não entram na comparação acima.`
-                : "Produtos diferentes da mesma categoria. Não entram na comparação acima."}
+              {alternativesByNcm && active.ncm
+                ? `Outros produtos da mesma classificação fiscal (NCM ${ncmLabel(active.ncm)}). São produtos diferentes: não entram na comparação acima.`
+                : active.subcategory
+                  ? `Outros produtos do tipo "${active.subcategory}". São produtos diferentes: não entram na comparação acima.`
+                  : "Produtos diferentes da mesma categoria. Não entram na comparação acima."}
             </p>
             {altProducts.length === 0 ? (
               <div className="empty compact">
                 <Clock aria-hidden="true" />
                 <h3>Sem alternativas no momento</h3>
-                <p>Nenhum outro produto do mesmo tipo tem preço atual agora.</p>
+                <p>Nenhum outro produto do mesmo tipo está no catálogo agora.</p>
               </div>
             ) : (
               <>
