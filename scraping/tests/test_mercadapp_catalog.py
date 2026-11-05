@@ -101,6 +101,22 @@ class TestCatalogWalk(unittest.TestCase):
         self.assertEqual(self.names(pages), ["B"])
         self.assertEqual(api.asked.count("v3/markets/79/items?page=1&limit=100&category_id=1"), len(mercadapp.BACKOFF_SECONDS) + 1)
 
+    def test_an_address_the_api_keeps_refusing_ends_the_catalog_instead_of_waiting_out_every_shelf(self):
+        api = FakeApi(categories=[1, 2, 3, 4], subcategories={}, shelves={n: [item(n, f"P{n}")] for n in range(1, 5)},
+                      refuse=[path for n in (2, 3, 4) for path in (f"v2/markets/79/brand_categories/{n}/subcategories",
+                                                    f"v3/markets/79/items?page=1&limit=100&category_id={n}")])
+        with patch.object(mercadapp.time, "sleep"), self.assertRaisesRegex(RuntimeError, "looks blocked"):
+            self.scraper._walk_catalog(api, limit=100)
+        # the blocked address refuses everything: the second refusal in a row ends it, category 3 is never asked
+        self.assertNotIn("v2/markets/79/brand_categories/3/subcategories", api.asked)
+        self.assertNotIn("v3/markets/79/items?page=1&limit=100&category_id=4", api.asked)
+
+    def test_a_catalog_that_gave_up_is_an_empty_list_for_the_offers_fallback(self):
+        with patch.object(CarnaubaScraper, "_create_driver"), patch.object(CarnaubaScraper, "_wait_for_session"), \
+                patch.object(CarnaubaScraper, "_walk_catalog", side_effect=RuntimeError("looks blocked")):
+            with self.assertLogs("scraper.mercadapp", level="WARNING"):
+                self.assertEqual(self.scraper._scrape_catalog(100), [])
+
     def test_no_categories_is_an_error_not_an_empty_catalog(self):
         with patch.object(mercadapp.time, "sleep"), self.assertRaises(RuntimeError):
             self.scraper._walk_catalog(FakeApi(categories=[], subcategories={}, shelves={}, refuse=["v2/markets/79/brand_categories"]), 100)

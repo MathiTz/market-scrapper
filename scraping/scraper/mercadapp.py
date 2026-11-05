@@ -113,6 +113,7 @@ MAX_PAGES = 400  # per category: far more than any shelf has; a stop for a respo
 PAUSE_SECONDS = 4.0  # between API calls: 4 a second, and 1 a second, got the address refused (403) for about half an hour
 PAGE_SIZE = 100  # items asked per page (the platform answers 30 unless told); ``has_next_page`` ends a shelf
 BACKOFF_SECONDS = (20, 60, 120)  # waits before the retries of a refused call
+GIVE_UP_AFTER = 2  # calls refused in a row, retries included, after which the address is taken to be blocked
 RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
 
 
@@ -233,12 +234,24 @@ class MercadappScraper(BaseScraper):
             raise RuntimeError(f"the categories answered HTTP {status} with none")
         pages: List[dict] = []
         seen = set()
+        refused = 0
+
+        def ask(path):
+            """``_get_with_retry``, giving up on the whole catalog when the address is evidently blocked: a
+            refused call costs minutes of backoff, and the release has hours, not days, to publish in."""
+            nonlocal refused
+            status, data = self._get_with_retry(get, path)
+            refused = refused + 1 if data is None and status in RETRY_STATUSES else 0
+            if refused >= GIVE_UP_AFTER:
+                raise RuntimeError(f"the API refused {refused} calls in a row (HTTP {status}); the address looks blocked")
+            return status, data
+
         for category in categories:
-            _, data = self._get_with_retry(get, f"v2/markets/{market}/brand_categories/{category['id']}/subcategories")
+            _, data = ask(f"v2/markets/{market}/brand_categories/{category['id']}/subcategories")
             sections = [sub["id"] for sub in (data or {}).get("subcategories") or []] or [category["id"]]
             for section in sections:
                 for page in range(1, MAX_PAGES + 1):
-                    status, data = self._get_with_retry(get, f"v3/markets/{market}/items?page={page}&limit={PAGE_SIZE}&category_id={section}")
+                    status, data = ask(f"v3/markets/{market}/items?page={page}&limit={PAGE_SIZE}&category_id={section}")
                     ids = {item["id"] for mix in (data or {}).get("mixes") or [] for item in mix.get("items") or []}
                     if data is None:
                         logger.warning("[%s] Category %s page %d answered HTTP %s; moving on", self.site_name, section, page, status)
