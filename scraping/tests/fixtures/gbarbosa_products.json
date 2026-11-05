@@ -1,0 +1,95 @@
+{
+ "products": [
+  {
+   "productName": "Sal Refinado Cuisine&Co 1Kg",
+   "brand": "Cuisine&Co",
+   "link": "/sal-refinado-cuisine-co-1kg-1873235/p",
+   "items": [
+    {
+     "ean": "7899778912003",
+     "images": [
+      {
+       "imageId": "261188",
+       "cacheId": "261188",
+       "imageTag": "",
+       "imageLabel": "",
+       "imageText": "",
+       "imageUrl": "https://gbarbosa.vtexassets.com/arquivos/ids/261188/67bdaf369020d1a695ac1f98.jpg?v=638760812071600000"
+      }
+     ],
+     "sellers": [
+      {
+       "sellerId": "1",
+       "commertialOffer": {
+        "Price": 1.99,
+        "ListPrice": 1.99,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "productName": "Sal Refinado Globo",
+   "brand": "Globo",
+   "link": "/sal-refinado-globo-1188909/p",
+   "items": [
+    {
+     "ean": "7896029310014",
+     "images": [
+      {
+       "imageId": "209689",
+       "cacheId": "209689",
+       "imageTag": "",
+       "imageLabel": "",
+       "imageText": "",
+       "imageUrl": "https://gbarbosa.vtexassets.com/arquivos/ids/209689/655265068d0743e14888e52f.jpg?v=638354954346830000"
+      }
+     ],
+     "sellers": [
+      {
+       "sellerId": "1",
+       "commertialOffer": {
+        "Price": 2.69,
+        "ListPrice": 2.69,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "productName": "Azeite de Oliva Extra Virgem Gallo Clássico Português 500ml",
+   "brand": "GALLO",
+   "link": "/azeite-de-oliva-extra-virgem-gallo-classico-portugues-500ml-1099218/p",
+   "items": [
+    {
+     "ean": "5601252231164",
+     "images": [
+      {
+       "imageId": "207797",
+       "cacheId": "207797",
+       "imageTag": "",
+       "imageLabel": "",
+       "imageText": "",
+       "imageUrl": "https://gbarbosa.vtexassets.com/arquivos/ids/207797/6552637d8d0743e14888dd9d.jpg?v=638354950418400000"
+      }
+     ],
+     "sellers": [
+      {
+       "sellerId": "1",
+       "commertialOffer": {
+        "Price": 28.9,
+        "ListPrice": 35.99,
+        "AvailableQuantity": 10000
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "recordsFiltered": 723
+}

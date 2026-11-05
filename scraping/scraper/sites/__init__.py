@@ -4,6 +4,7 @@ from scraper.sites.atacadao import AtacadaoScraper
 from scraper.sites.carnauba import CarnaubaScraper
 from scraper.sites.centerbox import CenterboxScraper
 from scraper.sites.cometa import CometaScraper
+from scraper.sites.gbarbosa import GBarbosaScraper
 from scraper.sites.mercadinho import MercadinhoScraper
 from scraper.sites.pao_de_acucar import PaoDeAcucarScraper
 from scraper.sites.pinheiro import PinheiroScraper
@@ -14,6 +15,7 @@ ALL_SCRAPERS = [
     CarnaubaScraper,
     CenterboxScraper,
     CometaScraper,
+    GBarbosaScraper,
     MercadinhoScraper,
     PaoDeAcucarScraper,
     PinheiroScraper,
@@ -27,6 +29,6 @@ for scraper_cls in ALL_SCRAPERS:
     SCRAPER_MAP[key] = scraper_cls
 
 __all__ = [
-    "ALL_SCRAPERS", "SCRAPER_MAP", "AtacadaoScraper", "CarnaubaScraper", "CenterboxScraper", "CometaScraper", "MercadinhoScraper",
+    "ALL_SCRAPERS", "SCRAPER_MAP", "AtacadaoScraper", "CarnaubaScraper", "CenterboxScraper", "CometaScraper", "GBarbosaScraper", "MercadinhoScraper",
     "PaoDeAcucarScraper", "PinheiroScraper", "SamsClubScraper",
 ]
