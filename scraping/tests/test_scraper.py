@@ -518,7 +518,8 @@ class TestSamsClubScraper(unittest.TestCase):
         self.assertIsNone(self.scraper._to_product_price(product, price, list_price, 99999).stock)
 
     @patch.object(SamsClubScraper, "fetch_raw")
-    def test_category_stops_at_the_first_product_without_a_discount(self, mock_fetch):
+    def test_discount_mode_stops_at_the_first_product_without_a_discount(self, mock_fetch):
+        self.scraper.only_discounted = True  # Sam's reads everything now; the mode itself is still VtexScraper's
         page = {"products": self.products["discounted"] + self.products["not_discounted"]}
         mock_fetch.return_value = json.dumps(page)
         offers = self.scraper._category_offers("bebidas", cap=100)
@@ -536,10 +537,21 @@ class TestSamsClubScraper(unittest.TestCase):
         self.assertEqual(len(self.scraper._category_offers("bebidas", cap=100)), 2)
 
     @patch.object(SamsClubScraper, "fetch_raw")
+    def test_reads_the_whole_catalogue_by_default_not_only_the_discounted(self, mock_fetch):
+        self.assertFalse(self.scraper.only_discounted)
+        self.assertTrue(self.scraper.split_subcategories)
+        mock_fetch.return_value = json.dumps({"products": self.products["discounted"] + self.products["not_discounted"]})
+        offers = self.scraper._category_offers("bebidas/category-2/cervejas", cap=100)
+        self.assertEqual(len(offers), len(self.products["discounted"]) + len(self.products["not_discounted"]))
+        self.assertNotIn("sort", mock_fetch.call_args.kwargs["params"])
+        self.assertIn("/category-1/bebidas/category-2/cervejas", mock_fetch.call_args.args[0])
+
+    @patch.object(SamsClubScraper, "fetch_raw")
     def test_scrape_spans_categories_without_duplicates(self, mock_fetch):
+        self.scraper.split_subcategories = False  # otherwise the category tree is read first
         mock_fetch.return_value = json.dumps({"products": self.products["discounted"] + self.products["not_discounted"]})
         results = self.scraper.scrape()
-        self.assertEqual(len(results), 3)  # the same products come back for every category
+        self.assertEqual(len(results), 4)  # the same products come back for every category
         self.assertEqual(mock_fetch.call_count, len(self.scraper.categories))
 
     @patch.object(SamsClubScraper, "fetch_raw", side_effect=RuntimeError("blocked"))

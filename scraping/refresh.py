@@ -90,7 +90,7 @@ def _say(message: str) -> None:
     print(message, flush=True)  # each chain takes minutes: show progress as it happens, even when piped
 
 
-def run(only: Optional[List[str]] = None, skip_scrape: bool = False, publish_data: bool = True,
+def run(only: Optional[List[str]] = None, skip: Optional[List[str]] = None, skip_scrape: bool = False, publish_data: bool = True,
         force: bool = False, sync_locations: bool = False, out: Callable = _say) -> int:
     dsn = config.PUBLISH_DATABASE_URL
     if publish_data and not dsn:
@@ -98,10 +98,11 @@ def run(only: Optional[List[str]] = None, skip_scrape: bool = False, publish_dat
             "Set it, or use --no-publish.")
         return 2
     keys = list(only) if only else list(SCRAPER_MAP)
-    unknown = [k for k in keys if k not in SCRAPER_MAP]
+    unknown = [k for k in keys + list(skip or []) if k not in SCRAPER_MAP]
     if unknown:
         out(f"Unknown chain: {', '.join(unknown)}. Choose from: {', '.join(SCRAPER_MAP)}.")
         return 2
+    keys = [k for k in keys if k not in (skip or [])]  # skipped chains keep the list their last run stored
     init_db()  # adds columns introduced since the local database was created
     started = time.monotonic()
     findings: List[Finding] = []
@@ -193,6 +194,8 @@ def run(only: Optional[List[str]] = None, skip_scrape: bool = False, publish_dat
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Scrape, store, validate and publish, in one go.")
     parser.add_argument("--only", nargs="+", metavar="CHAIN", help=f"scrape only these ({', '.join(SCRAPER_MAP)})")
+    parser.add_argument("--skip", nargs="+", metavar="CHAIN",
+                        help="scrape every chain except these (they keep the list their own timer stored)")
     parser.add_argument("--skip-scrape", action="store_true", help="validate and publish the stored prices")
     parser.add_argument("--no-publish", action="store_true", help="do everything except publish")
     parser.add_argument("--force", action="store_true", help="publish even if validation found errors")
@@ -205,7 +208,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     level = logging.INFO if args.verbose else logging.WARNING
     logging.basicConfig(level=level, format="%(levelname)s %(message)s")
     logging.getLogger("scrapling").setLevel(level)  # Scrapling sets up its own INFO logging
-    return run(only=args.only, skip_scrape=args.skip_scrape, publish_data=not args.no_publish, force=args.force,
+    return run(only=args.only, skip=args.skip, skip_scrape=args.skip_scrape, publish_data=not args.no_publish, force=args.force,
               sync_locations=args.sync_locations)
 
 

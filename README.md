@@ -502,9 +502,11 @@ Both run on **VTEX**, so they share `scraping/scraper/vtex.py` and call the publ
 rendering pages - which also gives, for free in the same response: brand, EAN/GTIN barcode and a product
 photo (see *Features* above).
 
-Atacadão sells at everyday wholesale prices with no discounts, so it collects a plain price list. Sam's
-Club reads pages sorted by discount and stops at the first non-discounted product, so only real offers are
-collected.
+Atacadão sells at everyday wholesale prices with no discounts, so it collects a plain price list (about
+4,300 grocery products, ~10 minutes), which runs once a day on its own timer (`market-atacadao`, 03:00) so it
+stays out of the twice-daily release. Sam's Club (and GBarbosa) are read in full too, one subcategory at a time
+so no department is cut at the search API's 2,500-product page limit: about 3,400 grocery products for Sam's
+Club (~5 min) and 8,000 for GBarbosa (~11 min). A product on promotion carries its list price and deal label.
 
 **Real branches:** VTEX's own public pickup-points API returns real branches with real coordinates already
 - no geocoding needed, unlike the Mercadapp chains.

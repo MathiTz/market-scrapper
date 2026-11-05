@@ -119,6 +119,16 @@ class TestRun(unittest.TestCase):
         self.run_refresh(only=["pinheiro", "cometa"])
         self.assertEqual([c.args[0] for c in self.scrape.call_args_list], ["pinheiro", "cometa"])
 
+    def test_skip_leaves_those_chains_out_of_the_scrape(self):
+        self.assertEqual(self.run_refresh(skip=["atacadao"]), 0)
+        scraped = [c.args[0] for c in self.scrape.call_args_list]
+        self.assertNotIn("atacadao", scraped)
+        self.assertIn("pinheiro", scraped)
+
+    def test_skip_with_an_unknown_chain_stops_before_scraping(self):
+        self.assertEqual(self.run_refresh(skip=["nope"]), 2)
+        self.scrape.assert_not_called()
+
     def test_sync_locations_is_off_by_default(self):
         self.run_refresh()
         self.sync_locations.assert_not_called()
