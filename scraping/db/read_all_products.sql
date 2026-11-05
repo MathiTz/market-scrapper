@@ -22,10 +22,18 @@ LEFT JOIN LATERAL (
 ORDER BY p.name, pp.store;
 
 -- The same from the scraper's own local SQLite file (scraping/market.db), where the tables differ:
+-- stores.name is the chain (stores.chain is a legacy column that is always empty), and prices holds one
+-- row per product and store that is updated in place, so "latest" is just the row - the window function
+-- only guards against a duplicate a concurrent scrape could have left behind.
 --
--- SELECT p.id, p.name, p.brand, p.category, p.gtin, s.chain AS store,
---        pr.price, pr.regular_price, pr.offer, pr.scraped_at
+-- SELECT p.id, p.name, p.brand, p.category, p.gtin, p.image_url,
+--        latest.store, latest.price, latest.regular_price, latest.offer, latest.scraped_at
 -- FROM products p
--- JOIN prices pr ON pr.product_id = p.id
--- JOIN stores s ON s.id = pr.store_id
--- ORDER BY p.name, s.chain;
+-- LEFT JOIN (
+--     SELECT pr.product_id, s.name AS store, pr.price, pr.regular_price, pr.offer, pr.scraped_at,
+--            ROW_NUMBER() OVER (PARTITION BY pr.product_id, pr.store_id
+--                               ORDER BY pr.scraped_at DESC, pr.id DESC) AS rn
+--     FROM prices pr
+--     JOIN stores s ON s.id = pr.store_id
+-- ) latest ON latest.product_id = p.id AND latest.rn = 1
+-- ORDER BY p.name, latest.store;
