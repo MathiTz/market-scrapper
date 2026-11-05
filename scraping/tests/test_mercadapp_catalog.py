@@ -41,8 +41,9 @@ class FakeApi:
             category = int(path.split("/")[-2])
             return 200, {"subcategories": [{"id": s, "name": f"Sub {s}"} for s in self.subcategories.get(category, [])]}
         section, number = int(path.split("category_id=")[1]), int(path.split("page=")[1].split("&")[0])
-        items = self.shelves.get(section, [])[(number - 1) * self.size: number * self.size]
-        return 200, page(*items)
+        shelf = self.shelves.get(section, [])
+        items = shelf[(number - 1) * self.size: number * self.size]
+        return 200, {**page(*items), "has_next_page": number * self.size < len(shelf)}
 
 
 class TestCatalogWalk(unittest.TestCase):
@@ -64,8 +65,8 @@ class TestCatalogWalk(unittest.TestCase):
                       shelves={11: [item(1, "A"), item(2, "B"), item(3, "C")], 12: [item(4, "D")], 2: [item(5, "E"), item(6, "F")]})
         pages = self.scraper._walk_catalog(api, limit=100)
         self.assertEqual(self.names(pages), ["A", "B", "C", "D", "E", "F"])
-        self.assertIn("v3/markets/79/items?page=2&category_id=11", api.asked)
-        self.assertIn("v3/markets/79/items?page=1&category_id=2", api.asked)  # no subcategories: the category itself
+        self.assertIn("v3/markets/79/items?page=2&limit=100&category_id=11", api.asked)
+        self.assertIn("v3/markets/79/items?page=1&limit=100&category_id=2", api.asked)  # no subcategories: the category itself
 
     def test_a_product_on_several_shelves_counts_once_and_a_repeated_page_ends_the_shelf(self):
         class Repeating(FakeApi):
@@ -81,6 +82,11 @@ class TestCatalogWalk(unittest.TestCase):
         self.assertEqual(self.names(pages), ["A", "B"])
         self.assertEqual(sum(1 for path in api.asked if "category_id=11" in path), 2)  # page 1 brought it, page 2 repeated
 
+    def test_a_shelf_that_says_it_has_no_next_page_is_not_asked_for_another(self):
+        api = FakeApi(categories=[1], subcategories={}, shelves={1: [item(1, "A"), item(2, "B")]}, size=2)
+        self.scraper._walk_catalog(api, limit=100)
+        self.assertEqual([p for p in api.asked if "items?" in p], ["v3/markets/79/items?page=1&limit=100&category_id=1"])
+
     def test_the_limit_stops_the_walk(self):
         api = FakeApi(categories=[1], subcategories={}, shelves={1: [item(n, f"P{n}") for n in range(1, 11)]})
         pages = self.scraper._walk_catalog(api, limit=3)
@@ -89,11 +95,11 @@ class TestCatalogWalk(unittest.TestCase):
 
     def test_a_refused_call_is_tried_again_and_a_dead_shelf_does_not_lose_the_others(self):
         api = FakeApi(categories=[1, 2], subcategories={}, shelves={1: [item(1, "A")], 2: [item(2, "B")]},
-                      refuse=["v3/markets/79/items?page=1&category_id=1"])
+                      refuse=["v3/markets/79/items?page=1&limit=100&category_id=1"])
         with patch.object(mercadapp.time, "sleep"), self.assertLogs("scraper.mercadapp", level="WARNING"):
             pages = self.scraper._walk_catalog(api, limit=100)
         self.assertEqual(self.names(pages), ["B"])
-        self.assertEqual(api.asked.count("v3/markets/79/items?page=1&category_id=1"), 3)
+        self.assertEqual(api.asked.count("v3/markets/79/items?page=1&limit=100&category_id=1"), len(mercadapp.BACKOFF_SECONDS) + 1)
 
     def test_no_categories_is_an_error_not_an_empty_catalog(self):
         with patch.object(mercadapp.time, "sleep"), self.assertRaises(RuntimeError):

@@ -370,10 +370,22 @@ expensive item can still pass the check. Misread sizes are repaired when the sha
 Both run the same storefront platform, sharing `scraping/scraper/mercadapp.py`'s `MercadappScraper`; the two site
 files only set the chain's own `base_url`, `offers_url` and `brand_id`.
 
-It is a React SPA that loads its offers as JSON but renders only a fraction of them on screen. The scraper
-opens the offers page with Selenium and injects a script *before* the page's own code runs, capturing every
-offers response the page receives - name, price, regular price, discount, stock and offer dates. It falls
-back to reading the rendered cards if nothing is captured.
+**The whole catalog** (about 4,900 products at Carnaúba, 6,600 at São Luiz). It is a React SPA that logs a
+guest in by itself; the scraper opens the offers page with Selenium, injects a script *before* the page's own
+code runs to keep that session's bearer token, and reads the platform's JSON API from inside the page:
+`brand_categories` -> each category's `subcategories` -> `items?page=N&limit=100&category_id=<subcategory>`
+until `has_next_page` is false (items only exist under a subcategory; the platform answers 30 an item page
+unless `limit` is given, and returns the same products for `limit=100` and `300`). Offers are part of the
+items (price, `original_price`, `offer_title`), so there is no separate offers scrape. Loose goods, which the
+platform prices per typical piece, are stored per kilo with a ` (kg)` suffix.
+
+**Rate limit:** the API answers 403 to the address for about half an hour after a burst (4 calls a second, and
+even 1 a second, tripped it; 1 call every 4 seconds - `PAUSE_SECONDS` - ran 120 calls clean). A run is about
+11 minutes per chain; a refused call is retried after 20 s, 60 s and 2 min, then its shelf is skipped.
+Do not probe the API in a loop while developing.
+
+If the catalog cannot be read it falls back to the offers the page loads (captured the same way), then to
+reading the rendered cards.
 
 **Real branches:** `fetch_locations()` opens the storefront's own "Clique e Retire" dialog and captures the
 response it triggers - every real branch's name and address (no coordinates; geocoded separately, see

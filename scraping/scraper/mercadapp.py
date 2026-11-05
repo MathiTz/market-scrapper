@@ -110,7 +110,9 @@ _API_JS = r"""
 _GET_JS = "const done = arguments[arguments.length - 1]; window.__get(arguments[0]).then(done);"
 
 MAX_PAGES = 400  # per category: far more than any shelf has; a stop for a response that never runs out
-PAUSE_SECONDS = 0.25  # between API calls: a burst of them gets the address refused for a while
+PAUSE_SECONDS = 4.0  # between API calls: 4 a second, and 1 a second, got the address refused (403) for about half an hour
+PAGE_SIZE = 100  # items asked per page (the platform answers 30 unless told); ``has_next_page`` ends a shelf
+BACKOFF_SECONDS = (20, 60, 120)  # waits before the retries of a refused call
 RETRY_STATUSES = (403, 429, 500, 502, 503, 504)
 
 
@@ -236,7 +238,7 @@ class MercadappScraper(BaseScraper):
             sections = [sub["id"] for sub in (data or {}).get("subcategories") or []] or [category["id"]]
             for section in sections:
                 for page in range(1, MAX_PAGES + 1):
-                    status, data = self._get_with_retry(get, f"v3/markets/{market}/items?page={page}&category_id={section}")
+                    status, data = self._get_with_retry(get, f"v3/markets/{market}/items?page={page}&limit={PAGE_SIZE}&category_id={section}")
                     ids = {item["id"] for mix in (data or {}).get("mixes") or [] for item in mix.get("items") or []}
                     if data is None:
                         logger.warning("[%s] Category %s page %d answered HTTP %s; moving on", self.site_name, section, page, status)
@@ -246,19 +248,21 @@ class MercadappScraper(BaseScraper):
                     pages.append(data)
                     if len(seen) >= limit:
                         return pages
+                    if data.get("has_next_page") is False:
+                        break
             logger.info("[%s] %s: %d product(s) so far", self.site_name, (category.get("name") or "").strip(), len(seen))
         return pages
 
     @staticmethod
-    def _get_with_retry(get, path: str, attempts: int = 3):
-        """One API call, spaced from the last, tried again after a refusal or a server error."""
-        for attempt in range(1, attempts + 1):
+    def _get_with_retry(get, path: str):
+        """One API call, spaced from the last, tried again - after a growing wait - when refused."""
+        for wait in (*BACKOFF_SECONDS, None):
             time.sleep(PAUSE_SECONDS)
             status, data = get(path)
-            if status not in RETRY_STATUSES or attempt == attempts:
+            if status not in RETRY_STATUSES or wait is None:
                 return status, data
-            time.sleep(2 * attempt)
-        return status, data  # pragma: no cover
+            logger.info("HTTP %s for %s; waiting %ds", status, path, wait)
+            time.sleep(wait)
 
     def _scrape_json(self, limit: int) -> List[ProductPrice]:
         try:
