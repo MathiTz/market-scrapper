@@ -322,6 +322,17 @@ def frangolandia_encartes() -> list:
     return _cached_encartes("Frangolândia", fetch)
 
 
+def assai_encartes() -> list:
+    def fetch():
+        from scraper.sites.assai import AssaiScraper
+
+        scraper = _short_timeouts(AssaiScraper())
+        scraper.max_retries = 2  # the challenge page is passed on the first try most of the time, not every time
+        return scraper.fetch_encartes()
+
+    return _cached_encartes("Assaí", fetch)
+
+
 def _site_keys() -> Dict[str, str]:
     from scraper.sites import ALL_SCRAPERS
 
@@ -569,6 +580,7 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
             _flyers(canonical, cometa_encartes(), now)
             + _image_flyers(canonical, "Centerbox", "https://www.grupocenterbox.com.br/ofertas/", centerbox_encartes(), now)
             + _image_flyers(canonical, "Frangolândia", "https://frangolandia.com/encartes/", frangolandia_encartes(), now)
+            + _image_flyers(canonical, "Assaí Atacadista", "https://www.assai.com.br/ofertas", assai_encartes(), now)
         )
     with_data = {o["retailer_id"] for o in offers} | {f["retailer_id"] for f in flyers}
     retailers = [
@@ -633,18 +645,19 @@ def _flyers(canonical: Dict[str, Store], encartes: list, now: str) -> List[dict]
 
 
 def _image_flyers(canonical: Dict[str, Store], store_name: str, source_url: str, encartes: list, now: str) -> List[dict]:
-    """Flyers of a chain that just posts its pages as images (Centerbox, Frangolândia): shown as images, read
-    into no prices. They give a start (the day they were posted) but no end - the UI treats that as still
-    running, and one that stops being listed simply drops out of the next scrape."""
+    """Flyers of a chain that just posts its pages as images (Centerbox, Frangolândia, Assaí): shown as images,
+    read into no prices. They give a start (the day they were posted, or begin) and, when the chain says
+    so, an end - without one the UI treats the flyer as still running, and one that stops being listed
+    simply drops out of the next scrape."""
     store = canonical.get(store_name)
     if store is None:
         return []
     return [{
-        "id": f"{store_name.lower()}-{e.id}", "retailer_id": str(store.id), "retailer_name": store.name,
+        "id": f"{store_name.lower().replace(' ', '-')}-{e.id}", "retailer_id": str(store.id), "retailer_name": store.name,
         "title": e.name, "source_url": source_url,
         "media_url": e.cover_url, "media_type": "image", "media_pages": e.pages or [e.cover_url],
         "valid_from": f"{e.posted_at}-03:00" if e.posted_at else None,  # Fortaleza has no daylight saving time
-        "valid_until": None, "scope": "",
+        "valid_until": f"{e.valid_until}-03:00" if e.valid_until else None, "scope": e.description,
         "version_hash": str(e.id), "collected_at": now, "source_checked_at": now,
         "method": "automatic", "status": "published", "published": 1,
     } for e in encartes]

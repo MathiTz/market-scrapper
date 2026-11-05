@@ -292,6 +292,19 @@ The offers are on the **home page**, in lazy-loaded carousels, behind a bot chec
 page with Scrapling's stealth browser, scrolls to trigger the lazy sections, finds each product by its
 `/produto/<id>/<slug>` link, and reads the regular price, deal label and per-unit price from the card text.
 
+### Assaí Atacadista (`assai.com.br`)
+
+The site shows no product prices, only weekly flyers, so Assaí contributes **flyers and branches**, no
+offers (`scraping/scraper/sites/assai.py`; it is in `FLYER_ONLY_SCRAPERS`, not scraped in the release's loop).
+The site sits behind Imperva's JavaScript challenge, which plain requests fail with a 403 and the stealth
+browser passes, so both sources are read with `render()`:
+
+- `/sites/default/files/static/ofertas_assai.json?<changing query>` is what the offers page loads: every flyer's
+  page images, its start and end dates, and the stores it applies to. Without the changing query the CDN
+  serves a days-old copy. The flyers are limited to Ceará and each says which stores it covers.
+- The "Nossas lojas" page embeds all stores as JSON with address and coordinates. A store whose coordinates
+  fall outside Ceará (Iguatu's are in Mato Grosso do Sul) has them dropped and the address geocoded.
+
 ### Pinheiro Supermercado (`lojaonline.pinheirosupermercado.com.br/ofertas`)
 
 A client-rendered Angular app; the endpoint behind it (`.../produtos/em-oferta?page=N`) holds every offer

@@ -1,5 +1,6 @@
 """Site-specific scraper implementations and registry."""
 
+from scraper.sites.assai import AssaiScraper
 from scraper.sites.atacadao import AtacadaoScraper
 from scraper.sites.carnauba import CarnaubaScraper
 from scraper.sites.centerbox import CenterboxScraper
@@ -22,6 +23,11 @@ ALL_SCRAPERS = [
     SamsClubScraper,
 ]
 
+# Chains that publish no prices, only flyers and branches: not scraped for offers, but their branches are synced.
+FLYER_ONLY_SCRAPERS = [
+    AssaiScraper,
+]
+
 # Build a map from site_key (or fallback to site_name) to scraper class
 SCRAPER_MAP = {}
 for scraper_cls in ALL_SCRAPERS:
@@ -29,6 +35,6 @@ for scraper_cls in ALL_SCRAPERS:
     SCRAPER_MAP[key] = scraper_cls
 
 __all__ = [
-    "ALL_SCRAPERS", "SCRAPER_MAP", "AtacadaoScraper", "CarnaubaScraper", "CenterboxScraper", "CometaScraper", "GBarbosaScraper", "MercadinhoScraper",
+    "ALL_SCRAPERS", "FLYER_ONLY_SCRAPERS", "SCRAPER_MAP", "AssaiScraper", "AtacadaoScraper", "CarnaubaScraper", "CenterboxScraper", "CometaScraper", "GBarbosaScraper", "MercadinhoScraper",
     "PaoDeAcucarScraper", "PinheiroScraper", "SamsClubScraper",
 ]

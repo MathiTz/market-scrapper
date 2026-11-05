@@ -18,7 +18,7 @@ from typing import Dict, List, Optional
 
 from models import SessionLocal, Store, StoreLocation, init_db
 from scraper.base import BranchLocation
-from scraper.sites import ALL_SCRAPERS, SCRAPER_MAP
+from scraper.sites import ALL_SCRAPERS, FLYER_ONLY_SCRAPERS, SCRAPER_MAP
 from services.address_search import AddressSearchError, _km_from_center, geocode_address
 
 logger = logging.getLogger(__name__)
@@ -39,12 +39,12 @@ def sync_store_locations(site_key: Optional[str] = None) -> Dict[str, int]:
     """
     init_db()
     if site_key:
-        scraper_cls = SCRAPER_MAP.get(site_key)
+        scraper_cls = SCRAPER_MAP.get(site_key) or next((c for c in FLYER_ONLY_SCRAPERS if c.site_key == site_key), None)
         if not scraper_cls:
             raise ValueError(f"Unknown site '{site_key}'")
         scrapers = [scraper_cls]
     else:
-        scrapers = ALL_SCRAPERS
+        scrapers = ALL_SCRAPERS + FLYER_ONLY_SCRAPERS
 
     results: Dict[str, int] = {}
     for scraper_cls in scrapers:

@@ -1,0 +1,189 @@
+{
+ "ofertas": [
+  {
+   "id": "27937",
+   "id_oferta": "175263-580",
+   "title": "",
+   "start_date": "02/11/2026",
+   "end_date": "06/11/2026",
+   "custom_text": "Preços válidos de 02/11/2026 até 06/11/2026",
+   "lojas": [
+    {
+     "nid": 11386,
+     "eid": 5
+    }
+   ],
+   "images": [
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175263/campanha-175263-cluster-580-pagina-1.jpeg"
+    },
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175263/campanha-175263-cluster-580-pagina-2.jpeg"
+    }
+   ],
+   "origem": "integracao",
+   "destaque": "0"
+  },
+  {
+   "id": "27938",
+   "id_oferta": "175264-544",
+   "title": "",
+   "start_date": "02/11/2026",
+   "end_date": "08/11/2026",
+   "custom_text": "Preços válidos de 02/11/2026 até 08/11/2026",
+   "lojas": [
+    {
+     "nid": 67,
+     "eid": 5
+    },
+    {
+     "nid": 78,
+     "eid": 5
+    },
+    {
+     "nid": 11386,
+     "eid": 5
+    }
+   ],
+   "images": [
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175264/campanha-175264-cluster-544-pagina-1.jpeg"
+    }
+   ],
+   "origem": "integracao",
+   "destaque": "0"
+  },
+  {
+   "id": "27939",
+   "id_oferta": "175265-579",
+   "title": "",
+   "start_date": "02/11/2026",
+   "end_date": "06/11/2026",
+   "custom_text": "Preços válidos de 02/11/2026 até 06/11/2026",
+   "lojas": [
+    {
+     "nid": 67,
+     "eid": 5
+    },
+    {
+     "nid": 78,
+     "eid": 5
+    }
+   ],
+   "images": [
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175265/campanha-175265-cluster-579-pagina-1.jpeg"
+    },
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175265/campanha-175265-cluster-579-pagina-2.jpeg"
+    }
+   ],
+   "origem": "integracao",
+   "destaque": "0"
+  },
+  {
+   "id": "28009",
+   "id_oferta": "175450-582",
+   "title": "",
+   "start_date": "05/11/2026",
+   "end_date": "06/11/2026",
+   "custom_text": "Preços válidos de 05/11/2026 até 06/11/2026",
+   "lojas": [
+    {
+     "nid": 11386,
+     "eid": 5
+    }
+   ],
+   "images": [
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175450/campanha-175450-cluster-582-pagina-1.jpeg"
+    },
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175450/campanha-175450-cluster-582-pagina-2.jpeg"
+    }
+   ],
+   "origem": "integracao",
+   "destaque": "0"
+  },
+  {
+   "id": "1",
+   "id_oferta": "170000-1",
+   "title": "",
+   "start_date": "05/10/2026",
+   "end_date": "08/10/2026",
+   "custom_text": "Preços válidos de 02/11/2026 até 06/11/2026",
+   "lojas": [
+    {
+     "nid": 11386,
+     "eid": 5
+    }
+   ],
+   "images": [
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175263/campanha-175263-cluster-580-pagina-1.jpeg"
+    },
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175263/campanha-175263-cluster-580-pagina-2.jpeg"
+    }
+   ],
+   "origem": "integracao",
+   "destaque": "0"
+  },
+  {
+   "id": "2",
+   "id_oferta": "170001-2",
+   "title": "",
+   "start_date": "02/11/2026",
+   "end_date": "06/11/2026",
+   "custom_text": "Preços válidos de 02/11/2026 até 06/11/2026",
+   "lojas": [
+    {
+     "nid": 99999,
+     "eid": 0
+    }
+   ],
+   "images": [
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175263/campanha-175263-cluster-580-pagina-1.jpeg"
+    },
+    {
+     "url": "https://d2q57q7k4hzryv.cloudfront.net/RPA/v3/175263/campanha-175263-cluster-580-pagina-2.jpeg"
+    }
+   ],
+   "origem": "integracao",
+   "destaque": "0"
+  }
+ ],
+ "lojas": [
+  {
+   "name": "Ceará",
+   "nid": 0,
+   "eid": 0,
+   "url": "/ofertas/ceara"
+  },
+  {
+   "name": "Assaí Bezerra M (Fortaleza)",
+   "nid": 67,
+   "eid": 5,
+   "url": "/ofertas/ceara/assai-bezerra-m-fortaleza"
+  },
+  {
+   "name": "Assaí Iguatu",
+   "nid": 11386,
+   "eid": 5,
+   "url": "/ofertas/ceara/assai-iguatu"
+  },
+  {
+   "name": "Assaí Washington Soares",
+   "nid": 78,
+   "eid": 5,
+   "url": "/ofertas/ceara/assai-washington-soares"
+  },
+  {
+   "name": "Acre",
+   "nid": 0,
+   "eid": 0,
+   "url": "/ofertas/acre"
+  }
+ ]
+}
