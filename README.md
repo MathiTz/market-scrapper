@@ -311,6 +311,51 @@ python -m services.image_health              # re-check the stale URLs
 python -m services.image_mirror --product 1885   # fetch/verify a photo for one product
 ```
 
+## Populating the warehouse
+
+`scraping/warehouse.db` is built from what the scraper has already stored, so the order is
+**scrape → classify → code → snapshot**. Everything below is local and idempotent; re-running a step
+picks up only what is new.
+
+```bash
+cd scraping
+source venv/bin/activate          # or prefix every command with venv/bin/
+
+# 1. scrape into market.db (no publish: production untouched)
+python refresh.py --no-publish    # --only centerbox atacadao  to scrape fewer chains
+
+# 2. classify every product the warehouse has not seen yet (needs OLLAMA_API_KEY in .env)
+python -m warehouse_etl           # --workers 8 for more parallel batches
+python -m warehouse_etl --status  # coverage, categories in use, review queue
+
+# 3. give the products an NCM: the Cosmos leaf first, then the ones no map reaches
+python -m warehouse_etl --ncm-only
+python -m warehouse_etl --ncm-unmapped
+
+# 4. snapshot the result (see "Warehouse baseline" below)
+python warehouse_sql_dump.py
+```
+
+A first run classifies everything and pays for it; later runs only classify new products, because
+every answer is cached by product name (`silver_llm_cache`). Budget roughly 1–2 s per product at
+`--workers 8`; the cache makes re-runs nearly free. `--limit N` and `--product ID` are there for
+trying things out.
+
+| flag | what it is for |
+|---|---|
+| `--status` | coverage and the review queue, no writes |
+| `--force` | reclassify products that already have a leaf |
+| `--rebuild-taxonomy` | re-seed `dim_category` from `data/cosmos-categorias/categorias.csv` |
+| `--force-outside` | reclassify what an older taxonomy parked in `fora-da-taxonomia` |
+| `--ncm-only` | fill NCM for products already classified |
+| `--ncm-unmapped` | code the products neither the leaf map nor a barcode reaches |
+| `--classify-unmapped` | classify products with no leaf, then code them |
+| `--ncm-gtin-csv file` | import `gtin,ncm` answers from a paid provider export |
+
+If the model has no answer for a product, it stays uncoded rather than guessed; `--status` shows the
+count. A hand correction goes in `data/ncm/product-overrides.csv` (name → NCM) and is applied by
+`--ncm-only`.
+
 ## Warehouse baseline
 
 `scraping/data/warehouse-baseline.sql.gz` is a snapshot of `warehouse.db`: the ~15k classified products,
