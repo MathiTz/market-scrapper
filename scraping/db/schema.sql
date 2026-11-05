@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires_at TIMESTAMPTZ NOT NULL
 );
 CREATE INDEX IF NOT EXISTS sessions_user ON sessions (user_id);
+CREATE INDEX IF NOT EXISTS sessions_expires ON sessions (expires_at);
 
 -- One row per shopper: the place they compare prices from ("Perto de você") and the city they browse.
 CREATE TABLE IF NOT EXISTS user_preferences (

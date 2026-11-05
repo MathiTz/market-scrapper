@@ -60,8 +60,7 @@ export interface AccountStore {
   /** The account and its password hash (null for a Google-only account), or null when there is none. */
   userByEmail(email: string): Promise<{ account: Account; password_hash: string | null } | null>;
   userByGoogleSub(sub: string): Promise<Account | null>;
-  /** Connects a Google identity to an account that already exists with the same verified e-mail. */
-  linkGoogle(userId: string, sub: string): Promise<Account>;
+  pruneSessions(now: Date): Promise<void>;
   createSession(tokenHash: string, userId: string, expiresAt: Date): Promise<void>;
   sessionUser(tokenHash: string): Promise<Account | null>;
   deleteSession(tokenHash: string): Promise<void>;
@@ -97,6 +96,14 @@ const SESSION_COOKIE = "med_session";
 const OAUTH_COOKIE = "med_oauth_state";
 const SESSION_DAYS = 30;
 const PBKDF2_ITERATIONS = 210_000;
+/**
+ * A well-formed hash verified for unknown e-mails and Google-only accounts, so a wrong login costs the
+ * same PBKDF2 work whether or not the account exists. The password it was made from is irrelevant: the
+ * result is discarded unless the account also has a real password hash. Keep its iteration count in step
+ * with PBKDF2_ITERATIONS.
+ */
+const TIMING_DUMMY_HASH =
+  "pbkdf2-sha256$210000$1yMFHcAugHK0BO4uOC0S/A==$U62w9zo8i3Ka9gqaiQSkzi9impCM0MooSr8vu0gFwN8=";
 
 /* -------------------------------------------------------------------------------------------- */
 /* Validation                                                                                    */
@@ -114,10 +121,19 @@ export function emailProblem(email: string): string | null {
 }
 
 export function passwordProblem(password: unknown): string | null {
-  if (typeof password !== "string" || password.length < MIN_PASSWORD)
+  if (typeof password !== "string")
     return `A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.`;
-  if (password.length > MAX_PASSWORD) return `A senha pode ter no máximo ${MAX_PASSWORD} caracteres.`;
+  const length = Array.from(password).length;
+  if (length < MIN_PASSWORD)
+    return `A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.`;
+  if (length > MAX_PASSWORD) return `A senha pode ter no máximo ${MAX_PASSWORD} caracteres.`;
   return null;
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isUuid(value: string): boolean {
+  return UUID_REGEX.test(value);
 }
 
 /** The display name, `null` when left empty, or `undefined` when it is too long for the column. */
@@ -333,15 +349,8 @@ export function postgresAccountStore(connectionString: string): AccountStore {
       return row ? account(row) : null;
     },
 
-    async linkGoogle(userId, sub) {
-      const [row] = await query((sql) =>
-        sql<UserRow[]>`
-          UPDATE users SET google_sub = ${sub} WHERE id = ${userId}
-          RETURNING id, email, name, created_at`,
-      );
-      // The account was read a moment ago; a missing row means it was deleted in between.
-      if (!row) throw new Error("Account not found");
-      return account(row);
+    async pruneSessions(now) {
+      await query((sql) => sql`DELETE FROM sessions WHERE expires_at < ${now}`);
     },
 
     async createSession(tokenHash, userId, expiresAt) {
@@ -473,12 +482,13 @@ export function memoryAccountStore(): AccountStore {
       const id = byGoogle.get(sub);
       return (id && users.get(id)?.account) || null;
     },
-    async linkGoogle(userId, sub) {
-      const user = users.get(userId);
-      if (!user) throw new Error("Account not found");
-      user.google_sub = sub;
-      byGoogle.set(sub, userId);
-      return user.account;
+    async pruneSessions(now) {
+      const cutoff = now.getTime();
+      for (const [tokenHash, session] of sessions) {
+        if (session.expiresAt < cutoff) {
+          sessions.delete(tokenHash);
+        }
+      }
     },
     async createSession(tokenHash, userId, expiresAt) {
       sessions.set(tokenHash, { userId, expiresAt: expiresAt.getTime() });
@@ -583,6 +593,7 @@ async function currentAccount(c: Context, store: AccountStore): Promise<Account 
 }
 
 async function startSession(c: Context, store: AccountStore, userId: string, now: Date) {
+  await store.pruneSessions(now);
   const token = randomToken();
   const expiresAt = new Date(now.getTime() + SESSION_DAYS * 86_400_000);
   await store.createSession(await hashToken(token), userId, expiresAt);
@@ -601,7 +612,9 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   if (!part) return null;
   try {
     const base64 = part.replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "="))) as Record<string, unknown>;
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
   } catch {
     return null;
   }
@@ -625,6 +638,21 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
     c.header("Cache-Control", "no-store");
   });
 
+  const MAX_ATTEMPTS_ENTRIES = 2000;
+  function pruneAttempts() {
+    if (attempts.size <= MAX_ATTEMPTS_ENTRIES) return;
+    const cutoff = Date.now();
+    for (const [key, entry] of attempts) {
+      if (entry.resetAt <= cutoff) attempts.delete(key);
+    }
+    // Still over the cap (a burst of distinct e-mails inside the window): drop the oldest entries.
+    while (attempts.size > MAX_ATTEMPTS_ENTRIES) {
+      const oldest = attempts.keys().next().value;
+      if (oldest === undefined) break;
+      attempts.delete(oldest);
+    }
+  }
+
   function throttled(c: Context, email: string): boolean {
     const ip = c.req.header("CF-Connecting-IP") ?? c.req.header("X-Forwarded-For")?.split(",")[0]?.trim() ?? "local";
     const key = `${ip}|${email}`;
@@ -634,6 +662,7 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
   }
 
   function countFailure(c: Context, email: string) {
+    pruneAttempts();
     const ip = c.req.header("CF-Connecting-IP") ?? c.req.header("X-Forwarded-For")?.split(",")[0]?.trim() ?? "local";
     const key = `${ip}|${email}`;
     const entry = attempts.get(key);
@@ -642,6 +671,11 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
     } else {
       entry.count += 1;
     }
+  }
+
+  function resetThrottle(c: Context, email: string) {
+    const ip = c.req.header("CF-Connecting-IP") ?? c.req.header("X-Forwarded-For")?.split(",")[0]?.trim() ?? "local";
+    attempts.delete(`${ip}|${email}`);
   }
 
   app.post("/auth/register", async (c) => {
@@ -676,17 +710,22 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
     const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
     const email = normalizeEmail(body?.email);
     const password = typeof body?.password === "string" ? body.password : "";
-    if (!email || !password) return c.json({ error: "Informe o e-mail e a senha." }, 400);
+    const problem = emailProblem(email) || passwordProblem(password);
+    if (problem) return c.json({ error: problem }, 400);
     if (throttled(c, email))
       return c.json({ error: "Muitas tentativas. Espere alguns minutos antes de tentar de novo." }, 429);
 
     const found = await store(c).userByEmail(email);
-    const valid = found ? await verifyPassword(password, found.password_hash) : false;
-    if (!found || !valid) {
+    // Verify against a dummy hash when there is no password, so unknown e-mails and Google-only
+    // accounts take the same time as a wrong password (no account enumeration by timing).
+    const storedHash = found?.password_hash ?? TIMING_DUMMY_HASH;
+    const valid = await verifyPassword(password, storedHash);
+    if (!found || !found.password_hash || !valid) {
       countFailure(c, email);
       // The same answer for an unknown e-mail and a wrong password: nothing to enumerate.
       return c.json({ error: "E-mail ou senha incorretos." }, 401);
     }
+    resetThrottle(c, email);
     await startSession(c, store(c), found.account.id, now());
     return c.json({ user: found.account, preferences: await store(c).preferences(found.account.id) });
   });
@@ -757,6 +796,7 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
           redirect_uri: new URL("/api/auth/google/callback", base).toString(),
           grant_type: "authorization_code",
         }),
+        signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) return failure("google-token");
       const tokens = (await response.json()) as { id_token?: unknown };
@@ -783,23 +823,23 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
 
     let account = await store(c).userByGoogleSub(sub);
     if (!account) {
+      // Never auto-link to an existing password account: prevents pre-hijacking.
       const existing = await store(c).userByEmail(email);
       if (existing) {
-        account = await store(c).linkGoogle(existing.account.id, sub);
-      } else {
-        try {
-          account = await store(c).createUser({
-            email,
-            password_hash: null,
-            name: cleanName(claims?.name) ?? null,
-            google_sub: sub,
-          });
-        } catch (error) {
-          if (!(error instanceof AccountExistsError)) throw error;
-          const raced = await store(c).userByEmail(email);
-          if (!raced) return failure("google-conta");
-          account = await store(c).linkGoogle(raced.account.id, sub);
-        }
+        return failure("google-conta-existente");
+      }
+      try {
+        account = await store(c).createUser({
+          email,
+          password_hash: null,
+          name: cleanName(claims?.name) ?? null,
+          google_sub: sub,
+        });
+      } catch (error) {
+        if (!(error instanceof AccountExistsError)) throw error;
+        const raced = await store(c).userByEmail(email);
+        if (!raced) return failure("google-conta");
+        return failure("google-conta-existente");
       }
     }
     await startSession(c, store(c), account.id, now());
@@ -845,12 +885,14 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
     if (!sameOrigin(c, c.env)) return c.json({ error: "Origem inválida." }, 403);
     const { account, response } = await requireAccount(c, store(c));
     if (!account) return response;
+    const id = c.req.param("id");
+    if (!isUuid(id)) return c.json({ error: "Lista não encontrada." }, 404);
     const body = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
     const name = cleanListName(body?.name);
     const lines = sanitizeLines(body?.lines);
     if (!name) return c.json({ error: `Dê um nome à lista (até ${MAX_LIST_NAME} caracteres).` }, 400);
     if (!lines) return c.json({ error: "A lista enviada é inválida." }, 400);
-    const list = await store(c).updateList(account.id, c.req.param("id"), name, lines);
+    const list = await store(c).updateList(account.id, id, name, lines);
     if (!list) return c.json({ error: "Lista não encontrada." }, 404);
     return c.json({ list });
   });
@@ -859,7 +901,9 @@ export function accountRoutes(deps: AccountDeps): Hono<{ Bindings: AccountBindin
     if (!sameOrigin(c, c.env)) return c.json({ error: "Origem inválida." }, 403);
     const { account, response } = await requireAccount(c, store(c));
     if (!account) return response;
-    const deleted = await store(c).deleteList(account.id, c.req.param("id"));
+    const id = c.req.param("id");
+    if (!isUuid(id)) return c.json({ error: "Lista não encontrada." }, 404);
+    const deleted = await store(c).deleteList(account.id, id);
     if (!deleted) return c.json({ error: "Lista não encontrada." }, 404);
     return c.json({ ok: true });
   });

@@ -17,7 +17,7 @@ from models.user import SavedList, User, UserPreference, UserSession  # noqa: E4
 
 
 def _id_token(claims):
-    payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
+    payload = base64.urlsafe_b64encode(json.dumps(claims, ensure_ascii=False).encode("utf-8")).decode().rstrip("=")
     return f"header.{payload}.signature"
 
 
@@ -101,6 +101,57 @@ class TestAccountsApi(unittest.TestCase):
         self.assertEqual(self.login().status_code, 200)
         self.assertEqual(self.client.post("/api/auth/logout").status_code, 200)
         self.assertIsNone(self.client.get("/api/auth/me").get_json()["user"])
+
+    def test_login_validates_email_and_password(self):
+        for body in (
+            {"email": "sem-arroba", "password": "segredo123"},
+            {"email": "ana@example.com", "password": "curta"},
+        ):
+            with self.subTest(body=body):
+                response = self.client.post("/api/auth/login", json=body)
+                self.assertEqual(response.status_code, 400)
+                self.assertIn("error", response.get_json())
+
+    def test_login_throttling_and_reset(self):
+        self.register("throttle@example.com", "segredo123")
+        headers1 = {"CF-Connecting-IP": "203.0.113.50"}
+
+        for _ in range(10):
+            res = self.client.post(
+                "/api/auth/login",
+                json={"email": "throttle@example.com", "password": "errada123"},
+                headers=headers1,
+            )
+            self.assertEqual(res.status_code, 401)
+        res = self.client.post(
+            "/api/auth/login",
+            json={"email": "throttle@example.com", "password": "errada123"},
+            headers=headers1,
+        )
+        self.assertEqual(res.status_code, 429)
+        self.assertIn("Muitas tentativas", res.get_json()["error"])
+
+        headers2 = {"CF-Connecting-IP": "203.0.113.60"}
+        for _ in range(9):
+            res = self.client.post(
+                "/api/auth/login",
+                json={"email": "throttle@example.com", "password": "errada123"},
+                headers=headers2,
+            )
+            self.assertEqual(res.status_code, 401)
+        res = self.client.post(
+            "/api/auth/login",
+            json={"email": "throttle@example.com", "password": "segredo123"},
+            headers=headers2,
+        )
+        self.assertEqual(res.status_code, 200)
+        for _ in range(9):
+            res = self.client.post(
+                "/api/auth/login",
+                json={"email": "throttle@example.com", "password": "errada123"},
+                headers=headers2,
+            )
+            self.assertEqual(res.status_code, 401)
 
     def test_state_changing_requests_refuse_another_origin(self):
         response = self.client.post(
@@ -207,6 +258,15 @@ class TestAccountsApi(unittest.TestCase):
             )
         self.assertEqual(self.client.post("/api/account/lists", json={"name": "Uma a mais", "lines": []}).status_code, 409)
 
+    def test_list_accepts_integral_float_quantity(self):
+        self.register()
+        lines = [{"product_id": "arroz-5kg", "name": "Arroz", "quantity": 1.0, "checked": False}]
+        created = self.client.post("/api/account/lists", json={"name": "Lista Float", "lines": lines})
+        self.assertEqual(created.status_code, 201)
+        saved = created.get_json()["list"]
+        self.assertEqual(saved["lines"][0]["quantity"], 1)
+        self.assertIsInstance(saved["lines"][0]["quantity"], int)
+
     def test_google_says_so_when_unconfigured(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("GOOGLE_CLIENT_ID", None)
@@ -221,6 +281,19 @@ class TestAccountsApi(unittest.TestCase):
             mismatch = self.client.get("/api/auth/google/callback?code=abc&state=wrong")
             self.assertEqual(mismatch.status_code, 302)
             self.assertIn("/conta?erro=google-estado", mismatch.headers["Location"])
+
+    def test_google_callback_rejects_non_ascii_state(self):
+        with patch.dict(os.environ, {"GOOGLE_CLIENT_ID": "client-id", "GOOGLE_CLIENT_SECRET": "secret"}):
+            self.client.set_cookie("med_oauth_state", "some-state", path="/api/auth/google")
+            response = self.client.get("/api/auth/google/callback?state=%C3%A9")
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("/conta?erro=google-estado", response.headers["Location"])
+
+            # A hostile cookie value must not reach hmac.compare_digest (it raises on non-ASCII).
+            self.client.set_cookie("med_oauth_state", "é", path="/api/auth/google")
+            response = self.client.get("/api/auth/google/callback?state=abc")
+            self.assertEqual(response.status_code, 302)
+            self.assertIn("/conta?erro=google-estado", response.headers["Location"])
 
     def test_google_creates_an_account_and_signs_in(self):
         claims = {
@@ -250,8 +323,34 @@ class TestAccountsApi(unittest.TestCase):
             self.assertEqual(me["user"]["name"], "Gmail da Silva")
             self.assertEqual(exchange.call_args.kwargs["data"]["grant_type"], "authorization_code")
 
-    def test_google_links_an_existing_email_account(self):
+    def test_google_non_ascii_name_saved_correctly(self):
+        claims = {
+            "iss": "https://accounts.google.com",
+            "aud": "client-id",
+            "exp": int(time.time()) + 300,
+            "sub": "google-sub-utf8",
+            "email": "jose@example.com",
+            "email_verified": True,
+            "name": "José Conceição",
+        }
+        env = {
+            "GOOGLE_CLIENT_ID": "client-id",
+            "GOOGLE_CLIENT_SECRET": "secret",
+            "ACCOUNTS_PUBLIC_URL": "http://localhost:3000",
+        }
+        with patch.dict(os.environ, env), patch(
+            "local_api.accounts.requests.post", return_value=FakeGoogleResponse({"id_token": _id_token(claims)})
+        ):
+            start = self.client.get("/api/auth/google/start")
+            state = start.headers["Location"].split("state=")[1].split("&")[0]
+            callback = self.client.get(f"/api/auth/google/callback?code=abc&state={state}")
+            self.assertEqual(callback.status_code, 302)
+            me = self.client.get("/api/auth/me").get_json()
+            self.assertEqual(me["user"]["name"], "José Conceição")
+
+    def test_google_never_links_an_existing_email_account(self):
         self.register("ana@example.com")
+        self.client.post("/api/auth/logout")  # clear register's session cookie
         claims = {
             "iss": "accounts.google.com",
             "aud": "client-id",
@@ -266,8 +365,38 @@ class TestAccountsApi(unittest.TestCase):
         ):
             start = self.client.get("/api/auth/google/start")
             state = start.headers["Location"].split("state=")[1].split("&")[0]
-            self.client.get(f"/api/auth/google/callback?code=abc&state={state}")
-            self.assertEqual(self.client.get("/api/auth/me").get_json()["user"]["email"], "ana@example.com")
+            callback = self.client.get(f"/api/auth/google/callback?code=abc&state={state}")
+            self.assertEqual(callback.status_code, 302)
+            self.assertIn("/conta?erro=google-conta-existente", callback.headers["Location"])
+            # Creates no session
+            self.assertIsNone(self.client.get("/api/auth/me").get_json()["user"])
+
+            # Leaves google_sub null
+            db = SessionLocal()
+            try:
+                user = db.query(User).filter(User.email == "ana@example.com").one()
+                self.assertIsNone(user.google_sub)
+            finally:
+                db.close()
+
+    def test_google_refuses_email_verified_one(self):
+        claims = {
+            "iss": "accounts.google.com",
+            "aud": "client-id",
+            "exp": int(time.time()) + 300,
+            "sub": "google-sub-int-verified",
+            "email": "intverified@example.com",
+            "email_verified": 1,
+        }
+        env = {"GOOGLE_CLIENT_ID": "client-id", "GOOGLE_CLIENT_SECRET": "secret"}
+        with patch.dict(os.environ, env), patch(
+            "local_api.accounts.requests.post", return_value=FakeGoogleResponse({"id_token": _id_token(claims)})
+        ):
+            start = self.client.get("/api/auth/google/start")
+            state = start.headers["Location"].split("state=")[1].split("&")[0]
+            callback = self.client.get(f"/api/auth/google/callback?code=abc&state={state}")
+            self.assertIn("/conta?erro=google-token", callback.headers["Location"])
+            self.assertIsNone(self.client.get("/api/auth/me").get_json()["user"])
 
     def test_google_refuses_another_audience(self):
         claims = {

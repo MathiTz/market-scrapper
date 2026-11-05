@@ -41,6 +41,14 @@ MAX_LINES = 200
 MAX_QUANTITY = 999
 DEFAULT_REGION = "Fortaleza"
 
+# A well-formed hash checked for unknown e-mails and Google-only accounts, so a wrong login costs the
+# same PBKDF2 work whether or not the account exists. The password it was made from is irrelevant: the
+# result is discarded unless the account also has a real password hash. Keep its iteration count in
+# step with PBKDF2_ITERATIONS.
+TIMING_DUMMY_HASH = (
+    "pbkdf2-sha256$210000$1yMFHcAugHK0BO4uOC0S/A==$U62w9zo8i3Ka9gqaiQSkzi9impCM0MooSr8vu0gFwN8="
+)
+
 EMAIL = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
 
 
@@ -101,14 +109,19 @@ def _sanitize_lines(raw):
         quantity = item.get("quantity")
         if not isinstance(product_id, str) or not product_id or len(product_id) > 200:
             return None
-        if not isinstance(quantity, int) or isinstance(quantity, bool) or not 1 <= quantity <= MAX_QUANTITY:
+        valid_qty = (
+            (isinstance(quantity, int) or (isinstance(quantity, float) and quantity.is_integer()))
+            and not isinstance(quantity, bool)
+            and 1 <= quantity <= MAX_QUANTITY
+        )
+        if not valid_qty:
             return None
         name = item.get("name")
         lines.append(
             {
                 "product_id": product_id,
                 "name": name.strip()[:200] if isinstance(name, str) and name.strip() else "Item salvo",
-                "quantity": quantity,
+                "quantity": int(quantity),
                 "checked": item.get("checked") is True,
             }
         )
@@ -336,6 +349,57 @@ def _conta_redirect(query: str, clear_state: bool = True):
     return response
 
 
+_login_attempts = {}
+_LOGIN_THROTTLE_MAX_FAILURES = 10
+_LOGIN_THROTTLE_WINDOW_SECONDS = 15 * 60
+_MAX_ATTEMPTS_ENTRIES = 2000
+
+
+def _prune_login_attempts():
+    if len(_login_attempts) <= _MAX_ATTEMPTS_ENTRIES:
+        return
+    now = time.time()
+    expired = [k for k, v in _login_attempts.items() if v["reset_at"] <= now]
+    for k in expired:
+        del _login_attempts[k]
+    # Still over the cap (a burst of distinct e-mails inside the window): drop the oldest entries.
+    while len(_login_attempts) > _MAX_ATTEMPTS_ENTRIES:
+        _login_attempts.pop(next(iter(_login_attempts)))
+
+
+def _throttle_key(email: str) -> str:
+    ip = (
+        request.headers.get("CF-Connecting-IP")
+        or request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        or request.remote_addr
+        or "local"
+    )
+    return f"{ip}|{email}"
+
+
+def _is_login_throttled(email: str) -> bool:
+    key = _throttle_key(email)
+    entry = _login_attempts.get(key)
+    if not entry or entry["reset_at"] <= time.time():
+        return False
+    return entry["count"] >= _LOGIN_THROTTLE_MAX_FAILURES
+
+
+def _record_login_failure(email: str):
+    _prune_login_attempts()
+    key = _throttle_key(email)
+    now = time.time()
+    entry = _login_attempts.get(key)
+    if not entry or entry["reset_at"] <= now:
+        _login_attempts[key] = {"count": 1, "reset_at": now + _LOGIN_THROTTLE_WINDOW_SECONDS}
+    else:
+        entry["count"] += 1
+
+
+def _reset_login_throttle(email: str):
+    _login_attempts.pop(_throttle_key(email), None)
+
+
 # ---------------------------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------------------------
@@ -397,16 +461,24 @@ def register_account_routes(app):
         body = request.get_json(silent=True)
         body = body if isinstance(body, dict) else {}
         email = _normalize_email(body.get("email"))
-        password = body.get("password") if isinstance(body.get("password"), str) else ""
-        if not email or not password:
-            return jsonify({"error": "Informe o e-mail e a senha."}), 400
+        password = body.get("password")
+        problem = _email_problem(email) or _password_problem(password)
+        if problem:
+            return jsonify({"error": problem}), 400
+        if _is_login_throttled(email):
+            return jsonify({"error": "Muitas tentativas. Espere alguns minutos antes de tentar de novo."}), 429
 
         db = SessionLocal()
         try:
             user = db.query(User).filter(User.email == email).one_or_none()
+            # A dummy check keeps unknown e-mails and Google-only accounts as slow as a wrong password.
+            if user is None or not user.password_hash:
+                verify_password(password, TIMING_DUMMY_HASH)
             # The same answer for an unknown e-mail and a wrong password: nothing to enumerate.
-            if user is None or not verify_password(password, user.password_hash):
+            if user is None or not user.password_hash or not verify_password(password, user.password_hash):
+                _record_login_failure(email)
                 return jsonify({"error": "E-mail ou senha incorretos."}), 401
+            _reset_login_throttle(email)
             return _start_session(
                 jsonify({"user": _user_json(user), "preferences": _preferences_json(db, user.id)}),
                 db,
@@ -485,7 +557,7 @@ def register_account_routes(app):
         expected = request.cookies.get(OAUTH_COOKIE) or ""
         if not client_id or not client_secret:
             return _conta_redirect("erro=google-indisponivel")
-        if not state or not expected or not hmac.compare_digest(state, expected):
+        if not state or not state.isascii() or not expected or not expected.isascii() or not hmac.compare_digest(state, expected):
             return _conta_redirect("erro=google-estado")
         code = request.args.get("code")
         if not code:
@@ -516,7 +588,8 @@ def register_account_routes(app):
         expires = claims.get("exp") if isinstance(claims, dict) else None
         sub = claims.get("sub") if isinstance(claims, dict) else None
         email = _normalize_email(claims.get("email") if isinstance(claims, dict) else None)
-        verified = isinstance(claims, dict) and claims.get("email_verified") in (True, "true")
+        raw_verified = claims.get("email_verified") if isinstance(claims, dict) else None
+        verified = (raw_verified is True) or (raw_verified == "true")
         if (
             issuer not in ("accounts.google.com", "https://accounts.google.com")
             or audience != client_id
@@ -533,30 +606,27 @@ def register_account_routes(app):
         try:
             user = db.query(User).filter(User.google_sub == sub).one_or_none()
             if user is None:
+                # Never auto-link to an existing password account: prevents pre-hijacking.
                 existing = db.query(User).filter(User.email == email).one_or_none()
                 if existing is not None:
-                    existing.google_sub = sub
+                    return _conta_redirect("erro=google-conta-existente")
+                user = User(
+                    id=str(uuid.uuid4()),
+                    email=email,
+                    password_hash=None,
+                    name=_clean_name(claims.get("name")) or None,
+                    google_sub=sub,
+                    created_at=_now(),
+                )
+                db.add(user)
+                try:
                     db.commit()
-                    user = existing
-                else:
-                    user = User(
-                        id=str(uuid.uuid4()),
-                        email=email,
-                        password_hash=None,
-                        name=_clean_name(claims.get("name")) or None,
-                        google_sub=sub,
-                        created_at=_now(),
-                    )
-                    db.add(user)
-                    try:
-                        db.commit()
-                    except IntegrityError:
-                        db.rollback()
-                        user = db.query(User).filter(User.email == email).one_or_none()
-                        if user is None:
-                            return _conta_redirect("erro=google-conta")
-                        user.google_sub = sub
-                        db.commit()
+                except IntegrityError:
+                    db.rollback()
+                    raced = db.query(User).filter(User.email == email).one_or_none()
+                    if raced is None:
+                        return _conta_redirect("erro=google-conta")
+                    return _conta_redirect("erro=google-conta-existente")
             response = _conta_redirect("entrou=google")
             return _start_session(response, db, user)
         finally:

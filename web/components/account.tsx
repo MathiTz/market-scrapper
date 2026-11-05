@@ -13,15 +13,18 @@ import {
 } from "lucide-react";
 import {
   ACCOUNT_QUERY_KEY,
+  SAVED_LISTS_QUERY_KEY,
   accountApi,
   useAccount,
   type Credentials,
 } from "@/lib/account-api";
 import {
   accountDate,
+  browsingRegion,
   displayName,
   emailProblem,
   passwordProblem,
+  preferencesFromNearby,
   type Preferences,
   type Session,
 } from "@/lib/account";
@@ -30,7 +33,7 @@ import { radii, validCoordinates } from "@/lib/location";
 import { BRAND } from "@/lib/domain";
 import { notify } from "@/lib/notify";
 import { SavedLists } from "@/components/saved-lists";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Segmented } from "@/components/ui/segmented";
 
@@ -41,6 +44,11 @@ function queryNotice(): { text: string; ok: boolean } {
   if (error === "google-estado") return { text: "A entrada com o Google expirou antes de terminar. Tente de novo.", ok: false };
   if (error === "google-cancelado") return { text: "A entrada com o Google foi cancelada.", ok: false };
   if (error === "google-indisponivel") return { text: "Entrar com o Google não está configurado neste servidor.", ok: false };
+  if (error === "google-conta-existente")
+    return {
+      text: "Já existe uma conta com este e-mail. Entre com sua senha; por segurança, não vinculamos o Google automaticamente.",
+      ok: false,
+    };
   if (error === "google-token" || error === "google-conta")
     return { text: "Não foi possível entrar com o Google agora. Tente de novo ou use seu e-mail e senha.", ok: false };
   if (params.get("entrou") === "google") return { text: "Você entrou com o Google.", ok: true };
@@ -90,12 +98,20 @@ export default function Account() {
           </p>
         )}
         {session.isPending ? (
-          <p className="account-loading" role="status">
-            Carregando sua conta…
-          </p>
+          <>
+            <h1 className="sr-only">Sua conta</h1>
+            <p className="account-loading" role="status">
+              Carregando sua conta…
+            </p>
+          </>
         ) : session.isError ? (
           <div className="account-loading" role="alert">
-            <p>Não foi possível consultar sua conta agora.</p>
+            <h1 className="sr-only">Sua conta</h1>
+            <p>
+              {session.error instanceof Error && session.error.message
+                ? session.error.message
+                : "Não foi possível consultar sua conta agora."}
+            </p>
             <Button variant="secondary" onClick={() => void session.refetch()}>
               Tentar novamente
             </Button>
@@ -137,6 +153,7 @@ function SignIn({ google, onSignedIn }: { google: boolean; onSignedIn: () => voi
     mutationFn: (credentials: Credentials) =>
       mode === "login" ? accountApi.login(credentials) : accountApi.register(credentials),
     onSuccess: (data) => {
+      client.removeQueries({ queryKey: SAVED_LISTS_QUERY_KEY });
       client.setQueryData(ACCOUNT_QUERY_KEY, {
         user: data.user,
         preferences: data.preferences,
@@ -163,7 +180,7 @@ function SignIn({ google, onSignedIn }: { google: boolean; onSignedIn: () => voi
     <div className="account-guest">
       <div className="account-guest-copy">
         <p className="overline">Área do usuário</p>
-        <h1>Sua conta no Mercado em Dia.</h1>
+        <h1>Sua conta no {BRAND.name}.</h1>
         <p>
           Guarde suas listas de compras e o lugar de onde você compara preços. A busca e os preços
           continuam abertos sem cadastro.
@@ -181,12 +198,11 @@ function SignIn({ google, onSignedIn }: { google: boolean; onSignedIn: () => voi
         </ul>
       </div>
 
-      <div className="account-form-card">
-        <div className="account-tabs" role="tablist" aria-label="Entrar ou criar conta">
+      <div className="account-form-card ph-no-capture">
+        <div className="account-tabs" role="group" aria-label="Entrar ou criar conta">
           <button
             type="button"
-            role="tab"
-            aria-selected={mode === "login"}
+            aria-pressed={mode === "login"}
             className={mode === "login" ? "selected" : ""}
             onClick={() => {
               setMode("login");
@@ -197,8 +213,7 @@ function SignIn({ google, onSignedIn }: { google: boolean; onSignedIn: () => voi
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={mode === "register"}
+            aria-pressed={mode === "register"}
             className={mode === "register" ? "selected" : ""}
             onClick={() => {
               setMode("register");
@@ -277,7 +292,7 @@ function SignIn({ google, onSignedIn }: { google: boolean; onSignedIn: () => voi
         {google && (
           <>
             <div className="account-divider">ou</div>
-            <a className="btn btn-secondary btn-md account-google" href="/api/auth/google/start">
+            <a className={buttonClass("secondary", "md", "account-google")} href="/api/auth/google/start">
               <span className="btn-label">Continuar com o Google</span>
             </a>
           </>
@@ -297,6 +312,7 @@ function SignedIn({ session, onNotice }: { session: Session; onNotice: (notice: 
   const logout = useMutation({
     mutationFn: accountApi.logout,
     onSuccess: () => {
+      client.removeQueries({ queryKey: SAVED_LISTS_QUERY_KEY });
       client.setQueryData(ACCOUNT_QUERY_KEY, { user: null, preferences: null, google: session.google } satisfies Session);
       onNotice({ text: "", ok: false });
       notify("Você saiu da sua conta.");
@@ -375,7 +391,7 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
     onError: (failure: Error) => setError(failure.message),
   });
 
-  const region = preferences?.region ?? "Fortaleza";
+  const region = browsingRegion();
 
   function choose(nextPlace: Place, nextLabel: string) {
     setPlace(nextPlace);
@@ -393,7 +409,7 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
       const found = await searchPlaces(query.trim());
       setPlaces(found);
       if (!found.length)
-        setMessage("Não encontramos esse endereço em Fortaleza. Tente o nome da rua com o número, ou um bairro.");
+        setMessage(`Não encontramos esse endereço em ${region}. Tente o nome da rua com o número, ou um bairro.`);
     } catch (failure) {
       setMessage(failure instanceof Error ? failure.message : "Não foi possível buscar o endereço agora.");
     } finally {
@@ -439,6 +455,8 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
     );
   }
 
+  const shownRegion = preferences?.region ?? region;
+
   return (
     <div className="account-place">
       {!editing && saved && (
@@ -449,18 +467,30 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
             </span>
             <div>
               <strong>{saved.label}</strong>
-              <small>Até {saved.radius_km} km · {region} · usado em “Perto de você”</small>
+              <small>Até {saved.radius_km} km · {shownRegion} · usado em “Perto de você”</small>
+              {preferences?.region && preferences.region !== region && (
+                <p className="account-place-message">
+                  Este local é de outra cidade e não é aplicado enquanto você navega em {region}.
+                </p>
+              )}
             </div>
           </div>
           <div className="account-place-actions">
-            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setError("");
+                setEditing(true);
+              }}
+            >
               Alterar
             </Button>
             <Button
               variant="ghost"
               size="sm"
               loading={save.isPending}
-              onClick={() => save.mutate({ region, location: null })}
+              onClick={() => save.mutate(preferencesFromNearby(null, region))}
             >
               Remover
             </Button>
@@ -473,7 +503,15 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
           <p className="account-place-empty">
             Nenhum local preferido ainda. Sem ele, o filtro “Perto de você” começa sem referência.
           </p>
-          <Button variant="secondary" size="sm" icon={<MapPin size={16} aria-hidden="true" />} onClick={() => setEditing(true)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<MapPin size={16} aria-hidden="true" />}
+            onClick={() => {
+              setError("");
+              setEditing(true);
+            }}
+          >
             Definir local
           </Button>
         </>
@@ -487,12 +525,12 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
                 Referência escolhida: <strong>{label}</strong>
               </>
             ) : (
-              "Escolha uma referência em Fortaleza: use o GPS ou busque um endereço."
+              `Escolha uma referência em ${region}: use o GPS ou busque um endereço.`
             )}
           </p>
           <div className="account-place-find">
             <TextField
-              label="Endereço ou bairro em Fortaleza"
+              label={`Endereço ou bairro em ${region}`}
               type="search"
               value={query}
               minLength={3}
@@ -564,11 +602,6 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
             onChange={setRadius}
             disabled={busy !== null || save.isPending}
           />
-          {error && (
-            <p className="account-error" role="alert">
-              {error}
-            </p>
-          )}
           <div className="account-place-save">
             <Button
               variant="primary"
@@ -576,10 +609,20 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
               disabled={!place || busy !== null}
               onClick={() =>
                 place &&
-                save.mutate({
-                  region,
-                  location: { label: label.trim() || "Minha localização", latitude: place.latitude, longitude: place.longitude, radius_km: radius },
-                })
+                save.mutate(
+                  preferencesFromNearby(
+                    {
+                      point: {
+                        label: label.trim() || "Minha localização",
+                        latitude: place.latitude,
+                        longitude: place.longitude,
+                        source: "manual",
+                      },
+                      radiusKm: radius,
+                    },
+                    region,
+                  ),
+                )
               }
             >
               Salvar local
@@ -602,6 +645,12 @@ function PreferredPlace({ preferences }: { preferences: Preferences | null }) {
             </Button>
           </div>
         </div>
+      )}
+
+      {error && (
+        <p className="account-error" role="alert">
+          {error}
+        </p>
       )}
     </div>
   );

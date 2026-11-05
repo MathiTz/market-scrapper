@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   accountDate,
+  browsingRegion,
   defaultListName,
   displayName,
   emailProblem,
@@ -13,6 +14,7 @@ import {
   type Account,
   type Preferences,
 } from "./account";
+import { BRAND } from "./domain";
 
 describe("account form validation", () => {
   it.each([
@@ -36,7 +38,9 @@ describe("account form validation", () => {
   it.each([
     ["", "A senha precisa ter pelo menos 8 caracteres."],
     ["1234567", "A senha precisa ter pelo menos 8 caracteres."],
+    ["🛒".repeat(4), "A senha precisa ter pelo menos 8 caracteres."],
     ["1".repeat(201), "A senha pode ter no máximo 200 caracteres."],
+    ["🛒".repeat(201), "A senha pode ter no máximo 200 caracteres."],
   ])("refuses the password %j", (password, message) => {
     expect(passwordProblem(password)).toBe(message);
   });
@@ -44,6 +48,7 @@ describe("account form validation", () => {
   it("accepts eight characters, accents and spaces", () => {
     expect(passwordProblem("segredo123")).toBeNull();
     expect(passwordProblem("senha com espaço")).toBeNull();
+    expect(passwordProblem("🛒".repeat(8))).toBeNull();
   });
 
   it("asks for a list name that fits", () => {
@@ -95,6 +100,23 @@ describe("account presentation", () => {
   });
 });
 
+describe("browsingRegion", () => {
+  it("reads the stored region when available", () => {
+    expect(browsingRegion({ getItem: () => "Caucaia" })).toBe("Caucaia");
+  });
+
+  it("falls back to BRAND.city when storage is absent or throws", () => {
+    expect(browsingRegion(null)).toBe(BRAND.city);
+    expect(
+      browsingRegion({
+        getItem: () => {
+          throw new Error("storage blocked");
+        },
+      }),
+    ).toBe(BRAND.city);
+  });
+});
+
 describe("preferred location", () => {
   const preferences: Preferences = {
     region: "Fortaleza",
@@ -117,6 +139,24 @@ describe("preferred location", () => {
     expect(nearbyFromPreferences({ region: "Fortaleza", location: null })).toBeNull();
     expect(nearbyFromPreferences(null)).toBeNull();
     expect(nearbyFromPreferences(undefined)).toBeNull();
+  });
+
+  it("returns null for a region mismatch and still returns the Nearby for the matching region", () => {
+    const caucaiaPreferences: Preferences = { ...preferences, region: "Caucaia" };
+    // region mismatch via preferences.region
+    expect(nearbyFromPreferences(caucaiaPreferences, "Fortaleza")).toBeNull();
+    // region mismatch via the second argument
+    expect(nearbyFromPreferences(preferences, "Caucaia")).toBeNull();
+    // matching region still returns the Nearby
+    expect(nearbyFromPreferences(caucaiaPreferences, "Caucaia")).toEqual({
+      point: {
+        label: "Casa · Rua A, 10 · Meireles",
+        latitude: -3.72,
+        longitude: -38.5,
+        source: "manual",
+      },
+      radiusKm: 5,
+    });
   });
 
   it("round-trips through preferencesFromNearby", () => {

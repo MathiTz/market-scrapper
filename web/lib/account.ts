@@ -1,5 +1,6 @@
-import type { Line } from "./list-storage";
+import { browserStorage, type Line } from "./list-storage";
 import type { Nearby } from "./location";
+import { BRAND } from "./domain";
 
 /** One shopper, as the API returns it (api/src/accounts.ts). */
 export type Account = {
@@ -54,8 +55,9 @@ export function emailProblem(email: string): string | null {
 
 /** Why the password cannot be used, or null. */
 export function passwordProblem(password: string): string | null {
-  if (password.length < MIN_PASSWORD) return `A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.`;
-  if (password.length > MAX_PASSWORD) return `A senha pode ter no máximo ${MAX_PASSWORD} caracteres.`;
+  const length = Array.from(password).length;
+  if (length < MIN_PASSWORD) return `A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.`;
+  if (length > MAX_PASSWORD) return `A senha pode ter no máximo ${MAX_PASSWORD} caracteres.`;
   return null;
 }
 
@@ -78,10 +80,22 @@ export function displayName(user: Account): string {
   return first || user.email.split("@")[0];
 }
 
+export function browsingRegion(storage: Pick<Storage, "getItem"> | null = browserStorage()): string {
+  try {
+    return storage?.getItem("med-region") || BRAND.city;
+  } catch {
+    return BRAND.city;
+  }
+}
+
 /** The account's saved place as the "Perto de você" filter expects it, or null when none is set. */
-export function nearbyFromPreferences(preferences: Preferences | null | undefined): Nearby | null {
+export function nearbyFromPreferences(
+  preferences: Preferences | null | undefined,
+  region = browsingRegion(),
+): Nearby | null {
   const location = preferences?.location;
   if (!location) return null;
+  if (preferences.region !== region) return null;
   return {
     point: {
       label: location.label,
@@ -96,7 +110,7 @@ export function nearbyFromPreferences(preferences: Preferences | null | undefine
 /** The filter's current value as preferences, for the account page to save. */
 export function preferencesFromNearby(
   nearby: Nearby | null,
-  region = "Fortaleza",
+  region = BRAND.city,
 ): Preferences {
   return {
     region,

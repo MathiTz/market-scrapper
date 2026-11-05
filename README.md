@@ -55,8 +55,10 @@ mirroring `api/`, plus scrape/health/diagnose endpoints), no HTML pages.
 - Automatic retry with backoff, scrape-attempt monitoring, and a validation gate before anything publishes
   (an empty, broken, or much-smaller-than-usual snapshot never goes live - the previous good one stays).
 - Optional **accounts** (`/conta`): e-mail + password or Google sign-in, so a shopper's list copies and
-  their preferred "Perto de você" place follow them between devices. Everything still works without an
-  account; see [web/docs/CONTAS.md](web/docs/CONTAS.md).
+  their preferred "Perto de você" place follow them between devices. Google sign-in never auto-links to an
+  existing e-mail account (sign in with the existing method), and the preferred place is saved with its browsing region
+  and applied only there. Everything still works without an account; see
+  [web/docs/CONTAS.md](web/docs/CONTAS.md).
 
 ## Tech stack
 
@@ -216,10 +218,15 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
 4. **Cloudflare:** `cd api && npm install && npx wrangler login`, then
    `npx wrangler hyperdrive create mercado-em-dia --connection-string="<read-only connection string>"` and
    put the id it prints in `api/wrangler.jsonc`.
-5. **Accounts (optional):** `scraping/db/accounts_role.sql` creates `api_accounts`, a login allowed to
-   write only `users`, `sessions`, `user_preferences` and `saved_lists`. Create a second Hyperdrive config
-   with that connection string and put its id in the `ACCOUNTS_HYPERDRIVE` binding in `api/wrangler.jsonc`
-   (without it the API falls back to `HYPERDRIVE`, which must then be writable). Set the Google secrets with
+5. **Accounts (optional):** `scraping/services/publish.py` executes `schema.sql` on every publish, so
+   account tables are created by a publish; run a publish (or apply `scraping/db/schema.sql` directly)
+   BEFORE `scraping/db/accounts_role.sql`, otherwise the `GRANT` fails because the tables do not exist yet.
+   `accounts_role.sql` creates `api_accounts`, a login allowed to write only `users`, `sessions`,
+   `user_preferences` and `saved_lists`. Create a second Hyperdrive config with that connection string and
+   put its id in the `ACCOUNTS_HYPERDRIVE` binding in `api/wrangler.jsonc` (without `ACCOUNTS_HYPERDRIVE`,
+   or if the connection is read-only, account routes answer HTTP 503
+   `{"error":"As contas não estão configuradas neste servidor."}`). Register the Google redirect URI
+   `https://<site>/api/auth/google/callback` in the Google OAuth client, then set the secrets with
    `npx wrangler secret put GOOGLE_CLIENT_ID` and `... GOOGLE_CLIENT_SECRET` to enable the Google button;
    e-mail/password works without them.
 6. **Deploy:** `cd api && npm run deploy` (builds the UI from `../web`, then deploys the Worker with the

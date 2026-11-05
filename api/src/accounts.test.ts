@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApp } from "./app";
-import { hashPassword, memoryAccountStore, verifyPassword, type AccountStore } from "./accounts";
+import {
+  AccountExistsError,
+  hashPassword,
+  hashToken,
+  isUuid,
+  memoryAccountStore,
+  verifyPassword,
+  type AccountStore,
+} from "./accounts";
 import type { SnapshotStore } from "./store";
 
 const env = { HYPERDRIVE: { connectionString: "postgres://unused" } };
@@ -35,7 +43,7 @@ const cookie = (response: Response, name = "med_session") =>
 
 /** An unsigned JWT-shaped token: the API only reads its payload (the token comes from Google over TLS). */
 const idToken = (claims: Record<string, unknown>) =>
-  ["header", btoa(JSON.stringify(claims)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""), "signature"].join(".");
+  ["header", Buffer.from(JSON.stringify(claims)).toString("base64url"), "signature"].join(".");
 
 const post = (
   harness: App,
@@ -86,6 +94,21 @@ describe("POST /api/auth/register", () => {
     const data = (await session.json()) as { user: { email: string }; preferences: { region: string; location: null } };
     expect(data.user.email).toBe("ana@example.com");
     expect(data.preferences).toEqual({ region: "Fortaleza", location: null });
+  });
+
+  it("sets a session cookie containing Secure when registered over https", async () => {
+    const harness = makeApp();
+    const response = await harness.app.request(
+      "https://example.com/api/auth/register",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "secure@example.com", password: "segredo123" }),
+      },
+      harness.env,
+    );
+    expect(response.status).toBe(201);
+    expect(response.headers.get("Set-Cookie")).toContain("Secure");
   });
 
   it.each([
@@ -163,6 +186,73 @@ describe("POST /api/auth/login", () => {
     const response = await post(harness, "/api/auth/login", { email: "g@example.com", password: "segredo123" });
     expect(response.status).toBe(401);
   });
+
+  it.each([
+    [{ email: "not-an-email", password: "segredo123" }],
+    [{ email: "ana@example.com", password: "curta" }],
+  ])("validates bad e-mail and short password with 400: %j", async (body) => {
+    const harness = makeApp();
+    const response = await post(harness, "/api/auth/login", body);
+    expect(response.status).toBe(400);
+    expect((await response.json()) as { error: string }).toHaveProperty("error");
+  });
+
+  it.each([
+    [{ email: "ana@example.com" }],
+    [{ password: "segredo123" }],
+  ])("validates missing e-mail and missing password with 400: %j", async (body) => {
+    const harness = makeApp();
+    const response = await post(harness, "/api/auth/login", body);
+    expect(response.status).toBe(400);
+    expect(response.status).not.toBe(401);
+    expect((await response.json()) as { error: string }).toHaveProperty("error");
+  });
+
+  it("counts Unicode code points for password length", async () => {
+    const harness = makeApp();
+    const shortEmoji = "😀".repeat(4);
+    const regShort = await register(harness, "short@example.com", shortEmoji);
+    expect(regShort.status).toBe(400);
+    expect(((await regShort.json()) as { error: string }).error).toContain("pelo menos 8 caracteres");
+    const loginShort = await post(harness, "/api/auth/login", { email: "short@example.com", password: shortEmoji });
+    expect(loginShort.status).toBe(400);
+    expect(((await loginShort.json()) as { error: string }).error).toContain("pelo menos 8 caracteres");
+
+    const longEmoji = "😀".repeat(201);
+    const regLong = await register(harness, "long@example.com", longEmoji);
+    expect(regLong.status).toBe(400);
+    expect(((await regLong.json()) as { error: string }).error).toContain("no máximo 200 caracteres");
+    const loginLong = await post(harness, "/api/auth/login", { email: "long@example.com", password: longEmoji });
+    expect(loginLong.status).toBe(400);
+    expect(((await loginLong.json()) as { error: string }).error).toContain("no máximo 200 caracteres");
+  });
+
+  it("throttles after 10 failures and resets the counter on success", async () => {
+    const harness = makeApp();
+    await register(harness, "throttle@example.com", "segredo123");
+    const headers1 = { "CF-Connecting-IP": "203.0.113.10" };
+
+    for (let i = 0; i < 10; i++) {
+      const res = await post(harness, "/api/auth/login", { email: "throttle@example.com", password: "errada123" }, undefined, headers1);
+      expect(res.status).toBe(401);
+    }
+    const locked = await post(harness, "/api/auth/login", { email: "throttle@example.com", password: "errada123" }, undefined, headers1);
+    expect(locked.status).toBe(429);
+    expect(((await locked.json()) as { error: string }).error).toContain("Muitas tentativas");
+
+    const headers2 = { "CF-Connecting-IP": "203.0.113.20" };
+    for (let i = 0; i < 9; i++) {
+      const res = await post(harness, "/api/auth/login", { email: "throttle@example.com", password: "errada123" }, undefined, headers2);
+      expect(res.status).toBe(401);
+    }
+    const success = await post(harness, "/api/auth/login", { email: "throttle@example.com", password: "segredo123" }, undefined, headers2);
+    expect(success.status).toBe(200);
+
+    for (let i = 0; i < 9; i++) {
+      const res = await post(harness, "/api/auth/login", { email: "throttle@example.com", password: "errada123" }, undefined, headers2);
+      expect(res.status).toBe(401);
+    }
+  });
 });
 
 describe("session", () => {
@@ -188,6 +278,32 @@ describe("session", () => {
   it("reports whether Google sign-in is configured", async () => {
     const harness = makeApp({ env: { GOOGLE_CLIENT_ID: "id", GOOGLE_CLIENT_SECRET: "secret" } });
     expect((await (await me(harness)).json()) as { google: boolean }).toMatchObject({ google: true });
+  });
+
+  it("prunes expired sessions in memoryAccountStore", async () => {
+    const store = memoryAccountStore();
+    const user = await store.createUser({ email: "u@example.com", password_hash: null, name: null, google_sub: "s" });
+    const past = new Date(Date.now() - 5000);
+    const future = new Date(Date.now() + 60_000);
+    await store.createSession("expired-hash", user.id, past);
+    await store.createSession("valid-hash", user.id, future);
+    await store.pruneSessions(new Date());
+    expect(await store.sessionUser("expired-hash")).toBeNull();
+    expect(await store.sessionUser("valid-hash")).not.toBeNull();
+  });
+
+  it("resolves an expired session to user null in /auth/me", async () => {
+    const accounts = memoryAccountStore();
+    const harness = makeApp({ accounts });
+    const user = await accounts.createUser({ email: "past@example.com", password_hash: null, name: null, google_sub: "s" });
+    const token = "stale-token-xyz";
+    const past = new Date(Date.now() - 10_000);
+    await accounts.createSession(await hashToken(token), user.id, past);
+
+    const res = await me(harness, `med_session=${token}`);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { user: unknown };
+    expect(body.user).toBeNull();
   });
 });
 
@@ -221,6 +337,26 @@ describe("/api/account/preferences", () => {
     const harness = makeApp();
     const session = cookie(await register(harness));
     expect((await put(harness, "/api/account/preferences", body, session)).status).toBe(400);
+  });
+
+  it("refuses a cross-origin PUT with 403", async () => {
+    const harness = makeApp();
+    const session = cookie(await register(harness));
+    const response = await harness.app.request(
+      "/api/account/preferences",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: session,
+          Origin: "https://evil.example",
+        },
+        body: JSON.stringify({ region: "Fortaleza", location: null }),
+      },
+      harness.env,
+    );
+    expect(response.status).toBe(403);
+    expect(((await response.json()) as { error: string }).error).toBe("Origem inválida.");
   });
 });
 
@@ -297,6 +433,72 @@ describe("/api/account/lists", () => {
     expect((await put(harness, "/api/account/lists/x", { name: "x", lines: [] }, "med_session=nope")).status).toBe(401);
     expect((await harness.app.request("/api/account/lists/x", { method: "DELETE" }, harness.env)).status).toBe(401);
   });
+
+  it("rejects non-uuid and unknown uuid on PUT and DELETE with 404", async () => {
+    const harness = makeApp();
+    const session = cookie(await register(harness));
+
+    // "not-a-uuid" -> 404
+    const putBad = await put(harness, "/api/account/lists/not-a-uuid", { name: "x", lines: [] }, session);
+    expect(putBad.status).toBe(404);
+    expect(((await putBad.json()) as { error: string }).error).toBe("Lista não encontrada.");
+
+    const deleteBad = await harness.app.request(
+      "/api/account/lists/not-a-uuid",
+      { method: "DELETE", headers: { Cookie: session } },
+      harness.env,
+    );
+    expect(deleteBad.status).toBe(404);
+    expect(((await deleteBad.json()) as { error: string }).error).toBe("Lista não encontrada.");
+
+    // valid-but-unknown UUID -> 404
+    const unknownId = crypto.randomUUID();
+    const putUnknown = await put(harness, `/api/account/lists/${unknownId}`, { name: "x", lines: [] }, session);
+    expect(putUnknown.status).toBe(404);
+    expect(((await putUnknown.json()) as { error: string }).error).toBe("Lista não encontrada.");
+
+    const deleteUnknown = await harness.app.request(
+      `/api/account/lists/${unknownId}`,
+      { method: "DELETE", headers: { Cookie: session } },
+      harness.env,
+    );
+    expect(deleteUnknown.status).toBe(404);
+    expect(((await deleteUnknown.json()) as { error: string }).error).toBe("Lista não encontrada.");
+  });
+
+  it("validates uuid strings with isUuid", () => {
+    expect(isUuid(crypto.randomUUID())).toBe(true);
+    expect(isUuid("123e4567-e89b-12d3-a456-426614174000")).toBe(true);
+    expect(isUuid("not-a-uuid")).toBe(false);
+    expect(isUuid("")).toBe(false);
+    expect(isUuid("123e4567-e89b-12d3-a456-42661417400")).toBe(false);
+  });
+
+  it("returns Cache-Control: no-store on GET /api/account/lists", async () => {
+    const harness = makeApp();
+    const session = cookie(await register(harness));
+    const response = await harness.app.request("/api/account/lists", { headers: { Cookie: session } }, harness.env);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("refuses cross-origin DELETE /api/account/lists/:id with 403", async () => {
+    const harness = makeApp();
+    const session = cookie(await register(harness));
+    const response = await harness.app.request(
+      `/api/account/lists/${crypto.randomUUID()}`,
+      {
+        method: "DELETE",
+        headers: {
+          Cookie: session,
+          Origin: "https://evil.example",
+        },
+      },
+      harness.env,
+    );
+    expect(response.status).toBe(403);
+    expect(((await response.json()) as { error: string }).error).toBe("Origem inválida.");
+  });
 });
 
 describe("Google sign-in", () => {
@@ -365,7 +567,35 @@ describe("Google sign-in", () => {
     expect((init.body as URLSearchParams).get("grant_type")).toBe("authorization_code");
   });
 
-  it("links Google to an existing e-mail account instead of duplicating it", async () => {
+  it("decodes non-ASCII profile name correctly from UTF-8 id_token", async () => {
+    const claims = {
+      iss: "https://accounts.google.com",
+      aud: "client-id",
+      exp: Math.floor(Date.now() / 1000) + 300,
+      sub: "google-sub-utf8",
+      email: "jose@example.com",
+      email_verified: true,
+      name: "José Conceição",
+    };
+    const fetchImpl = vi.fn(async () => Response.json({ id_token: idToken(claims) })) as unknown as typeof fetch;
+    const harness = makeApp({ env: googleEnv, fetchImpl });
+    const start = await harness.app.request("/api/auth/google/start", {}, harness.env);
+    const state = new URL(start.headers.get("Location") ?? "").searchParams.get("state");
+    const session = cookie(start, "med_oauth_state");
+
+    const callback = await harness.app.request(
+      `/api/auth/google/callback?code=abc&state=${state}`,
+      { headers: { Cookie: session } },
+      harness.env,
+    );
+    expect(callback.status).toBe(302);
+    expect(callback.headers.get("Location")).toContain("/conta?entrou=google");
+    const signedIn = cookie(callback);
+    const profile = (await (await me(harness, signedIn)).json()) as { user: { name: string } };
+    expect(profile.user.name).toBe("José Conceição");
+  });
+
+  it("never auto-links Google to an existing password account with the same e-mail", async () => {
     const fetchImpl = vi.fn(async () =>
       Response.json({
         id_token: idToken({
@@ -388,8 +618,43 @@ describe("Google sign-in", () => {
       { headers: { Cookie: cookie(start, "med_oauth_state") } },
       harness.env,
     );
-    const profile = (await (await me(harness, cookie(callback))).json()) as { user: { email: string } };
-    expect(profile.user.email).toBe("ana@example.com");
+    expect(callback.status).toBe(302);
+    expect(callback.headers.get("Location")).toContain("/conta?erro=google-conta-existente");
+    expect(cookie(callback, "med_session")).toBe("");
+
+    const googleUser = await harness.accounts.userByGoogleSub("google-sub-2");
+    expect(googleUser).toBeNull();
+  });
+
+  it("redirects to google-conta-existente when createUser races with an existing account", async () => {
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        id_token: idToken({
+          iss: "accounts.google.com",
+          aud: "client-id",
+          exp: Math.floor(Date.now() / 1000) + 300,
+          sub: "google-sub-race",
+          email: "raced@example.com",
+          email_verified: true,
+        }),
+      }),
+    ) as unknown as typeof fetch;
+    const accounts = memoryAccountStore();
+    const origCreateUser = accounts.createUser.bind(accounts);
+    accounts.createUser = async (input) => {
+      await origCreateUser({ ...input, google_sub: null });
+      throw new AccountExistsError();
+    };
+    const harness = makeApp({ accounts, env: googleEnv, fetchImpl });
+    const start = await harness.app.request("/api/auth/google/start", {}, harness.env);
+    const state = new URL(start.headers.get("Location") ?? "").searchParams.get("state");
+    const callback = await harness.app.request(
+      `/api/auth/google/callback?code=abc&state=${state}`,
+      { headers: { Cookie: cookie(start, "med_oauth_state") } },
+      harness.env,
+    );
+    expect(callback.status).toBe(302);
+    expect(callback.headers.get("Location")).toContain("/conta?erro=google-conta-existente");
   });
 
   it("refuses a token for another audience or an unverified e-mail", async () => {
@@ -424,5 +689,24 @@ describe("password hashing", () => {
     expect(await verifyPassword("outra-senha", hash)).toBe(false);
     expect(await verifyPassword("segredo123", null)).toBe(false);
     expect(await verifyPassword("segredo123", "lixo")).toBe(false);
+  });
+});
+
+describe("database permission error 42501", () => {
+  it("returns 503 when accounts store throws 42501 insufficient_privilege", async () => {
+    const baseStore = memoryAccountStore();
+    const faultyStore: AccountStore = {
+      ...baseStore,
+      sessionUser: async () => {
+        const err = new Error("insufficient_privilege");
+        (err as unknown as { code: string }).code = "42501";
+        throw err;
+      },
+    };
+    const harness = makeApp({ accounts: faultyStore });
+    const response = await me(harness, "med_session=sometoken");
+    expect(response.status).toBe(503);
+    const data = (await response.json()) as { error: string };
+    expect(data.error).toBe("As contas não estão configuradas neste servidor.");
   });
 });

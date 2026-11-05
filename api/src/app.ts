@@ -143,6 +143,10 @@ export function createApp({ store, accounts, fetchImpl = fetch, now }: Deps) {
 
   app.all("/api/*", (c) => c.json({ error: "Não encontrado." }, 404));
   app.onError((error, c) => {
+    if ((error as { code?: string })?.code === "42501") {
+      console.error("Database permission denied (42501): accounts not configured");
+      return c.json({ error: "As contas não estão configuradas neste servidor." }, 503);
+    }
     console.error("Request failed", error instanceof Error ? error.message : error);
     return c.json({ error: "Não foi possível carregar as ofertas agora." }, 500);
   });

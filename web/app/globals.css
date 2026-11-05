@@ -4868,3 +4868,27 @@ html[data-vt="product"] .product-hero img {
     align-items: stretch;
   }
 }
+
+.saved-lists-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-space-3);
+  padding: var(--md-space-3);
+  border: 1px solid var(--md-border-subtle);
+  border-radius: var(--md-radius-xs);
+  background: var(--md-surface-level-2);
+  margin-top: var(--md-space-3);
+}
+
+.saved-lists-confirm p {
+  color: var(--md-text-primary);
+  font-size: var(--md-text-sm);
+  margin: 0;
+}
+
+.saved-lists-confirm-actions {
+  display: flex;
+  gap: var(--md-space-2);
+}

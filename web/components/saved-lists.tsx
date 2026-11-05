@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClipboardList, FolderOpen, Trash2 } from "lucide-react";
-import { accountApi, SAVED_LISTS_QUERY_KEY, useAccount } from "@/lib/account-api";
+import { accountApi, SAVED_LISTS_QUERY_KEY, savedListsKey, useAccount } from "@/lib/account-api";
 import {
   accountDate,
   defaultListName,
@@ -10,7 +10,7 @@ import {
   savedLines,
   type SavedList,
 } from "@/lib/account";
-import { browserStorage, writeList, type Line } from "@/lib/list-storage";
+import { browserStorage, readList, writeList, type Line } from "@/lib/list-storage";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { notify } from "@/lib/notify";
@@ -21,14 +21,21 @@ import { notify } from "@/lib/notify";
  */
 export function SavedLists({ current, onOpen }: { current?: Line[]; onOpen?: (lines: Line[]) => void }) {
   const session = useAccount();
+  const userId = session.data?.user?.id;
   const client = useQueryClient();
   const [name, setName] = useState(defaultListName);
   const [error, setError] = useState("");
+  const [confirm, setConfirm] = useState<{ kind: "open" | "delete"; list: SavedList } | null>(null);
+  const confirmRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // The panel sits under the list; a long list would hide it after the click.
+    if (confirm) confirmRef.current?.scrollIntoView({ block: "nearest" });
+  }, [confirm]);
 
   const lists = useQuery({
-    queryKey: SAVED_LISTS_QUERY_KEY,
+    queryKey: savedListsKey(userId ?? "signed-out"),
     queryFn: async () => (await accountApi.lists()).lists,
-    enabled: Boolean(session.data?.user),
+    enabled: Boolean(userId),
     staleTime: 30_000,
   });
 
@@ -117,7 +124,7 @@ export function SavedLists({ current, onOpen }: { current?: Line[]; onOpen?: (li
           <Button
             variant="primary"
             loading={save.isPending}
-            disabled={Boolean(problem) || !current.length}
+            disabled={Boolean(problem) || !current.length || lists.isPending}
             onClick={() => save.mutate()}
           >
             {save.isPending ? "Salvando…" : "Salvar na conta"}
@@ -135,7 +142,7 @@ export function SavedLists({ current, onOpen }: { current?: Line[]; onOpen?: (li
         <p className="saved-lists-empty">Carregando suas listas…</p>
       ) : lists.isError ? (
         <div className="saved-lists-empty" role="status">
-          <span>Não foi possível carregar as listas da conta agora.</span>
+          <span>{lists.error instanceof Error ? lists.error.message : "Não foi possível carregar as listas da conta agora."}</span>
           <Button variant="ghost" size="sm" onClick={() => void lists.refetch()}>
             Tentar novamente
           </Button>
@@ -143,39 +150,92 @@ export function SavedLists({ current, onOpen }: { current?: Line[]; onOpen?: (li
       ) : saved.length === 0 ? (
         <p className="saved-lists-empty">Nenhuma lista salva ainda.</p>
       ) : (
-        <ul className="saved-lists-items">
-          {saved.map((list) => (
-            <li key={list.id}>
-              <div>
-                <strong>{list.name}</strong>
-                <small>
-                  {itemCount(list.lines.length)} · salva em {accountDate(list.updated_at)}
-                </small>
-              </div>
-              <div className="saved-lists-actions">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={<FolderOpen size={16} aria-hidden="true" />}
-                  onClick={() => open(list)}
-                  aria-label={`Abrir a lista ${list.name}`}
-                >
-                  Abrir
+        <>
+          <ul className="saved-lists-items">
+            {saved.map((list) => (
+              <li key={list.id}>
+                <div>
+                  <strong>{list.name}</strong>
+                  <small>
+                    {itemCount(list.lines.length)} · salva em {accountDate(list.updated_at)}
+                  </small>
+                </div>
+                <div className="saved-lists-actions">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={<FolderOpen size={16} aria-hidden="true" />}
+                    onClick={() => {
+                      const deviceLines = current ?? readList(browserStorage(), "med-list-real").lines;
+                      if (deviceLines.length > 0) {
+                        setConfirm({ kind: "open", list });
+                      } else {
+                        open(list);
+                      }
+                    }}
+                    aria-label={`Abrir a lista ${list.name}`}
+                  >
+                    Abrir
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={<Trash2 size={16} aria-hidden="true" />}
+                    loading={remove.isPending && remove.variables === list.id}
+                    onClick={() => setConfirm({ kind: "delete", list })}
+                    aria-label={`Excluir a lista ${list.name}`}
+                  >
+                    Excluir
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {confirm && (
+            <div
+              className="saved-lists-confirm"
+              role="group"
+              aria-label="Confirmar ação"
+              aria-live="polite"
+              ref={confirmRef}
+            >
+              <p>
+                {confirm.kind === "open"
+                  ? `Abrir “${confirm.list.name}” substitui a lista deste aparelho.`
+                  : `Excluir “${confirm.list.name}” da sua conta?`}
+              </p>
+              <div className="saved-lists-confirm-actions">
+                {confirm.kind === "open" ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      open(confirm.list);
+                      setConfirm(null);
+                    }}
+                  >
+                    Abrir e substituir
+                  </Button>
+                ) : (
+                  <Button
+                    variant="negative"
+                    size="sm"
+                    loading={remove.isPending && remove.variables === confirm.list.id}
+                    onClick={() => {
+                      remove.mutate(confirm.list.id);
+                      setConfirm(null);
+                    }}
+                  >
+                    Excluir
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" onClick={() => setConfirm(null)}>
+                  Cancelar
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={<Trash2 size={16} aria-hidden="true" />}
-                  loading={remove.isPending && remove.variables === list.id}
-                  onClick={() => remove.mutate(list.id)}
-                  aria-label={`Excluir a lista ${list.name}`}
-                >
-                  Excluir
-                </Button>
               </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

@@ -66,6 +66,7 @@ export const accountApi = {
 
 export const ACCOUNT_QUERY_KEY = ["account"] as const;
 export const SAVED_LISTS_QUERY_KEY = ["account", "lists"] as const;
+export const savedListsKey = (userId: string) => [...SAVED_LISTS_QUERY_KEY, userId] as const;
 
 /**
  * The signed-in shopper, or `{ user: null }`. A 401 is not an error: it is the normal signed-out state,

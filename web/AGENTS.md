@@ -29,9 +29,12 @@ A Vite + React + TypeScript single-page app. There is no Next.js here.
   chain: the product bought, else a similar one (same subcategory and measure, same defining words) costed by its price per kg/L.
 - Accounts (`components/account.tsx`, `components/saved-lists.tsx`, `lib/account.ts`, `lib/account-api.ts`):
   e-mail/password and Google sign-in; the account keeps copies of shopping lists and the preferred
-  "Perto de você" place. The list still lives in `localStorage` first - an account adds copies, it does not
-  replace the browser's. The API routes are `api/src/accounts.ts` in production and
-  `scraping/local_api/accounts.py` locally; keep both in step. See `docs/CONTAS.md`.
+  "Perto de você" place. Google sign-in never auto-links to an existing e-mail account (requires the
+  existing sign-in method); the preferred place is saved with the browsing region and applied only while browsing that region;
+  opening a saved list asks before replacing a non-empty device list, and deleting asks first. The list
+  still lives in `localStorage` first - an account adds copies, it does not replace the browser's. The API
+  routes are `api/src/accounts.ts` in production and `scraping/local_api/accounts.py` locally; keep both
+  in step. See `docs/CONTAS.md`.
 - Run `npm run dev` (port 3000), `npm run typecheck`, `npm test` and `npm run build`.
 
 ## Contribution guidelines
@@ -42,7 +45,7 @@ A Vite + React + TypeScript single-page app. There is no Next.js here.
   visual before/after evidence, put it in the PR description on GitHub, not in the repository's history -
   a handful of screenshots is a permanent multi-megabyte cost to every future clone, forever, even once the
   PR is old news.
-- Keep doc cross-references relative to the file making them (e.g. `[VALIDACAO.md](VALIDACAO.md)` from
+- Keep doc cross-references relative to the file making them (e.g. `[VALIDACAO.md](docs/VALIDACAO.md)` from
   another file already in `docs/`), so moving the whole `docs/` folder never breaks a link.
 - A big structural change (new build tooling, a new top-level folder, a renamed convention) should say, in
   the PR description, what it replaces and why the replacement earns its keep - not just what it adds. A

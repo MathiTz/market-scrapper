@@ -19,8 +19,9 @@
     // Accounts write (users, sessions, user_preferences, saved_lists), so they need a login allowed to
     // write those tables: run scraping/db/accounts_role.sql, then
     //   npx wrangler hyperdrive create mercado-em-dia-accounts --connection-string="<accounts role>"
-    // and add the returned id here. Without this binding the API falls back to HYPERDRIVE, which is fine
-    // only when that connection may write (local development).
+    // and add the returned id here. Without a writable binding the account routes answer 503
+    // ("As contas não estão configuradas neste servidor."), not 500. Without this binding the API falls
+    // back to HYPERDRIVE, which is fine only when that connection may write (local development).
     // (the comma after the block above belongs to that new entry)
     // , { "binding": "ACCOUNTS_HYPERDRIVE", "id": "<id>" }
   ]
