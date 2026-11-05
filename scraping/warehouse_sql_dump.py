@@ -49,7 +49,7 @@ def main(argv=None) -> int:
     parser.add_argument("--plain", action="store_true", help="write plain SQL instead of .sql.gz")
     args = parser.parse_args(argv)
 
-    out = args.out.with_suffix(".sql") if args.plain else args.out
+    out = args.out.with_name(args.out.name.removesuffix(".gz")) if args.plain else args.out  # x.sql.gz -> x.sql
     if not args.database.is_file():
         print(f"no warehouse at {args.database}", file=sys.stderr)
         return 2
