@@ -41,6 +41,45 @@ CREATE TABLE IF NOT EXISTS dim_brand (
     created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
 
+-- ---------------------------------------------------------------------------
+-- NCM (fiscal classification): the official table, the leaf map, barcode answers
+-- ---------------------------------------------------------------------------
+
+-- The official NCM table, vendored from BrasilAPI (data/ncm/ncm.csv), so a code is validated
+-- offline and never invented. Levels: 2 chapter, 4 heading, 6 subheading, 8 item.
+CREATE TABLE IF NOT EXISTS dim_ncm (
+    ncm_code      TEXT PRIMARY KEY,
+    level         INTEGER NOT NULL,
+    chapter       TEXT NOT NULL,
+    parent_code   TEXT,
+    description   TEXT NOT NULL,
+    table_version TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_dim_ncm_level ON dim_ncm(level);
+
+-- One curated code per Cosmos leaf (data/ncm/category-ncm.csv, drafted by warehouse_ncm_bootstrap.py
+-- and reviewed by hand). Every product inherits its leaf's code: that is what gives the products
+-- whose chain gave no barcode (about a quarter) an answer too.
+CREATE TABLE IF NOT EXISTS map_category_ncm (
+    category_slug TEXT PRIMARY KEY,
+    ncm_code      TEXT NOT NULL,
+    confidence    REAL,
+    source        TEXT NOT NULL,      -- llm | overlap | manual
+    reason        TEXT,
+    updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+
+-- A barcode's own NCM, from a paid provider (Cosmos Bluesoft, GS1) or an imported CSV. It wins over
+-- the leaf's code, and makes the lookup a one-time cost per barcode instead of one per product per run.
+CREATE TABLE IF NOT EXISTS map_gtin_ncm (
+    gtin         TEXT PRIMARY KEY,
+    ncm_code     TEXT NOT NULL,
+    source       TEXT NOT NULL,       -- cosmos | gs1 | csv | manual
+    confidence   REAL,
+    payload_json TEXT,
+    fetched_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+
 -- Cleaned view of each product, keyed by the stable canonical key (a barcode or a hash of the
 -- identity tokens + size). The market.db id is only a reference: it is local to one machine and
 -- collides across rebuilds, so it can never be the identity here.
@@ -61,6 +100,12 @@ CREATE TABLE IF NOT EXISTS silver_products (
     category_path          TEXT,
     category_source        TEXT,      -- cloud | rule | manual | outside | cache
     category_confidence    REAL,
+    -- The product's NCM (fiscal classification), resolved by warehouse/ncm.py: its barcode's answer
+    -- when one was bought/imported, else its category leaf's code. Null only when neither exists.
+    ncm_code               TEXT,
+    ncm_source             TEXT,      -- gtin | leaf | product | manual
+    ncm_confidence         REAL,
+    ncm_updated_at         TEXT,
     review_status          TEXT NOT NULL DEFAULT 'none',  -- none | pending
     updated_at             TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );

@@ -16,6 +16,9 @@ export function demoData() {
       pack_count: 1,
       gtin: null,
       gtin_evidence: null,
+      ncm: null,
+      category_slug: null,
+      category_department: null,
     },
     {
       id: "demo-arroz",
@@ -29,6 +32,9 @@ export function demoData() {
       pack_count: 1,
       gtin: null,
       gtin_evidence: null,
+      ncm: null,
+      category_slug: null,
+      category_department: null,
     },
     {
       id: "demo-detergente",
@@ -42,6 +48,9 @@ export function demoData() {
       pack_count: 1,
       gtin: null,
       gtin_evidence: null,
+      ncm: null,
+      category_slug: null,
+      category_department: null,
     },
   ];
   const base = {

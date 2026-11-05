@@ -40,6 +40,7 @@ from services.price_points import history_of
 from services.public_api import build_public
 from services.scraper_service import run_and_store, run_all_products, run_all_offers
 from diagnose_sites import run_diagnosis
+from local_api.accounts import register_account_routes
 
 # Receipt OCR (scraping/receiptocr/) is optional like Cometa's easyocr: without it the
 # API still serves everything else, and /api/receipt/ocr explains itself with a 503. The
@@ -67,6 +68,7 @@ app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
 init_db()
+register_account_routes(app)
 
 
 def get_db() -> Session:

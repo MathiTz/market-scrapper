@@ -7,6 +7,7 @@ import Market from "@/components/market";
 // never loads alongside the main market view, so they are split into their own
 // chunks and fetched only when the route actually asks for them.
 const Admin = lazy(() => import("@/components/admin"));
+const Account = lazy(() => import("@/components/account"));
 const Vitrine = lazy(() => import("@/components/vitrine"));
 import "./posthog";
 // Archivo (variable: weight 100-900, width 62-125) is self-hosted from the package; the wdth file is the one
@@ -33,6 +34,7 @@ const queryClient = new QueryClient({
 function Page() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   if (path === "/admin") return <Admin />;
+  if (path === "/conta") return <Account />;
   // The components sheet lives behind the demo only: never on the real-data route.
   if (path === "/demo" && new URLSearchParams(window.location.search).get("vitrine") === "1")
     return <Vitrine />;

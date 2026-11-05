@@ -54,6 +54,11 @@ mirroring `api/`, plus scrape/health/diagnose endpoints), no HTML pages.
   of day regardless of when the process itself was last started.
 - Automatic retry with backoff, scrape-attempt monitoring, and a validation gate before anything publishes
   (an empty, broken, or much-smaller-than-usual snapshot never goes live - the previous good one stays).
+- Optional **accounts** (`/conta`): e-mail + password or Google sign-in, so a shopper's list copies and
+  their preferred "Perto de você" place follow them between devices. Google sign-in never auto-links to an
+  existing e-mail account (sign in with the existing method), and the preferred place is saved with its browsing region
+  and applied only there. Everything still works without an account; see
+  [web/docs/CONTAS.md](web/docs/CONTAS.md).
 
 ## Tech stack
 
@@ -168,6 +173,7 @@ Centralized in `scraping/config.py`, overridable via environment variables (see 
 | `PUBLISH_DATABASE_URL` | Cloud Postgres (Neon) the scheduler publishes to | *(unset = don't publish)* |
 | `DEFAULT_QUERY` | Default search term for scraping (empty = all products) | `""` |
 | `DEFAULT_LIMIT` | Max results per site | `10000` |
+| `COSMOS_API_TOKEN` | Cosmos Bluesoft token, enables barcode→NCM lookups (optional; paid) | *(unset)* |
 | `SCRAPE_INTERVAL_HOURS` | Used to derive how long an offer stays "current" (3x this) | `12` |
 | `SCRAPE_MAX_RETRIES` | Max retry attempts for network errors | `3` |
 | `SCRAPE_RETRY_BACKOFF` | Base backoff seconds between retries | `2.0` |
@@ -176,6 +182,12 @@ Centralized in `scraping/config.py`, overridable via environment variables (see 
 | `HOST` | Flask host | `0.0.0.0` |
 | `PORT` | Flask port | `5050` |
 | `DEBUG` | Flask debug mode | `true` |
+
+Account sign-in reads three more variables directly (both backends): `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` enable "Continuar com o Google" (unset = e-mail/password only), and
+`ACCOUNTS_PUBLIC_URL` is the public UI origin used for the Google callback and the origin check when a
+proxy makes the request origin differ from it (e.g. `http://127.0.0.1:3000` with the local Flask API).
+Both backends fall back to the request's own origin.
 
 ## Production: Neon + Cloudflare
 
@@ -187,9 +199,10 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
   (`scraping/db/schema.sql`). Publishing unchanged data is a no-op, and only the newest 5 snapshots are kept.
 - **`api/`** is the Hono app. It streams the latest snapshot untouched (with `ETag` and `Cache-Control`),
   answers `POST /api/location` (address search through Photon) and serves the built UI from the same
-  Worker. It is read-only.
+  Worker. The catalogue side is strictly read-only; only the account tables are written, through a separate
+  role (see *Accounts* below).
 - **The UI** downloads the snapshot once and searches and filters it in the browser; shopping lists stay in
-  `localStorage`.
+  `localStorage`, and an optional account keeps copies of them plus the preferred location.
 
 ### One-time setup
 
@@ -205,7 +218,18 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
 4. **Cloudflare:** `cd api && npm install && npx wrangler login`, then
    `npx wrangler hyperdrive create mercado-em-dia --connection-string="<read-only connection string>"` and
    put the id it prints in `api/wrangler.jsonc`.
-5. **Deploy:** `cd api && npm run deploy` (builds the UI from `../web`, then deploys the Worker with the
+5. **Accounts (optional):** `scraping/services/publish.py` executes `schema.sql` on every publish, so
+   account tables are created by a publish; run a publish (or apply `scraping/db/schema.sql` directly)
+   BEFORE `scraping/db/accounts_role.sql`, otherwise the `GRANT` fails because the tables do not exist yet.
+   `accounts_role.sql` creates `api_accounts`, a login allowed to write only `users`, `sessions`,
+   `user_preferences` and `saved_lists`. Create a second Hyperdrive config with that connection string and
+   put its id in the `ACCOUNTS_HYPERDRIVE` binding in `api/wrangler.jsonc` (without `ACCOUNTS_HYPERDRIVE`,
+   or if the connection is read-only, account routes answer HTTP 503
+   `{"error":"As contas não estão configuradas neste servidor."}`). Register the Google redirect URI
+   `https://<site>/api/auth/google/callback` in the Google OAuth client, then set the secrets with
+   `npx wrangler secret put GOOGLE_CLIENT_ID` and `... GOOGLE_CLIENT_SECRET` to enable the Google button;
+   e-mail/password works without them.
+6. **Deploy:** `cd api && npm run deploy` (builds the UI from `../web`, then deploys the Worker with the
    UI's files and the API together).
 
 ### Develop and test
@@ -216,7 +240,76 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
 - **UI tests:** `cd web && npm test` and `npm run typecheck`.
 - **Python tests:** `cd scraping && venv/bin/python -m unittest discover -s tests`.
 - **Without the cloud at all:** `scraping/run.py` (Flask) serves the same `/api/public` shape for local
-  development.
+  development, plus the account routes against SQLite. Google sign-in there also needs
+  `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `ACCOUNTS_PUBLIC_URL=http://127.0.0.1:3000` (so the
+  callback returns to the UI, not the API port).
+
+## NCM (classificação fiscal)
+
+Every product in the warehouse gets an NCM — the Brazilian fiscal code — in `silver_products.ncm_code`.
+It is resolved in three layers, cheapest first (`scraping/warehouse/ncm.py`):
+
+1. **Barcode** (`map_gtin_ncm`) — the answer for that exact GTIN, from a paid provider or an imported
+   CSV. A GTIN does **not** encode an NCM: this is a paid lookup, and there is no free equivalent
+   (Cosmos Bluesoft needs a token; Open Food Facts returns no NCM). The table makes it a one-time cost
+   per barcode, and the import means a provider can be swapped for a spreadsheet.
+2. **Category leaf** (`map_category_ncm`) — one curated code per Cosmos category, from
+   `scraping/data/ncm/category-ncm.csv`. This is what gives the ~26% of products whose chain gave no
+   barcode a code anyway.
+3. **Product name** — for the products the Cosmos tree has no node for at all (fruit, diapers, rubbish
+   bags), the model codes the name directly, with the same propose-and-repair as the category map.
+   `python -m warehouse_etl --ncm-unmapped` runs that pass; its source is `product`.
+
+Every code is validated against `scraping/data/ncm/ncm.csv`, a snapshot of the official table (10,437
+items, 957 headings, 96 chapters): a code that does not exist is never stored.
+
+```bash
+cd scraping
+python warehouse_ncm_fetch.py                               # refresh the official table (BrasilAPI)
+python warehouse_ncm_bootstrap.py                           # draft the leaf map; then review the CSV
+python -m warehouse_etl --ncm-only                          # apply the maps to classified products
+python -m warehouse_etl --ncm-unmapped                      # code the products no map can reach
+python -m warehouse_etl --ncm-gtin-csv data/ncm/gtin.csv    # import gtin,ncm answers
+python -m warehouse_etl --status                            # coverage, by source
+```
+
+Two small tables keep the data honest: `data/ncm/heading-department.csv` gives a department to the
+products the Cosmos tree has no node for (fruit, nappies, pet food, supplements, cleaning tools), and
+`data/ncm/product-overrides.csv` corrects a product whose code the model got demonstrably wrong
+(keyed by name; `--ncm-only` applies both).
+
+The publisher also joins the warehouse's category tree into the snapshot (`products[].category_slug`,
+`products[].category_department`, `products[].ncm`; see `scraping/services/category_index.py` and
+`ncm_index.py`). The UI can then build "Alternativas" from the fiscal classification instead of only the
+subcategory (`VITE_ALTERNATIVES_NCM=1`, `?alternativas=ncm`) and show the warehouse's departments as the
+category chips instead of the nine keyword categories (`VITE_CATEGORIES_WAREHOUSE=1`,
+`?categorias=warehouse`). Both switches are opt-in per build or per URL, so one deployment can compare;
+without a warehouse, or without a flag, the site behaves exactly as before. Products the Cosmos tree has
+no node for still get a department from their NCM heading (`data/ncm/heading-department.csv`), so fruit,
+nappies, pet food and cleaning tools are not left without a chip.
+
+Rows in `category-ncm.csv` with `source=overlap` or `confidence` under 0.6 are the ones to read first:
+a wrong code on a leaf is a wrong code on every product under it.
+
+## Product images
+
+A product's `image_url` is the chain's own CDN, and those files disappear: a delisted item, a
+re-upload, a bucket that starts answering 403. The UI has no fallback, so a dead URL was a card saying
+"Sem foto".
+
+The publisher now checks the URLs (`scraping/services/image_health.py`, cached in
+`data/image-health.json`, re-checked weekly) and, when one is dead and the local mirror has a verified
+photo of that product, publishes `/images/<path>` instead. Those files ship with the Worker:
+`services/publish.py` writes the list it used to `data/image-manifest.json`, and
+`web/scripts/sync-images.mjs` copies exactly those files into the build (before `dev` and `build`), so
+the page loads the image from us instead of a CDN that may say no.
+
+```bash
+cd scraping
+python -m services.image_health --status     # what is known: ok / dead / unsure
+python -m services.image_health              # re-check the stale URLs
+python -m services.image_mirror --product 1885   # fetch/verify a photo for one product
+```
 
 ## What a store's list is
 

@@ -6,7 +6,7 @@ import {
   type LocationPoint,
   type Nearby,
 } from "@/lib/location";
-import type { AddressResult } from "@/lib/geocoding";
+import { addressAt, searchPlaces, type AddressResult } from "@/lib/geocoding";
 import { Button, IconButton } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 import { Segmented } from "@/components/ui/segmented";
@@ -15,24 +15,6 @@ import { useDialog } from "@/components/ui/use-dialog";
 import { useSheetDrag } from "@/components/ui/use-sheet-drag";
 import { capture } from "@/app/posthog";
 import { posthogLog } from "@/app/posthog-logs";
-
-/** The street address at a GPS position, or null when it cannot be found (the position is rounded first). */
-async function addressAt(latitude: number, longitude: number): Promise<string | null> {
-  try {
-    const params = new URLSearchParams({
-      lat: latitude.toFixed(4),
-      lon: longitude.toFixed(4),
-    });
-    const response = await fetch("/api/location/reverse?" + params, {
-      signal: AbortSignal.timeout(6000),
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return typeof data?.place?.label === "string" ? data.place.label : null;
-  } catch {
-    return null;
-  }
-}
 
 export function NearbyFilter({
   value,
@@ -115,26 +97,8 @@ export function NearbyFilter({
     if (!auto) setBusy("address");
     const timer = setTimeout(() => abort.abort(), 15000);
     try {
-      const response = await fetch("/api/location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-        signal: abort.signal,
-        cache: "no-store",
-      });
-      const data = await response.json();
+      const results = await searchPlaces(query, abort.signal);
       if (token !== sequence.current) return;
-      if (!response.ok)
-        throw Error(data.error || "Não foi possível buscar o endereço.");
-      const results = Array.isArray(data.places)
-        ? data.places.filter(
-            (p: AddressResult) =>
-              p &&
-              typeof p.id === "string" &&
-              typeof p.label === "string" &&
-              validCoordinates(p),
-          )
-        : [];
       setPlaces(results);
       if (!results.length)
         setMessage(

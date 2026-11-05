@@ -19,6 +19,20 @@ WAREHOUSE_DB = _path(os.getenv("WAREHOUSE_DB", ""), BASE_DIR / "warehouse.db")
 TAXONOMY_DIR = BASE_DIR / "data" / "cosmos-categorias"
 TAXONOMY_CSV = TAXONOMY_DIR / "categorias.csv"
 
+# NCM: the official table (vendored) and the curated category map. See warehouse/ncm.py.
+NCM_DIR = _path(os.getenv("NCM_DIR", ""), BASE_DIR / "data" / "ncm")
+NCM_TABLE_CSV = NCM_DIR / "ncm.csv"
+NCM_CATEGORY_CSV = NCM_DIR / "category-ncm.csv"
+# NCM -> department for the products the Cosmos tree has no node for (see warehouse/ncm.py).
+NCM_HEADING_DEPARTMENTS_CSV = NCM_DIR / "heading-department.csv"
+# Hand corrections for a product whose model answer is demonstrably wrong, keyed by its name.
+NCM_PRODUCT_OVERRIDES_CSV = NCM_DIR / "product-overrides.csv"
+
+# A barcode's own NCM can only come from a paid provider (a GTIN does not encode one). Kept here
+# so enabling it is an .env change, not a code change.
+COSMOS_API_TOKEN = os.getenv("COSMOS_API_TOKEN", "")
+COSMOS_GTIN_URL = os.getenv("COSMOS_GTIN_URL", "https://api.cosmos.bluesoft.com.br/gtins").rstrip("/")
+
 
 # Generative model for the free-form part (choosing a leaf from the whole tree).
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")

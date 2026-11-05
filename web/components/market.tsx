@@ -21,6 +21,7 @@ import {
   Clock,
   TriangleAlert,
   Undo2,
+  UserRound,
 } from "lucide-react";
 import {
   BRAND,
@@ -42,6 +43,9 @@ import { OfferRail } from "@/components/offer-rail";
 import { BackToTop } from "@/components/back-to-top";
 import { LoadMore, useIncremental } from "@/components/infinite";
 import { ListAdder } from "@/components/list-adder";
+import { SavedLists } from "@/components/saved-lists";
+import { displayName, nearbyFromPreferences } from "@/lib/account";
+import { useAccount } from "@/lib/account-api";
 import { ReceiptCheck } from "@/components/receipt-check";
 import { StaleFlag } from "@/components/stale-flag";
 import { receiptOcrEnabled } from "@/lib/receipt-api";
@@ -59,6 +63,7 @@ import {
   type ProductFilters,
   type SortKey,
 } from "@/lib/filters";
+import { departmentsOf, inDepartment } from "@/lib/categories";
 import { useDebounced } from "@/lib/use-debounced";
 import { StoreContact } from "@/components/store-contact";
 import { OfferRow } from "@/components/offer-row";
@@ -137,6 +142,9 @@ const discountLabels: Record<number, string> = {
 };
 /** "Só para membros…" inside a sentence: only the first letter changes, proper names keep theirs. */
 const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+/** "20099000" as the NCM is written on an invoice: 2009.90.00. */
+const ncmLabel = (code: string) => `${code.slice(0, 4)}.${code.slice(4, 6)}.${code.slice(6, 8)}`;
+
 /** A product name short enough for a toast or a notice. */
 const short = (name: string) => (name.length > 42 ? `${name.slice(0, 40).trimEnd()}…` : name);
 
@@ -171,6 +179,10 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   } | null>(null);
   const [sharedNotice, setSharedNotice] = useState("");
   const [nearby, setNearby] = useState<Nearby | null>(null);
+  const account = useAccount();
+  const signedIn = Boolean(account.data?.user);
+  // The account's preferred place is applied once per visit, and never over a reference chosen here.
+  const appliedPreferredPlace = useRef(false);
   const nearbyKey = "med-nearby-" + (demo ? "demo" : "real");
   const basePath = demo ? "/demo" : "/";
   const sharedOpened = useRef(false);
@@ -229,6 +241,14 @@ export default function Market({ demo = false }: { demo?: boolean }) {
       else sessionStorage.removeItem(nearbyKey);
     } catch {}
   }, [nearby, nearbyKey, loaded]);
+  useEffect(() => {
+    // Demo data has no account, and a reference already chosen in this tab wins over the saved one.
+    if (!loaded || account.isPending || demo || appliedPreferredPlace.current) return;
+    appliedPreferredPlace.current = true;
+    if (nearby) return;
+    const preferred = nearbyFromPreferences(account.data?.preferences ?? null);
+    if (preferred) setNearby(preferred);
+  }, [account.data, account.isPending, demo, loaded, nearby]);
   useEffect(() => {
     if (!loaded) return;
     const saved = writeList(browserStorage(), listKey, lines);
@@ -490,6 +510,18 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   // This whole derived block is memoized: `data` only changes when the *debounced* `search`
   // (or the snapshot) changes, so between keystrokes these stay stable and the catalog isn't
   // re-filtered on every render — that was the source of the typing lag.
+  // Warehouse categories are opt-in, the same way as the NCM alternatives: a build flag, or the URL to
+  // compare both lists on one deployment. See libraries/categories.ts for why the chips come from the
+  // products rather than from the payload's static list.
+  const categoriesFromWarehouse = useMemo(() => {
+    const chosen = new URLSearchParams(window.location.search).get("categorias");
+    return chosen ? chosen === "warehouse" : import.meta.env.VITE_CATEGORIES_WAREHOUSE === "1";
+  }, []);
+  const warehouseDepartments = useMemo(
+    () => (categoriesFromWarehouse ? departmentsOf(result.data?.products ?? []) : []),
+    [categoriesFromWarehouse, result.data],
+  );
+
   const {
     filteredOffers,
     productOffers,
@@ -503,7 +535,8 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   } = useMemo(() => {
     const products = (data?.products || []).filter(
       (p) =>
-        (!category || p.category === category) &&
+        (!category ||
+          (categoriesFromWarehouse ? inDepartment(p, category) : p.category === category)) &&
         (!nearby || offers.some((o) => o.product_id === p.id)) &&
         (!networks.length ||
           offers.some(
@@ -672,9 +705,15 @@ export default function Market({ demo = false }: { demo?: boolean }) {
   // grid but wrong here: a product opened while "queijo" is still typed must still see every alternative,
   // not just the other ones whose name happens to contain "queijo".
   const allProducts = result.data?.products ?? [];
+  // Off unless the build opts in (VITE_ALTERNATIVES_NCM=1), the same pattern as the receipt OCR flag, with
+  // ?alternativas=ncm|category to compare both lists on one deployment - see alternativesOf.
+  const alternativesByNcm = useMemo(() => {
+    const chosen = new URLSearchParams(window.location.search).get("alternativas");
+    return chosen ? chosen === "ncm" : import.meta.env.VITE_ALTERNATIVES_NCM === "1";
+  }, []);
   const altProducts = useMemo(
-    () => (active ? alternativesOf(allProducts, active, pricedIds) : []),
-    [allProducts, active, pricedIds],
+    () => (active ? alternativesOf(allProducts, active, pricedIds, alternativesByNcm) : []),
+    [allProducts, active, pricedIds, alternativesByNcm],
   );
   const alternatives = useIncremental(altProducts.length, 24, detailResetKey);
   const outsideOffers =
@@ -914,6 +953,14 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             </span>
           </p>
         )}
+        <a
+          className="header-account"
+          href="/conta"
+          aria-label={signedIn ? `Sua conta: ${account.data?.user?.email}` : "Entrar na sua conta"}
+        >
+          <UserRound size={19} aria-hidden="true" />
+          <span>{signedIn ? displayName(account.data!.user!) : "Entrar"}</span>
+        </a>
       </header>
       <main className="main" id="conteudo" tabIndex={-1}>
         {offline && !active && view !== "today" && (
@@ -1183,15 +1230,17 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             )}
             <h2 className="spaced">Alternativas</h2>
             <p className="muted">
-              {active.subcategory
-                ? `Outros produtos do tipo "${active.subcategory}". São produtos diferentes: não entram na comparação acima.`
-                : "Produtos diferentes da mesma categoria. Não entram na comparação acima."}
+              {alternativesByNcm && active.ncm
+                ? `Outros produtos da mesma classificação fiscal (NCM ${ncmLabel(active.ncm)}). São produtos diferentes: não entram na comparação acima.`
+                : active.subcategory
+                  ? `Outros produtos do tipo "${active.subcategory}". São produtos diferentes: não entram na comparação acima.`
+                  : "Produtos diferentes da mesma categoria. Não entram na comparação acima."}
             </p>
             {altProducts.length === 0 ? (
               <div className="empty compact">
                 <Clock aria-hidden="true" />
                 <h3>Sem alternativas no momento</h3>
-                <p>Nenhum outro produto do mesmo tipo tem preço atual agora.</p>
+                <p>Nenhum outro produto do mesmo tipo está no catálogo agora.</p>
               </div>
             ) : (
               <>
@@ -1265,9 +1314,11 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                   >
                     {[
                       "Todas",
-                      ...(data?.categories.length
-                        ? data.categories
-                        : ["Mercearia", "Limpeza", "Bebidas", "Higiene"]),
+                      ...(categoriesFromWarehouse && warehouseDepartments.length
+                        ? warehouseDepartments
+                        : data?.categories.length
+                          ? data.categories
+                          : ["Mercearia", "Limpeza", "Bebidas", "Higiene"]),
                     ].map((c) => {
                       const on = category === c || (c === "Todas" && !category);
                       return (
@@ -1759,7 +1810,11 @@ export default function Market({ demo = false }: { demo?: boolean }) {
             {view === "list" && (
               <>
                 <div className="page-title">
-                  <p className="overline">Sem cadastro, guardada neste aparelho</p>
+                  <p className="overline">
+                    {!demo && signedIn
+                      ? "Guardada neste aparelho · cópia na sua conta"
+                      : "Sem cadastro, guardada neste aparelho"}
+                  </p>
                   <h1>Minha lista.</h1>
                   <p>
                     {lines.length} {lines.length === 1 ? "item" : "itens"} para
@@ -1773,6 +1828,15 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                     diretamente com a loja.
                   </p>
                 </div>
+                {!demo && (
+                  <SavedLists
+                    current={lines}
+                    onOpen={(saved) => {
+                      setLines(saved);
+                      setUndo(null);
+                    }}
+                  />
+                )}
                 {storageMessage(storageIssue) && (
                   <div className="notice amber storage-notice" role="status">
                     <TriangleAlert size={19} aria-hidden="true" />
