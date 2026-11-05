@@ -77,6 +77,11 @@ def seed():
             website="https://www.grupocenterbox.com.br",
         ),
         Store(
+            # Prices come from the text of its weekly flyers; real branches from services.store_locations.
+            name="Mix Mateus",
+            website="https://ofertasmateus.com",
+        ),
+        Store(
             # Flyers only (no price catalog online): real branches are not tracked for it yet.
             name="Frangolândia",
             website="https://frangolandia.com",

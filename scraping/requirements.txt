@@ -15,3 +15,4 @@ APScheduler==3.10.4
 python-dotenv==1.0.1
 psycopg[binary]>=3.2
 pillow>=10
+pdfplumber>=0.11  # the prices in Mix Mateus's flyers: their PDFs have a text layer

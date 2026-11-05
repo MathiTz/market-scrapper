@@ -322,6 +322,15 @@ def frangolandia_encartes() -> list:
     return _cached_encartes("Frangolândia", fetch)
 
 
+def mixmateus_encartes() -> list:
+    def fetch():
+        from scraper.sites.mix_mateus import MixMateusScraper
+
+        return _short_timeouts(MixMateusScraper()).fetch_encartes()
+
+    return _cached_encartes("Mix Mateus", fetch)
+
+
 def assai_encartes() -> list:
     def fetch():
         from scraper.sites.assai import AssaiScraper
@@ -581,6 +590,7 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
             + _image_flyers(canonical, "Centerbox", "https://www.grupocenterbox.com.br/ofertas/", centerbox_encartes(), now)
             + _image_flyers(canonical, "Frangolândia", "https://frangolandia.com/encartes/", frangolandia_encartes(), now)
             + _image_flyers(canonical, "Assaí Atacadista", "https://www.assai.com.br/ofertas", assai_encartes(), now)
+            + _image_flyers(canonical, "Mix Mateus", "https://ofertasmateus.com", mixmateus_encartes(), now)
         )
     with_data = {o["retailer_id"] for o in offers} | {f["retailer_id"] for f in flyers}
     retailers = [
@@ -645,17 +655,18 @@ def _flyers(canonical: Dict[str, Store], encartes: list, now: str) -> List[dict]
 
 
 def _image_flyers(canonical: Dict[str, Store], store_name: str, source_url: str, encartes: list, now: str) -> List[dict]:
-    """Flyers of a chain that just posts its pages as images (Centerbox, Frangolândia, Assaí): shown as images,
-    read into no prices. They give a start (the day they were posted, or begin) and, when the chain says
-    so, an end - without one the UI treats the flyer as still running, and one that stops being listed
-    simply drops out of the next scrape."""
+    """Flyers of a chain that just posts its pages as images (Centerbox, Frangolândia, Assaí) or as a PDF (Mix
+    Mateus, which has ``pdf_url``): shown as they are, not read into prices here. They give a start (the day
+    they were posted, or begin) and, when the chain says so, an end - without one the UI treats the flyer as
+    still running, and one that stops being listed simply drops out of the next scrape."""
     store = canonical.get(store_name)
     if store is None:
         return []
     return [{
         "id": f"{store_name.lower().replace(' ', '-')}-{e.id}", "retailer_id": str(store.id), "retailer_name": store.name,
         "title": e.name, "source_url": source_url,
-        "media_url": e.cover_url, "media_type": "image", "media_pages": e.pages or [e.cover_url],
+        "media_url": e.pdf_url or e.cover_url, "media_type": "pdf" if e.pdf_url else "image",
+        "media_pages": [] if e.pdf_url else (e.pages or [e.cover_url]),
         "valid_from": f"{e.posted_at}-03:00" if e.posted_at else None,  # Fortaleza has no daylight saving time
         "valid_until": f"{e.valid_until}-03:00" if e.valid_until else None, "scope": e.description,
         "version_hash": str(e.id), "collected_at": now, "source_checked_at": now,
