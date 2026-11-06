@@ -1539,6 +1539,11 @@ export default function Market({ demo = false }: { demo?: boolean }) {
                           Dados publicados {whenLabel(data.generated_at)}
                         </span>
                       )}
+                      {data && !demo && (
+                        <span className="coverage-note">
+                          Aqui aparecem só os produtos em destaque de cada rede, não o catálogo inteiro. Busque pelo nome para achar o resto.
+                        </span>
+                      )}
                     </div>
                     <a href="#sources" className="text-link">
                       Como ler os preços <ChevronRight size={17} aria-hidden="true" />

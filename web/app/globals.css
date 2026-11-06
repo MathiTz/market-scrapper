@@ -3029,7 +3029,8 @@ footer a {
   flex-wrap: wrap;
   row-gap: 2px;
 }
-.coverage .coverage-time {
+.coverage .coverage-time,
+.coverage .coverage-note {
   display: block;
   flex-basis: 100%;
 }
