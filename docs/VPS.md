@@ -67,7 +67,13 @@ shared secret). The path is Worker -> Caddy (HTTPS, only that route) -> gunicorn
    `npx wrangler secret put OCR_SECRET` (the same value as `OCR_SHARED_SECRET`), then `npm run deploy` (it builds the
    UI with `VITE_RECEIPT_OCR=1`).
 
-Check: `curl -i -X POST https://<HOST>/api/receipt/ocr` answers 401 (the secret is required), any other path 404, and
+6. Firewall (Hetzner Cloud): inbound 22 only from your own addresses, 80 open to everyone (Caddy gets and renews its
+   certificate over it), and 443 only from Cloudflare's published ranges (https://www.cloudflare.com/ips-v4 and
+   `ips-v6`; no "Any" source in that rule, or it allows everyone). The Worker's calls come from those ranges, so it still
+   gets through, while a direct request to the server times out. If the OCR ever starts failing with 502 after months
+   of working, compare the rule with those two lists first.
+
+Check, from the server itself or before step 6: `curl -i -X POST https://<HOST>/api/receipt/ocr` answers 401 (the secret is required), any other path 404, and
 `journalctl -u market-ocr -n 50` shows the requests. The Worker answers 501 until both secrets are set.
 
 ## Day to day
