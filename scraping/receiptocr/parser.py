@@ -53,6 +53,16 @@ def clean_code(value: object) -> str | None:
     return digits if (10 - total % 10) % 10 == check else None
 
 
+MIN_READ_DIGITS, MAX_READ_DIGITS = 8, 16
+
+
+def code_read(value: object) -> list[str]:
+    """The digits the model transcribed as a barcode when they could be one (8-16 digits, not all zeros), else [].
+    Not checked: this is what `clean_code` rejects too, kept so a one-digit slip can be repaired by a caller."""
+    digits = re.sub(r"\D", "", str(value or ""))
+    return [digits] if MIN_READ_DIGITS <= len(digits) <= MAX_READ_DIGITS and set(digits) != {"0"} else []
+
+
 def parse_reply_json(text: str) -> list[Item]:
     m = JSON_RE.search(text)
     if not m:
@@ -94,6 +104,7 @@ def parse_reply_json(text: str) -> list[Item]:
                 line_no=line_no,
                 name=name,
                 code=code,
+                code_reads=code_read(it.get("code")),
                 qty=qty,
                 unit=unit,
                 unit_price=unit_price,

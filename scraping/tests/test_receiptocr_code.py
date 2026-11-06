@@ -4,7 +4,7 @@ import json
 import unittest
 
 from receiptocr.consensus import consensus_merge
-from receiptocr.parser import clean_code, parse_reply_json
+from receiptocr.parser import clean_code, code_read, parse_reply_json
 from receiptocr.schemas import Item
 
 COCA_COLA = "7894900011517"  # real EAN-13 (Coca-Cola 2 L): its check digit holds
@@ -43,6 +43,41 @@ class TestParseAndMerge(unittest.TestCase):
         cut = Item(line_no=1, name="REFRIG COCA COLA 2L", code=None, qty=1, unit_price=9.99, total=9.99, printed_total=9.99)
         merged, _ = consensus_merge([[seen], [cut]])
         self.assertEqual(merged[0].code, COCA_COLA)
+
+
+class TestCodeReads(unittest.TestCase):
+    """What the model transcribed, kept even when its check digit fails, so a caller can repair a one-digit slip."""
+
+    def test_a_code_the_check_digit_rejects_still_comes_through_as_a_read(self):
+        slipped = "7894900011518"  # one digit off COCA_COLA
+        self.assertEqual(code_read(slipped), [slipped])
+        self.assertEqual(code_read(" 0789-4900011517 "), ["07894900011517"])
+
+    def test_what_cannot_be_a_barcode_is_no_read(self):
+        for value in ("", None, "1234", "0000000000000", "12345678901234567", "abc"):
+            self.assertEqual(code_read(value), [])
+
+    def test_the_parser_keeps_the_read_and_still_gives_no_validated_code(self):
+        reply = json.dumps({"items": [{"line": "1", "code": "7894900011518", "name": "COCA COLA", "qty": 1,
+                                       "unit": "un", "unit_price": 9.99, "printed_total": 9.99}]})
+        item = parse_reply_json(reply)[0]
+        self.assertIsNone(item.code)
+        self.assertEqual(item.code_reads, ["7894900011518"])
+
+    def test_the_merge_lists_each_distinct_read_most_voted_first(self):
+        def item(code, reads):
+            return Item(line_no=1, name="REFRIG COCA COLA 2L", code=code, code_reads=reads, qty=1,
+                        unit_price=9.99, total=9.99, printed_total=9.99)
+
+        slip = "789490001151"  # a dropped digit
+        merged, _ = consensus_merge([[item(None, [slip])], [item(None, [slip])], [item(COCA_COLA, [COCA_COLA])]])
+        self.assertEqual(merged[0].code_reads, [slip, COCA_COLA])  # two readings agree on the slip, one on the rest
+        self.assertEqual(merged[0].code, COCA_COLA)
+
+    def test_the_merge_keeps_no_more_than_a_handful(self):
+        reads = [f"78949000115{n:02d}" for n in range(10)]
+        items = [[Item(line_no=1, name="X Y", code_reads=[r], qty=1, unit_price=1, total=1, printed_total=1)] for r in reads]
+        self.assertLessEqual(len(consensus_merge(items)[0][0].code_reads), 6)
 
 
 # Trying the extractor on real receipt photos. They show the buyer's CPF, so they are kept out of the repo (the

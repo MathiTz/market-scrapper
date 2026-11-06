@@ -7,6 +7,7 @@ from .schemas import Item
 VOTE_TOL = 0.02
 MATH_TOL = 0.03
 NAME_SIM = 65.0
+MAX_CODE_READS = 6
 
 
 def _item_math_ok(it: Item) -> bool:
@@ -118,6 +119,12 @@ def merge_line_group(
         if it.code:
             code_votes[it.code] = code_votes.get(it.code, 0.0) + w
     code = max(code_votes, key=code_votes.get) if code_votes else None
+    # The raw strings of every reading, most-voted first, for a caller that can repair one a digit off.
+    read_votes: dict[str, float] = {}
+    for it, w in zip(items, weights):
+        for read in it.code_reads:
+            read_votes[read] = read_votes.get(read, 0.0) + w
+    code_reads = sorted(read_votes, key=lambda r: -read_votes[r])[:MAX_CODE_READS]
 
     line_no = next((it.line_no for it in items if it.line_no is not None), None)
     unit = next((it.unit for it in items if it.unit), None)
@@ -126,6 +133,7 @@ def merge_line_group(
         line_no=line_no,
         name=name,
         code=code,
+        code_reads=code_reads,
         qty=qty,
         unit=unit,
         unit_price=up,

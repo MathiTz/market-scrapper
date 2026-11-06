@@ -44,6 +44,7 @@ const lineSchema = z.object({
   line_no: z.number().int().nullable(),
   name: z.string(),
   code: z.string().nullable().default(null), // an older server does not send it
+  code_reads: z.array(z.string()).default([]), // nor this: the raw barcode readings, even those the check digit rejected
   qty: reais,
   unit: z.string().nullable(),
   unit_price: reais,

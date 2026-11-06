@@ -36,6 +36,30 @@ export const ABBREVIATIONS: Record<string, string> = {
 /** The printed form of a barcode with the zeros some systems pad it with (EAN-13 as GTIN-14) taken off. */
 export const gtinKey = (code: string) => code.replace(/\D/g, "").replace(/^0+/, "");
 
+/**
+ * The known barcodes (as `gtinKey`s) that `read` is, or is one inserted, dropped or changed digit away from, or has
+ * two neighbouring digits swapped from. A model
+ * reading a printed barcode usually slips by a digit, which the check digit then rejects; against the barcodes we
+ * sell, that slip points at one product. Short reads are left out: with eight digits or fewer, too many barcodes
+ * are one slip apart.
+ */
+export function barcodesNear(read: string, known: ReadonlyMap<string, unknown>): string[] {
+  const key = gtinKey(read);
+  if (key.length < 11) return [];
+  const found = new Set<string>();
+  const check = (candidate: string) => known.has(candidate) && found.add(candidate);
+  check(key);
+  for (let i = 0; i <= key.length; i++) {
+    for (let digit = 0; digit <= 9; digit++) check(key.slice(0, i) + digit + key.slice(i)); // a digit dropped from the read
+    if (i < key.length) {
+      check(key.slice(0, i) + key.slice(i + 1)); // an extra digit in the read
+      for (let digit = 0; digit <= 9; digit++) check(key.slice(0, i) + digit + key.slice(i + 1)); // a changed digit
+    }
+    if (i + 1 < key.length) check(key.slice(0, i) + key[i + 1] + key[i] + key.slice(i + 2)); // two digits swapped
+  }
+  return [...found].map((candidate) => gtinKey(candidate));
+}
+
 const isSubsequence = (small: string, big: string) => {
   let at = 0;
   for (const letter of big) if (letter === small[at]) at++;

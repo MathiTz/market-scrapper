@@ -51,6 +51,10 @@ class Item:
     # The product's barcode (EAN/GTIN) when the receipt prints it - NFC-e lines do ("Código"): digits only, and
     # only when it passes the GS1 check digit, so a misread digit gives None rather than a wrong product.
     code: str | None = None
+    # Every barcode-length digit string the readings of this line produced, most-voted first, check digit or not.
+    # One misread digit loses `code`, but the string is usually one edit from the real barcode: a caller that knows
+    # the barcodes it sells can repair it (the web app does, only to a barcode it knows and a name that agrees).
+    code_reads: list[str] = field(default_factory=list)
     qty: float | None = None
     unit: str | None = None
     unit_price: float | None = None

@@ -217,6 +217,67 @@ describe("compareReceipt: the barcode a line prints", () => {
   });
 });
 
+describe("compareReceipt: a barcode read one digit off", () => {
+  // Real barcodes of two flavours of one drink: they differ in two digits (the flavour and the check digit).
+  const abacaxi = product("abacaxi", "Suplemento Alimentar Jungle Organico Low Carb Abacaxi Com Hortela 500ml", { amount: 500, gtin: "7898692301993" });
+  const uva = product("uva", "Suplemento Alimentar Jungle Organico Low Carb Uva 500ml", { amount: 500, gtin: "7898692300880" });
+  const arroz = product("arroz", "Arroz Branco Tio Joao 1kg", { amount: 1000, unit: "g", gtin: "7893500000019" });
+  const products = [abacaxi, uva, arroz];
+  const offers = products.map((p) => offer(p.id, 749));
+  const unrepaired = (reads: string[], name = "SUPLEN LOW JUNGLE500") =>
+    compare([line(name, { code: null, code_reads: reads, unit_price: 8.49 })], products, offers);
+
+  it("repairs an extra digit in the read: the barcode we sell it points at is the line's", () => {
+    expect(unrepaired(["78986926301993"]).comparisons).toMatchObject([{ productId: "abacaxi", via: "code" }]);
+  });
+
+  it("repairs a dropped digit and a changed digit, and a read padded with a zero", () => {
+    expect(unrepaired(["789892301993"]).comparisons).toMatchObject([{ productId: "abacaxi", via: "code" }]);
+    expect(unrepaired(["7898692301998"]).comparisons).toMatchObject([{ productId: "abacaxi", via: "code" }]);
+    expect(unrepaired(["078986926301993"]).comparisons).toMatchObject([{ productId: "abacaxi", via: "code" }]);
+  });
+
+  it("uses the read that points somewhere when the others are garbage", () => {
+    expect(unrepaired(["7890028592057", "78986926301993"]).comparisons).toMatchObject([{ productId: "abacaxi" }]);
+  });
+
+  it("repairs two neighbouring digits swapped", () => {
+    expect(unrepaired(["7898962301993"]).comparisons).toMatchObject([{ productId: "abacaxi", via: "code" }]);
+    expect(unrepaired(["7898692301939"]).comparisons).toMatchObject([{ productId: "abacaxi", via: "code" }]);
+  });
+
+  it("does not repair a read that is two separate slips away from everything we sell", () => {
+    const twoSlips = ["7899692309993", "7898692391903", "78986923019"]; // two changed digits; two dropped
+    for (const read of twoSlips) expect(unrepaired([read]).comparisons, read).toHaveLength(0);
+    expect(unrepaired([twoSlips[0]]).unmatched).toHaveLength(1);
+  });
+
+  it("does not choose between two barcodes the read could be", () => {
+    // 7898692300883 is one digit from the Uva barcode (7898692300880) and one from a barcode ending 3 (below)
+    const siblings = [...products, product("outro", "Suplemento Alimentar Jungle Organico Low Carb Limao 500ml", { amount: 500, gtin: "7898692300883".replace(/3$/, "7") })];
+    const report = compareReceipt(
+      receipt(line("SUPLEN LOW JUNGLE500", { code: null, code_reads: ["7898692300884"] })),
+      [], catalog(...siblings), siblings.map((p) => offer(p.id, 749)), now, "catalogue",
+    );
+    expect(report.comparisons.map((c) => c.via)).not.toContain("code"); // two candidates: no repair (the name decides, or nothing)
+  });
+
+  it("does not accept a repair the line's name contradicts", () => {
+    // a read one digit from the rice's barcode, on a line that says it is a juice-drink: not rice
+    expect(unrepaired(["7893500000010"], "SUPLEN LOW JUNGLE500").comparisons.map((c) => c.productId)).not.toContain("arroz");
+  });
+
+  it("trusts a barcode that passed its check digit even when we do not sell it", () => {
+    // 7898692301993 is sold; this valid-looking code (given as `code`) is not, and its reads must not be fuzzed onto the sold one
+    const report = compare([line("SUPLEN LOW JUNGLE500", { code: "7898205925357", code_reads: ["7898205925357", "78986926301993"] })], products, offers);
+    expect(report.comparisons.map((c) => c.via)).not.toContain("code");
+  });
+
+  it("ignores reads too short to point at one barcode", () => {
+    expect(unrepaired(["78986923"]).comparisons.map((c) => c.via)).not.toContain("code");
+  });
+});
+
 describe("compareReceipt: names cut short or abbreviated", () => {
   const queijo = product("queijo", "Queijo Mussarela Fatiado Tirolez 150g", { amount: 150, unit: "g", brand: "Tirolez" });
   it("reads QJ as queijo and a clipped word as the start of the real one", () => {

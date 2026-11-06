@@ -286,8 +286,10 @@ browser -> Worker  POST /api/receipt/ocr      (api/src/app.ts: 6 photos/min per 
 - **Rotating the secret:** write a new `OCR_SHARED_SECRET` in the server's `scraping/.env`, `systemctl restart
   market-ocr`, then `npx wrangler secret put OCR_SECRET` with the same value. Reads fail between the two steps.
 - **What to expect:** the reading is not deterministic (two reads of one photo can differ). Prices and totals are
-  reliable; names are sometimes garbled and a barcode is sometimes missed, so a line without one depends on the name
-  match, and a product the catalogue does not have is reported as not recognised. A price paid after a store discount can
+  reliable; names are sometimes garbled and a barcode is sometimes misread. A barcode that fails its check digit is
+  repaired in the browser when it is one digit away (inserted, dropped, changed or swapped) from exactly one barcode
+  in the catalogue and the product's name agrees; otherwise the line depends on the name match, and a product the
+  catalogue does not have is reported as not recognised. A price paid after a store discount can
   be below the price the catalogue shows; the UI says the catalogue price may be out of date.
 - **Privacy:** the photo goes to the VPS and from there to ollama.com, and is never stored (the temporary file is deleted
   right after reading). The UI says so before the upload and asks the shopper to cover anything they do not want sent.

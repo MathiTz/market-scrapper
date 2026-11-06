@@ -1,6 +1,6 @@
 import { clean, rankOffers, type Offer, type Product } from "./domain";
 import { listName } from "./format";
-import { ABBREVIATIONS, gtinKey, wordSimilarity, wordWeights, type WordWeights } from "./product-match";
+import { ABBREVIATIONS, barcodesNear, gtinKey, wordSimilarity, wordWeights, type WordWeights } from "./product-match";
 
 /** One line as POST /api/receipt/ocr returns it: reais as printed on the receipt, not cents. */
 export type ReceiptItem = {
@@ -8,6 +8,8 @@ export type ReceiptItem = {
   name: string;
   /** The product's barcode when the receipt prints it (checked server-side), else null/absent. */
   code?: string | null;
+  /** What the readings produced as a barcode, most-voted first, check digit or not: a read one digit off is repaired below. */
+  code_reads?: string[];
   qty: number | null;
   unit: string | null;
   unit_price: number | null;
@@ -76,6 +78,8 @@ const PRICE_FITS = 0.1;
 const PRICE_CLEARLY_BETTER = 0.15;
 /** A printed word counts as found at this similarity or above (a prefix or a misread letter; a loose subsequence does too). */
 const MIN_WORD_SIMILARITY = 0.6;
+/** A barcode repaired from a misread (one digit off a barcode we sell) must also be explained this much by the product's name. */
+const MIN_SCORE_REPAIRED_CODE = 0.4;
 /** A line recognised outside the list - from the whole catalogue - has to be explained better: nothing asked for it. */
 const MIN_SCORE_OUTSIDE_LIST = 0.75;
 
@@ -248,7 +252,15 @@ export function compareReceipt(
   }
   /** The barcode on the line, found among the list's items first and then (if allowed) the catalogue. */
   const matchCode = (item: ReceiptItem): { product: Product; onList: boolean } | null => {
-    const sold = item.code ? byCode.get(gtinKey(item.code)) : null;
+    let sold = item.code ? byCode.get(gtinKey(item.code)) : null;
+    // No barcode passed its check digit: a read one digit off is repaired to the one barcode we sell it points at (two
+    // barcodes it could be is no repair), and only when the product's name agrees. A code that did pass is trusted
+    // as it is: a single slip cannot make another valid barcode, so one we do not sell is a product we do not have.
+    if (!item.code) {
+      const keys = new Set((item.code_reads ?? []).flatMap((read) => barcodesNear(read, byCode)));
+      const only = keys.size === 1 ? byCode.get([...keys][0]) : undefined;
+      sold = only?.filter((p) => score(item, p, weights) >= MIN_SCORE_REPAIRED_CODE);
+    }
     if (!sold?.length) return null;
     const onList = sold.find((p) => listedIds.has(p.id));
     if (onList) return { product: onList, onList: true };

@@ -70,3 +70,13 @@ All errors derive from `ReceiptOcrError`:
 - A printed+math-consistent total outranks a bare majority when they
   disagree: the printed total is what the register charged.
 - `receipt.raw` keeps the per-tile parsed items for debugging.
+- **Barcodes (`code` and `code_reads`).** The model is asked to copy the barcode printed on each line. `code` is only
+  set when the digits pass the GS1 check digit, so a wrong barcode never names another product; the price is that a
+  single misread digit loses it. `code_reads` keeps every barcode-length string the readings produced, most-voted
+  first, check digit or not, for a caller that knows the barcodes it sells: a read one inserted, dropped, changed
+  or swapped digit away from exactly one of them is almost always that product (the web app does this, and also
+  requires the product's name to agree: `web/lib/receipt.ts`, `barcodesNear` in `web/lib/product-match.ts`).
+- **Tile geometry is tuned, not arbitrary.** Measured on real receipts (8 runs each), 3 tiles with 10% overlap and a 2x
+  zoom read barcodes best. Taller tiles (40% overlap) and shorter ones (5 or 7 tiles) both made the model invent digits,
+  and some invented codes still passed the check digit. Change `n_tiles`, `tile_overlap` or `tile_zoom` only with a
+  measurement like that.
