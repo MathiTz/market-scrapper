@@ -1,0 +1,14 @@
+[Unit]
+Description=Scrape GBarbosa's whole catalogue, then validate and publish (the other chains keep their last lists)
+After=network-online.target exit-tunnel.service
+Wants=network-online.target exit-tunnel.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/market-scrapper/scraping
+# About 8,000 grocery products read a subcategory at a time (11 minutes on a fast connection), too long for the
+# twice-daily release, which skips it (--skip atacadao gbarbosa). refresh.py publishes the stored lists of every
+# chain, so this run republishes the others unchanged.
+ExecStart=/opt/market-scrapper/scraping/venv/bin/python refresh.py --only gbarbosa
+TimeoutStartSec=2h
+Nice=5

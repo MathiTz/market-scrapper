@@ -1,5 +1,5 @@
 [Unit]
-Description=Scrape every chain but Atacadão (its own daily timer), validate, publish to Neon and sync price history
+Description=Scrape every chain but Atacadão and GBarbosa (their own daily timers), validate, publish to Neon and sync price history
 After=network-online.target exit-tunnel.service
 Wants=network-online.target exit-tunnel.service
 
@@ -8,6 +8,6 @@ Type=oneshot
 WorkingDirectory=/opt/market-scrapper/scraping
 # refresh.py reads .env itself (PUBLISH_DATABASE_URL, PROXY_<CHAIN>) and exits non-zero when validation blocks
 # a publish, so a bad scrape shows up as a failed unit and never reaches the site.
-ExecStart=/opt/market-scrapper/scraping/venv/bin/python refresh.py --skip atacadao
+ExecStart=/opt/market-scrapper/scraping/venv/bin/python refresh.py --skip atacadao gbarbosa
 TimeoutStartSec=3h
 Nice=5

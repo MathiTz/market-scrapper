@@ -506,7 +506,7 @@ Atacadão sells at everyday wholesale prices with no discounts, so it collects a
 4,300 grocery products, ~10 minutes), which runs once a day on its own timer (`market-atacadao`, 03:00) so it
 stays out of the twice-daily release. Sam's Club (and GBarbosa) are read in full too, one subcategory at a time
 so no department is cut at the search API's 2,500-product page limit: about 3,400 grocery products for Sam's
-Club (~5 min) and 8,000 for GBarbosa (~11 min). A product on promotion carries its list price and deal label.
+Club (~5 min) and 8,000 for GBarbosa (~11 min, on its own daily timer `market-gbarbosa` at 04:00, like Atacadão). A product on promotion carries its list price and deal label.
 
 **Real branches:** VTEX's own public pickup-points API returns real branches with real coordinates already
 - no geocoding needed, unlike the Mercadapp chains.
