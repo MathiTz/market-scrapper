@@ -47,6 +47,9 @@ mirroring `api/`, plus scrape/health/diagnose endpoints), no HTML pages.
 - Deal-aware: regular price, discount label, and club-only (member) prices are all tracked and shown
   separately from what everyone pays.
 - Flyers (Cometa's `encartes`) read with OCR, kept only when a printed discount badge confirms the reading.
+- **Receipt check** ("Conferir com o cupom" on the shopping list): a photo of an NFC-e receipt is read, matched to
+  the catalogue (by the printed barcode, else by name) and compared with the current prices, with a per-chain basket
+  of where the same items would have been cheapest. See *Receipt check* below.
 - One row per (product, store) in the database, not one per scrape - past prices are archived into a
   compact, capped binary history instead of growing the table forever (this project scrapes ad-hoc, not on
   a guaranteed schedule, so the data layer is built to not care how often or how irregularly it runs).
@@ -62,8 +65,8 @@ mirroring `api/`, plus scrape/health/diagnose endpoints), no HTML pages.
 
 ## Tech stack
 
-- **Scraping/backend:** Python 3.14, SQLAlchemy (SQLite locally, Postgres in production), Flask (local API
-  only), Scrapling (stealth fetching) with Selenium as a fallback, APScheduler.
+- **Scraping/backend:** Python 3.14, SQLAlchemy (SQLite locally, Postgres in production), Flask (the local API,
+  and the receipt OCR route on the VPS behind gunicorn), Scrapling (stealth fetching) with Selenium as a fallback, APScheduler.
 - **UI:** React 19, Vite, TypeScript, TanStack React Query - see `web/AGENTS.md`.
 - **API:** Hono on Cloudflare Workers, reading Postgres (Neon) through Hyperdrive - see `api/`.
 
@@ -86,6 +89,8 @@ market_scrapper/
 │   │   ├── flyer_ocr.py               # Cometa flyer OCR + badge verification
 │   │   └── sites/                     # One thin file per chain
 │   ├── models/                    # SQLAlchemy models (Product, Store, StoreLocation, Price, PriceHistory, ...)
+│   ├── receiptocr/                # Receipt photo -> items (NFC-e): tiles + a vision API + consensus; see its README
+│   ├── deploy/                    # systemd units for the VPS, and the Caddyfile for the receipt OCR
 │   ├── services/
 │   │   ├── public_api.py             # Builds the /api/public payload the UI expects
 │   │   ├── scraper_service.py        # Bridge between scrapers and the database (upsert + history)
@@ -174,6 +179,8 @@ Centralized in `scraping/config.py`, overridable via environment variables (see 
 | `DEFAULT_QUERY` | Default search term for scraping (empty = all products) | `""` |
 | `DEFAULT_LIMIT` | Max results per site | `10000` |
 | `SNAPSHOT_OFFERS_PER_CHAIN` | Max products per chain in the published snapshot (`0` = all). The rest stay searchable through `/api/search`; turn it on only once the deployed UI has that search | `0` |
+| `OLLAMA_API_KEY` | ollama.com key: reads receipt photos (and classifies products); without it `/api/receipt/ocr` answers 503 | *(unset)* |
+| `OCR_SHARED_SECRET` | On the VPS: the secret the Worker must send (`X-OCR-Secret`) to `/api/receipt/ocr`; unset = open (development) | *(unset)* |
 | `COSMOS_API_TOKEN` | Cosmos Bluesoft token, enables barcode→NCM lookups (optional; paid) | *(unset)* |
 | `SCRAPE_INTERVAL_HOURS` | Used to derive how long an offer stays "current" (3x this) | `12` |
 | `SCRAPE_MAX_RETRIES` | Max retry attempts for network errors | `3` |
@@ -252,6 +259,40 @@ data goes to a cloud database, and a small read-only API on Cloudflare serves it
   development, plus the account routes against SQLite. Google sign-in there also needs
   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `ACCOUNTS_PUBLIC_URL=http://127.0.0.1:3000` (so the
   callback returns to the UI, not the API port).
+
+## Receipt check (Conferir com o cupom)
+
+On the shopping list, a shopper can send a photo of an NFC-e receipt. The app reads its lines, finds each product in
+the catalogue (by the barcode the receipt prints, else by its name), shows what was paid against the lowest current
+price, and prices the same items at every chain ("Onde sairia mais barato"). The matching and the basket run in the
+browser (`web/lib/receipt.ts`, `web/lib/receipt-basket.ts`, `web/components/receipt-check.tsx`); only the reading
+needs a server, because it uses OpenCV and a vision API.
+
+```
+browser -> Worker  POST /api/receipt/ocr      (api/src/app.ts: 6 photos/min per address, 10 MB cap, shared secret)
+        -> Caddy   https://<ip>.sslip.io      (on the VPS; forwards only this route; 443 open to Cloudflare's ranges only)
+        -> gunicorn 127.0.0.1:5051            (scraping/local_api/app.py, market-ocr.service)
+        -> receiptocr                         (OpenCV tiles + the ollama.com vision API, OLLAMA_API_KEY)
+```
+
+- **Locally:** put `OLLAMA_API_KEY` in `scraping/.env`, `pip install -r requirements-ocr.txt`, and run the Flask API and
+  `npm run dev`; the feature shows in development and the route is open (no `OCR_SHARED_SECRET`). The library also has a
+  command line: `python -m receiptocr photo.jpg` (see `scraping/receiptocr/README.md`).
+- **In production:** the Worker answers 501 until it knows where the OCR runs. Set up the VPS side following
+  [docs/VPS.md](docs/VPS.md#receipt-ocr-optional) (gunicorn unit, Caddy, firewall), then, from `api/`,
+  `npx wrangler secret put OCR_URL` (`https://<server-ip-with-dashes>.sslip.io`) and
+  `npx wrangler secret put OCR_SECRET` (the value of `OCR_SHARED_SECRET` on the server). `npm run deploy` builds the UI
+  with `VITE_RECEIPT_OCR=1`, which is what shows the button in production.
+- **Rotating the secret:** write a new `OCR_SHARED_SECRET` in the server's `scraping/.env`, `systemctl restart
+  market-ocr`, then `npx wrangler secret put OCR_SECRET` with the same value. Reads fail between the two steps.
+- **What to expect:** the reading is not deterministic (two reads of one photo can differ). Prices and totals are
+  reliable; names are sometimes garbled and a barcode is sometimes missed, so a line without one depends on the name
+  match, and a product the catalogue does not have is reported as not recognised. A price paid after a store discount can
+  be below the price the catalogue shows; the UI says the catalogue price may be out of date.
+- **Privacy:** the photo goes to the VPS and from there to ollama.com, and is never stored (the temporary file is deleted
+  right after reading). The UI says so before the upload and asks the shopper to cover anything they do not want sent.
+- **Tests:** `scraping/tests/test_receiptocr_api.py` (the extractor is always mocked: no test calls the provider) and the
+  receipt routes in `api/src/app.test.ts`.
 
 ## NCM (classificação fiscal)
 
