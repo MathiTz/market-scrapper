@@ -66,6 +66,40 @@ describe("receiptSize / nameTokens", () => {
     expect(nameTokens("Arroz Branco Tipo 1 5kg")).toEqual(["arroz", "branco"]);
     expect(nameTokens("QJO MUSSARELA")).toEqual(["queijo", "mussarela"]);
   });
+
+  it("splits a size glued to the words around it, but leaves short numbers in a word alone", () => {
+    expect(nameTokens("SUPLEN JUNGLE500TANG")).toEqual(["suplen", "jungle", "tang"]);
+    expect(nameTokens("SUPLEN LOW JUNGLE500")).toEqual(["suplen", "low", "jungle"]);
+    expect(nameTokens("VITAMINA B12 BAYER")).toEqual(["vitamina", "b12", "bayer"]);
+    expect(nameTokens("REFRIG 7UP")).toEqual(["refrigerante", "7up"]);
+  });
+
+  it("reads a size printed without its unit when it is glued to a word", () => {
+    expect(receiptSize("SUPLEN JUNGLE500TANG")).toEqual({ amount: 500, unit: null, packs: 1 });
+    expect(receiptSize("VITAMINA B12 BAYER")).toBeNull();
+  });
+});
+
+describe("compareReceipt: a size glued to the name ('SUPLEN JUNGLE500TANG')", () => {
+  const tang = product("tang", "Suplemento Alimentar Jungle Organico Endurance Tangerina 500ml", { amount: 500 });
+  const morango = product("mor", "Suplemento Alimentar Jungle Organico Low Carb Morango Com Limao 500ml", { amount: 500 });
+  const uva = product("uva", "Suplemento Alimentar Jungle Organico Low Carb Uva 500ml", { amount: 500 });
+  const stick = product("stick", "Suplemento Alimentar Em Po Jungle Plant Power Tangerina E Morango 5g Stick", { amount: 5, unit: "g" });
+  const products = [tang, morango, uva, stick];
+  const offers = products.map((p) => offer(p.id, 749, "Pinheiro Supermercado"));
+  const printed = (name: string) => line(name, { unit_price: 8.49, discount: 2, total: 6.49, printed_total: 6.49 });
+
+  it("matches the flavour it names, and only among the products of that size", () => {
+    const report = compare([printed("SUPLEN JUNGLE500TANG"), printed("SUPLEN JUNGLE500MOR")], products, offers);
+    expect(report.comparisons.map((c) => c.productId)).toEqual(["tang", "mor"]); // not the 5 g stick that also says "Tangerina"
+    expect(report.unmatched).toHaveLength(0);
+  });
+
+  it("still leaves a line that names no flavour unmatched when several flavours fit it equally", () => {
+    const report = compare([printed("SUPLEN LOW JUNGLE500")], products, offers);
+    expect(report.comparisons).toHaveLength(0);
+    expect(report.unmatched).toHaveLength(1); // only the barcode can tell Morango from Uva: never guessed
+  });
 });
 
 describe("compareReceipt: matching a receipt line to a list item", () => {

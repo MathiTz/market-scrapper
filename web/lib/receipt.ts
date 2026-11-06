@@ -82,8 +82,11 @@ const MIN_SCORE_OUTSIDE_LIST = 0.75;
 const STOPWORDS = new Set(["de", "da", "do", "das", "dos", "e", "com", "sem", "para", "tipo", "un", "und", "unid", "kg", "pct", "cx"]);
 const SIZE = /(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l)\b/;
 const PACK = /\b(\d+)\s*x\s*(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l)\b/;
+/** A size printed with no unit, glued to the word before it: "JUNGLE500" is 500 (g or ml, whichever the product has). */
+const BARE_SIZE = /[a-z](\d{3,4})(?!\d)/;
 
-type Size = { amount: number; unit: "g" | "ml"; packs: number };
+/** `unit` is null for a size printed without one ("JUNGLE500"): the amount is known, the unit is the product's own. */
+type Size = { amount: number; unit: "g" | "ml" | null; packs: number };
 
 const toBase = (value: string, unit: string): number => {
   const n = Number(value.replace(",", "."));
@@ -97,12 +100,20 @@ export function receiptSize(name: string): Size | null {
   const pack = PACK.exec(text);
   if (pack) return { amount: toBase(pack[2], pack[3]), unit: baseUnit(pack[3]), packs: Number(pack[1]) };
   const single = SIZE.exec(text);
-  return single ? { amount: toBase(single[1], single[2]), unit: baseUnit(single[2]), packs: 1 } : null;
+  if (single) return { amount: toBase(single[1], single[2]), unit: baseUnit(single[2]), packs: 1 };
+  const bare = BARE_SIZE.exec(text);
+  return bare ? { amount: Number(bare[1]), unit: null, packs: 1 } : null;
 }
+
+/**
+ * A receipt runs a size and the words around it together ("JUNGLE500TANG" for "Jungle 500ml Tangerina"), which would
+ * leave one word that matches nothing. Three digits or more between letters are a size, not part of a word.
+ */
+const glued = (text: string) => text.replace(/([a-z])(\d{3,})/g, "$1 $2").replace(/(\d{3,})([a-z])/g, "$1 $2");
 
 /** The words of a name that identify the product: no sizes, fillers, or bare numbers. */
 export function nameTokens(name: string): string[] {
-  const text = clean(name).replace(PACK, " ").replace(SIZE, " ");
+  const text = glued(clean(name).replace(PACK, " ").replace(SIZE, " "));
   return (text.match(/[a-z0-9]+/g) ?? [])
     .map((word) => ABBREVIATIONS[word] ?? word)
     .filter((word) => word.length >= 2 && !STOPWORDS.has(word) && !/^\d+$/.test(word));
@@ -116,7 +127,7 @@ function sizeAgrees(item: ReceiptItem, product: Product): boolean {
   if (!size) return product.pack_count === 1; // no size to check: only a single pack can be assumed
   if (size.packs !== product.pack_count) return false;
   if (product.unit === "un") return true; // we know no size for it: nothing to contradict
-  return product.unit === size.unit && Math.abs(product.amount - size.amount) <= size.amount * 0.01;
+  return (size.unit === null || product.unit === size.unit) && Math.abs(product.amount - size.amount) <= size.amount * 0.01;
 }
 
 /** The words of a product that a receipt line can be matched against: its name, brand and variant. */
