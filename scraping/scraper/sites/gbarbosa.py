@@ -5,7 +5,7 @@ GBarbosa runs on VTEX (see :mod:`scraper.vtex`). The site has a single price lis
 about 43,000 products, most of them not food, so only the grocery and household departments are read. The daily
 run collects the discounted ones; the weekly full run (``full_catalogue``) reads every product, each department a
 subcategory at a time: Mercearia alone has almost 10,000 products, past what the search API returns for one
-category. Prices are the everyday ones, with the list price and percentage shown when a product is discounted.
+category. A subcategory still past that limit (Bomboniere, 2,648) is read one sub-subcategory at a time. Prices are the everyday ones, with the list price and percentage shown when a product is discounted.
 
 The pickup-points API lists no branches for this chain, so it has none in the app until a source for them is found.
 """

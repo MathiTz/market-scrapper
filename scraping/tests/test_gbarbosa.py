@@ -25,6 +25,15 @@ TREE = json.dumps([
     ]},
 ])
 
+TREE3 = json.dumps([
+    {"name": "Mercearia", "url": "https://www.gbarbosa.com.br/mercearia", "children": [
+        {"name": "Bomboniere", "url": "https://www.gbarbosa.com.br/mercearia/bomboniere", "children": [
+            {"name": "Doces", "url": "https://www.gbarbosa.com.br/mercearia/bomboniere/doces"},
+            {"name": "Balas", "url": "https://www.gbarbosa.com.br/mercearia/bomboniere/balas-e-pastilhas"},
+        ]},
+    ]},
+])
+
 
 class TestGBarbosa(unittest.TestCase):
     def setUp(self):
@@ -61,6 +70,34 @@ class TestGBarbosa(unittest.TestCase):
         self.assertEqual(asked, ["category-1/mercearia/category-2/temperos", "category-1/mercearia/category-2/molhos-e-condimentos",
                                  "category-1/peixaria"])
         self.assertEqual(len(offers), 3)
+
+    def test_a_subcategory_past_the_page_limit_is_read_one_sub_subcategory_at_a_time(self):
+        asked = []
+
+        def fetch_raw(url, params=None):
+            if "category/tree/3" in url:
+                return TREE3
+            asked.append(url.split("/product_search/")[1])
+            return FIXTURE if params["page"] == 1 else json.dumps({"products": []})
+
+        self.scraper.page_size = 3  # the fixture's three products fill a page, so the limit below is reached
+        with patch("scraper.vtex.MAX_PAGES", 1), patch.object(GBarbosaScraper, "fetch_raw", side_effect=fetch_raw):
+            offers = self.scraper._category_offers("mercearia/category-2/bomboniere", cap=100)
+        self.assertEqual(asked, [
+            "category-1/mercearia/category-2/bomboniere",
+            "category-1/mercearia/category-2/bomboniere/category-3/doces",
+            "category-1/mercearia/category-2/bomboniere/category-3/balas-e-pastilhas",
+        ])
+        self.assertEqual(len(offers), 3)  # the same three products in each: counted once
+
+    def test_the_daily_offers_run_does_not_split_further(self):
+        self.scraper.full_catalogue = False
+        self.scraper.only_discounted = False  # so the page limit is what ends the read, not a product without a deal
+        self.scraper.page_size = 3
+        fetch = patch.object(GBarbosaScraper, "fetch_raw", return_value=FIXTURE)
+        with patch("scraper.vtex.MAX_PAGES", 1), fetch as mock_fetch, self.assertLogs("scraper.vtex", level=logging.WARNING):
+            self.scraper._category_offers("mercearia/category-2/bomboniere", cap=100)
+        self.assertFalse(any("tree" in c.args[0] for c in mock_fetch.call_args_list))
 
     def test_the_price_the_list_price_and_the_barcode_are_read(self):
         with patch.object(GBarbosaScraper, "fetch_raw", return_value=FIXTURE):

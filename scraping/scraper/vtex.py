@@ -55,7 +55,8 @@ def _image_url(images: Optional[list]) -> Optional[str]:
 UNTRACKED_STOCK = 10000
 
 # The search API answers 400 for any page past this one, so a category yields at most MAX_PAGES * page_size
-# (2,500) products however many it has (Atacadão's "mercearia" has about 17,000).
+# (2,500) products however many it has (Atacadão's "mercearia" has about 17,000). A subcategory that still has
+# more (GBarbosa's "bomboniere" has 2,648) is read one sub-subcategory at a time in the full run.
 MAX_PAGES = 50
 
 # Fortaleza's centre: real branches are returned ranked by distance from here, with their own coordinates,
@@ -78,6 +79,8 @@ class VtexScraper(BaseScraper):
     # fits under the limit; the departments keep to ``categories``. Off, ``categories`` are read as they are.
     # Only the full run needs it: the deals of a department fit under the limit.
     split_subcategories = False
+    # The category tree to its third level, read the first time a subcategory is past the page limit.
+    _tree3: Optional[dict] = None
 
     @property
     def _discounted_only(self) -> bool:
@@ -127,6 +130,35 @@ class VtexScraper(BaseScraper):
             raise last_error
         return results[:limit]
 
+    def _third_level_paths(self, path: str) -> List[str]:
+        """The sub-subcategories of a subcategory path (``mercearia/category-2/bomboniere``), for one that has more
+        products than the search API returns. Empty for any other path, or when the tree cannot be read."""
+        parts = path.split("/")
+        if len(parts) != 3 or parts[1] != "category-2":
+            return []
+        if self._tree3 is None:
+            try:
+                tree = json.loads(self.fetch_raw(self.base_url + "/api/catalog_system/pub/category/tree/3"))
+            except Exception as exc:
+                logger.warning("[%s] Could not read the category tree (%s)", self.site_name, exc)
+                return []
+            self._tree3 = {
+                (_slug(d.get("url", "")), _slug(c.get("url", ""))): [_slug(g.get("url", "")) for g in c.get("children") or []]
+                for d in tree for c in d.get("children") or []
+            }
+        return [f"{path}/category-3/{g}" for g in self._tree3.get((parts[0], parts[2]), []) if g]
+
+    def _read_each(self, paths: List[str], cap: int) -> List[ProductPrice]:
+        """The products of several category paths, without repeats, up to ``cap``."""
+        offers: List[ProductPrice] = []
+        seen = set()
+        for path in paths:
+            for offer in self._category_offers(path, cap):
+                if offer.url not in seen:
+                    seen.add(offer.url)
+                    offers.append(offer)
+        return offers[:cap]
+
     def _category_offers(self, slug: str, cap: int) -> List[ProductPrice]:
         offers: List[ProductPrice] = []
         page = 1
@@ -135,6 +167,11 @@ class VtexScraper(BaseScraper):
             params["sort"] = "discount:desc"
         while len(offers) < cap:
             if page > MAX_PAGES:
+                deeper = self._third_level_paths(slug) if self.full_catalogue else []
+                if deeper:
+                    logger.info("[%s] %s: past the API's page limit, reading its %d sub-subcategories",
+                                self.site_name, slug, len(deeper))
+                    return self._read_each(deeper, cap)
                 logger.warning("[%s] %s: stopped at the API's page limit (%d products read); the category has more",
                                self.site_name, slug, MAX_PAGES * self.page_size)
                 break
