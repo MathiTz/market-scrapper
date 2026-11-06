@@ -285,12 +285,56 @@ def run_all_products(site: Optional[str] = None, limit: int = DEFAULT_LIMIT) -> 
     return total
 
 
-def run_all_offers(site: Optional[str] = None, limit: int = DEFAULT_LIMIT) -> Dict[str, int]:
+def _listed_run_of(scraper) -> Optional[str]:
+    """The run id that makes up the chain's current list (its last full run), if it has one."""
+    from services.public_api import _listed_runs  # public_api reads this module's tables; import it late
+
+    db = SessionLocal()
+    try:
+        return _listed_runs(db, {scraper.site_name: scraper.site_key}).get(scraper.site_name)
+    finally:
+        db.close()
+
+
+def expire_deals(site_name: str, run_id: str) -> int:
+    """Put a chain's deals back to their regular price, so a deal that ended does not outlive its offers run.
+
+    Only for a chain whose list is kept between runs: an offers-only run re-applies the deals still on, but cannot
+    see one that ended (it is simply absent), so every deal on the list is first reverted to the regular price.
+    The next step saves today's deals over them. Returns how many prices were put back.
+    """
+    db = SessionLocal()
+    try:
+        store = db.query(Store).filter(Store.name == site_name).first()
+        if store is None:
+            return 0
+        rows = (db.query(Price).filter(Price.store_id == store.id, Price.run_id == run_id,
+                                       Price.offer.isnot(None), Price.regular_price.isnot(None)).all())
+        count = 0
+        for row in rows:
+            if row.regular_price and row.regular_price > row.price:
+                _upsert_price(db, row.product_id, row.store_id,
+                              ProductPrice(store_name=site_name, product_name="", price=row.regular_price,
+                                           url=row.url, stock=row.stock), run_id)
+                count += 1
+        db.commit()
+        return count
+    finally:
+        db.close()
+
+
+def run_all_offers(site: Optional[str] = None, limit: int = DEFAULT_LIMIT, full: bool = False) -> Dict[str, int]:
     """Run scrapers on their offers pages (no query) and persist results.
+
+    A chain that can read its whole catalogue (``has_full_catalogue``) does so only when ``full`` is set (the
+    weekly run), and that run becomes the chain's list. Otherwise it reads just its offers and lays them over the
+    list the last full run made: the same run id, so the rest of the list stays, with ended deals put back to the
+    regular price. A chain with no full catalogue is unaffected: every run is its whole list.
 
     Args:
         site: Optional site key; if None, run all sites.
         limit: Max results per site.
+        full: Read the whole catalogue of the chains that can.
 
     Returns:
         Dict mapping site_key -> number of price records saved.
@@ -311,9 +355,16 @@ def run_all_offers(site: Optional[str] = None, limit: int = DEFAULT_LIMIT) -> Di
         logger.info("Scraping offers from %s...", scraper.site_name)
         start_time = time.monotonic()
         run_id = uuid.uuid4().hex  # one id per site and run: the prices it saves belong to this list
+        scraper.full_catalogue = full and scraper.has_full_catalogue
+        overlay = scraper.has_full_catalogue and scraper.has_deals and not scraper.full_catalogue
+        if overlay:
+            run_id = _listed_run_of(scraper) or run_id  # no full run yet: this one starts the list
         try:
             results = scraper.scrape("", limit=limit)
             logger.info("%s returned %d results", scraper.site_name, len(results))
+            if overlay and results:
+                logger.info("%s: %d ended deal(s) put back to the regular price",
+                            scraper.site_name, expire_deals(scraper.site_name, run_id))
             saved = save_scraped_results(results, run_id=run_id)
             results_by_site[scraper.site_key] = saved
             _record_attempt(

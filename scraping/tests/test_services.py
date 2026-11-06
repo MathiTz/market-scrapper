@@ -13,6 +13,129 @@ from services.scraper_service import (  # noqa: E402
 from scraper.base import ProductPrice  # noqa: E402
 
 
+class TestFullAndOffersRuns(unittest.TestCase):
+    """A chain with a whole catalogue: the weekly full run makes its list, the daily offers run lays over it."""
+
+    def setUp(self):
+        from unittest.mock import patch
+        from scraper.base import BaseScraper
+
+        test = self
+        test.round = []
+
+        class OverlayChain(BaseScraper):
+            site_name = "Overlay Chain"
+            site_key = "overlay_chain"
+            has_full_catalogue = True
+
+            def scrape(self, query="", limit=0):
+                return list(test.round)
+
+        patcher = patch.dict("scraper.sites.SCRAPER_MAP", {"overlay_chain": OverlayChain})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(self.forget)
+
+    def forget(self):
+        """The in-memory database is shared by the whole module: leave nothing of this chain behind."""
+        from models import Price, PriceHistory, Product, ScrapeAttempt, SessionLocal, Store
+
+        db = SessionLocal()
+        try:
+            store = db.query(Store).filter(Store.name == "Overlay Chain").first()
+            if store is not None:
+                product_ids = [p.product_id for p in db.query(Price).filter(Price.store_id == store.id)]
+                db.query(Price).filter(Price.store_id == store.id).delete()
+                db.query(PriceHistory).filter(PriceHistory.store_id == store.id).delete()
+                if product_ids:
+                    db.query(Product).filter(Product.id.in_(product_ids)).delete(synchronize_session=False)
+                db.delete(store)
+            db.query(ScrapeAttempt).filter(ScrapeAttempt.site_key == "overlay_chain").delete()
+            db.commit()
+        finally:
+            db.close()
+
+    @staticmethod
+    def entry(name, price, regular=None, offer=None):
+        return ProductPrice("Overlay Chain", name, price, "http://example.com/" + name,
+                            regular_price=regular, offer=offer)
+
+    def prices(self):
+        from models import Price, SessionLocal, Store
+
+        db = SessionLocal()
+        try:
+            store = db.query(Store).filter(Store.name == "Overlay Chain").one()
+            return {p.product.name: (p.price, p.offer, p.run_id)
+                    for p in db.query(Price).filter(Price.store_id == store.id).all()}
+        finally:
+            db.close()
+
+    def listed(self):
+        from models import SessionLocal
+        from services.public_api import _listed_runs
+
+        db = SessionLocal()
+        try:
+            return _listed_runs(db, {"Overlay Chain": "overlay_chain"}).get("Overlay Chain")
+        finally:
+            db.close()
+
+    def test_offers_run_keeps_the_list_updates_deals_and_puts_ended_ones_back(self):
+        self.round = [self.entry("Arroz", 5.0), self.entry("Feijao", 8.0), self.entry("Cafe", 2.0, 4.0, "50% OFF")]
+        run_all_offers(site="overlay_chain", full=True)
+        full_run = self.listed()
+        self.assertIsNotNone(full_run)
+
+        self.round = [self.entry("Feijao", 6.0, 8.0, "25% OFF"), self.entry("Novo", 1.0, 2.0, "50% OFF")]
+        run_all_offers(site="overlay_chain")
+
+        prices = self.prices()
+        self.assertEqual(prices["Arroz"], (5.0, None, full_run))  # not an offer: stays on the list at its price
+        self.assertEqual(prices["Feijao"], (6.0, "25% OFF", full_run))  # a new deal
+        self.assertEqual(prices["Cafe"], (4.0, None, full_run))  # its deal ended: back to the regular price
+        self.assertEqual(prices["Novo"], (1.0, "50% OFF", full_run))  # a deal on a product the list lacked
+        self.assertEqual(self.listed(), full_run)  # the list is still the full run's
+
+    def test_the_next_full_run_replaces_the_list(self):
+        self.round = [self.entry("Arroz", 5.0), self.entry("Feijao", 8.0)]
+        run_all_offers(site="overlay_chain", full=True)
+        first = self.listed()
+        self.round = [self.entry("Arroz", 5.5), self.entry("Macarrao", 3.0)]
+        run_all_offers(site="overlay_chain", full=True)
+        second = self.listed()
+        self.assertNotEqual(first, second)
+        prices = self.prices()
+        self.assertEqual(prices["Arroz"][2], second)
+        self.assertEqual(prices["Feijao"][2], first)  # no longer seen: off the list
+
+    def test_an_offers_run_before_any_full_run_starts_the_list(self):
+        self.round = [self.entry("Arroz", 5.0)]
+        run_all_offers(site="overlay_chain")
+        self.assertIsNotNone(self.listed())
+        self.assertEqual(self.prices()["Arroz"][2], self.listed())
+
+    def test_a_chain_without_a_full_catalogue_is_unchanged(self):
+        from scraper.sites import SCRAPER_MAP
+
+        SCRAPER_MAP["overlay_chain"].has_full_catalogue = False
+        self.round = [self.entry("Arroz", 5.0)]
+        run_all_offers(site="overlay_chain")
+        first = self.listed()
+        self.round = [self.entry("Arroz", 5.0), self.entry("Feijao", 8.0)]
+        run_all_offers(site="overlay_chain")
+        self.assertNotEqual(self.listed(), first)  # each run is the whole list
+
+
+class TestFreshnessWindow(unittest.TestCase):
+    def test_a_chain_read_in_full_only_weekly_keeps_its_prices_current_for_a_week(self):
+        from services.public_api import TTL_HOURS, _ttl_hours
+
+        for weekly in ("Carnaúba Supermercados", "Atacadão", "Sams Club", "GBarbosa", "Mercadinho São Luiz"):
+            self.assertEqual(_ttl_hours(weekly), 24 * 8, weekly)
+        self.assertEqual(_ttl_hours("Pinheiro Supermercado"), TTL_HOURS)  # every run is its whole list
+
+
 class TestSaveDealDetails(unittest.TestCase):
     def test_regular_price_and_offer_label_are_stored(self):
         from models import Price, SessionLocal

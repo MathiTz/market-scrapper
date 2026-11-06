@@ -16,6 +16,7 @@ class AtacadaoScraper(VtexScraper):
     base_url = "https://www.atacadao.com.br"
     offers_url = base_url
     only_discounted = False
+    has_deals = False  # nothing to find on a daily run: it is read in full, once a week
     categories = (
         "mercearia", "frios-e-congelados", "bebidas", "higiene-e-perfumaria", "limpeza",
         "hortifruti", "carnes-aves-e-peixes", "padaria-e-matinais",

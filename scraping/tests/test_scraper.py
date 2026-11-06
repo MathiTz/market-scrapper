@@ -537,8 +537,8 @@ class TestSamsClubScraper(unittest.TestCase):
         self.assertEqual(len(self.scraper._category_offers("bebidas", cap=100)), 2)
 
     @patch.object(SamsClubScraper, "fetch_raw")
-    def test_reads_the_whole_catalogue_by_default_not_only_the_discounted(self, mock_fetch):
-        self.assertFalse(self.scraper.only_discounted)
+    def test_the_full_run_reads_the_whole_catalogue_not_only_the_discounted(self, mock_fetch):
+        self.scraper.full_catalogue = True
         self.assertTrue(self.scraper.split_subcategories)
         mock_fetch.return_value = json.dumps({"products": self.products["discounted"] + self.products["not_discounted"]})
         offers = self.scraper._category_offers("bebidas/category-2/cervejas", cap=100)
@@ -548,10 +548,9 @@ class TestSamsClubScraper(unittest.TestCase):
 
     @patch.object(SamsClubScraper, "fetch_raw")
     def test_scrape_spans_categories_without_duplicates(self, mock_fetch):
-        self.scraper.split_subcategories = False  # otherwise the category tree is read first
         mock_fetch.return_value = json.dumps({"products": self.products["discounted"] + self.products["not_discounted"]})
         results = self.scraper.scrape()
-        self.assertEqual(len(results), 4)  # the same products come back for every category
+        self.assertEqual(len(results), 3)  # the same products come back for every category
         self.assertEqual(mock_fetch.call_count, len(self.scraper.categories))
 
     @patch.object(SamsClubScraper, "fetch_raw", side_effect=RuntimeError("blocked"))
@@ -679,6 +678,39 @@ class TestMercadinhoScraper(unittest.TestCase):
                 patch.object(MercadinhoScraper, "_scrape_cards", return_value=[card]) as cards:
             self.assertEqual(scraper.scrape(), [card])
             cards.assert_called_once()
+
+
+class TestMercadappModes(unittest.TestCase):
+    def test_the_daily_run_reads_only_the_offers_and_the_full_run_reads_the_catalog(self):
+        from scraper.base import ProductPrice
+
+        deal = ProductPrice("Mercadinho São Luiz", "Oferta", 1.0, "u", regular_price=2.0, offer="50% OFF")
+        everything = [deal, ProductPrice("Mercadinho São Luiz", "Comum", 3.0, "u")]
+        scraper = MercadinhoScraper()
+        with patch.object(MercadinhoScraper, "_scrape_catalog", return_value=everything) as catalog, \
+                patch.object(MercadinhoScraper, "_scrape_json", return_value=[deal]):
+            self.assertEqual(scraper.scrape(), [deal])
+            catalog.assert_not_called()
+            scraper.full_catalogue = True
+            self.assertEqual(scraper.scrape(), everything)
+            catalog.assert_called_once()
+
+
+class TestVtexModes(unittest.TestCase):
+    def test_the_daily_run_reads_discounts_only_and_whole_departments(self):
+        from scraper.sites.gbarbosa import GBarbosaScraper
+
+        for cls in (SamsClubScraper, GBarbosaScraper):
+            scraper = cls()
+            self.assertTrue(scraper._discounted_only, cls)
+            self.assertEqual(scraper._category_paths(), list(cls.categories))  # no category tree read
+            scraper.full_catalogue = True
+            self.assertFalse(scraper._discounted_only, cls)
+
+    def test_atacadao_has_no_deals_to_find_so_its_run_is_always_the_price_list(self):
+        scraper = AtacadaoScraper()
+        self.assertFalse(scraper.has_deals)
+        self.assertFalse(scraper._discounted_only)
 
 
 class TestMercadappBranches(unittest.TestCase):

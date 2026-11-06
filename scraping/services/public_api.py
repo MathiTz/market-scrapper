@@ -45,6 +45,9 @@ logger = logging.getLogger(__name__)
 FORTALEZA = timezone(timedelta(hours=-3))
 CITY = "Fortaleza"
 TTL_HOURS = SCRAPE_INTERVAL_HOURS * 3  # an offer is stale after missing ~3 scheduled scrapes
+# A chain that reads its whole catalogue only weekly (scraper.has_full_catalogue) confirms most prices once a week:
+# a week and a day, so a price the last full run saw is not called stale while the next one is still due.
+FULL_CATALOGUE_TTL_HOURS = 24 * 8
 FLYER_CACHE_SECONDS = 30 * 60
 
 _SIZE_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*(kg|g|ml|l)\b")
@@ -343,6 +346,14 @@ def assai_encartes() -> list:
         return scraper.fetch_encartes()
 
     return _cached_encartes("Assaí", fetch)
+
+
+def _ttl_hours(store_name: str) -> int:
+    """How long a price of this chain counts as current without being seen again."""
+    from scraper.sites import ALL_SCRAPERS
+
+    weekly = any(cls.site_name == store_name and cls.has_full_catalogue for cls in ALL_SCRAPERS)
+    return max(TTL_HOURS, FULL_CATALOGUE_TTL_HOURS) if weekly else TTL_HOURS
 
 
 def _site_keys() -> Dict[str, str]:
@@ -664,7 +675,7 @@ def build_public(db: Session, q: str = "", network: str = "", channel: str = "",
                 "price_observed_at": observed, "source_checked_at": observed,
                 "valid_from": None, "valid_until": None, "collected_at": observed,
                 "source_url": price.url or store.website or "", "method": "automatic",
-                "published": 1, "ttl_hours": TTL_HOURS, "collection_error": None,
+                "published": 1, "ttl_hours": _ttl_hours(store.name), "collection_error": None,
             })
 
     errors = _last_errors(db, site_keys, runs)

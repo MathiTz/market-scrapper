@@ -102,6 +102,13 @@ class BaseScraper(ABC):
     site_name: str = "base"
     site_key: str = "base"
     base_url: str = ""
+    # A chain that can also read its whole catalogue (not just the deals) sets ``has_full_catalogue``. The service
+    # turns ``full_catalogue`` on for the weekly full run; left off, ``scrape`` reads only the offers (fast).
+    has_full_catalogue: bool = False
+    full_catalogue: bool = False
+    # False for a chain with no deals at all (Atacadão): its "offers" are its whole price list, so there is no
+    # cheaper daily run to make of it.
+    has_deals: bool = True
     # Keywords used to identify product/offer pages from homepage links
     product_url_keywords: Tuple[str, ...] = (
         "colecao", "categoria", "produtos", "busca", "ofertas",

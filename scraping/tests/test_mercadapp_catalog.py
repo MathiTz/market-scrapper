@@ -123,6 +123,7 @@ class TestCatalogWalk(unittest.TestCase):
 
     def test_the_catalog_is_what_scrape_returns_and_the_offers_are_only_a_fallback(self):
         product = ProductPrice("Carnaúba Supermercados", "Arroz", 5.0, "u")
+        self.scraper.full_catalogue = True  # the weekly run; the daily one reads only the offers
         with patch.object(CarnaubaScraper, "_scrape_catalog", return_value=[product]), \
                 patch.object(CarnaubaScraper, "_scrape_json") as offers:
             self.assertEqual(self.scraper.scrape(), [product])

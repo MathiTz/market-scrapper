@@ -60,6 +60,7 @@ export function catalogueToData(
   retailers: RetailerRef[],
   city: string,
   known: ReadonlySet<string>,
+  ttlOf: (retailerId: string) => number = () => TTL_HOURS,
 ): { products: Product[]; offers: Offer[] } {
   const byName = new Map(retailers.map((r) => [r.name, r]));
   const products: Product[] = [];
@@ -69,7 +70,7 @@ export function catalogueToData(
     const id = `catalogo-${item.key}`;
     const own = item.prices.flatMap((price) => {
       const retailer = byName.get(price.store);
-      return retailer ? offersOf(id, item.key, retailer, city, price) : [];
+      return retailer ? offersOf(id, item.key, retailer, city, price, ttlOf(retailer.id)) : [];
     });
     if (!own.length) continue;
     offers.push(...own);
@@ -95,7 +96,14 @@ export function catalogueToData(
   return { products, offers };
 }
 
-function offersOf(productId: string, key: string, retailer: RetailerRef, city: string, price: CataloguePrice): Offer[] {
+function offersOf(
+  productId: string,
+  key: string,
+  retailer: RetailerRef,
+  city: string,
+  price: CataloguePrice,
+  ttlHours: number,
+): Offer[] {
   const base = {
     product_id: productId,
     price_key: key,
@@ -116,7 +124,7 @@ function offersOf(productId: string, key: string, retailer: RetailerRef, city: s
     source_url: price.source_url ?? "",
     method: "automatic" as const,
     published: 1,
-    ttl_hours: TTL_HOURS,
+    ttl_hours: ttlHours,
     collection_error: null,
   };
   const id = `${productId}-${retailer.id}`;

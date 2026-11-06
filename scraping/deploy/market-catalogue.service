@@ -1,0 +1,15 @@
+[Unit]
+Description=Read the whole catalogue of the chains that have one (weekly), then validate and publish
+After=network-online.target exit-tunnel.service
+Wants=network-online.target exit-tunnel.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/market-scrapper/scraping
+# --full: Carnaúba, Mercadinho São Luiz, GBarbosa, Sam's Club and Atacadão read every product, about 4,000 to 8,000
+# each, which takes over an hour in all. Each such chain's run becomes its list; the twice-daily release
+# (market-release.service) then lays only the day's offers over it. Atacadão has no offers, so it is read here and
+# nowhere else. refresh.py publishes the stored lists of every chain, so this run republishes the others unchanged.
+ExecStart=/opt/market-scrapper/scraping/venv/bin/python refresh.py --full --only carnauba mercadinho gbarbosa sams_club atacadao
+TimeoutStartSec=4h
+Nice=5

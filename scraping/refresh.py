@@ -66,7 +66,7 @@ def evaluate_scrape(db, key: str, name: str, since_id: int) -> ChainResult:
     return ChainResult(key, name, "ok", attempt.items_found, seconds)
 
 
-def scrape_chain(key: str, scrape: Callable = run_all_offers) -> ChainResult:
+def scrape_chain(key: str, scrape: Callable = run_all_offers, full: bool = False) -> ChainResult:
     """Scrape one chain into the local database and say how it went."""
     name = SCRAPER_MAP[key].site_name
     db = SessionLocal()
@@ -76,7 +76,7 @@ def scrape_chain(key: str, scrape: Callable = run_all_offers) -> ChainResult:
         db.close()
     started = time.monotonic()
     try:
-        scrape(site=key)
+        scrape(site=key, full=full)
     except Exception as exc:  # run_all_offers records a failed scraper itself; this is anything around it
         return ChainResult(key, name, "failed", seconds=time.monotonic() - started, detail=str(exc)[:200])
     db = SessionLocal()
@@ -91,7 +91,7 @@ def _say(message: str) -> None:
 
 
 def run(only: Optional[List[str]] = None, skip: Optional[List[str]] = None, skip_scrape: bool = False, publish_data: bool = True,
-        force: bool = False, sync_locations: bool = False, out: Callable = _say) -> int:
+        force: bool = False, sync_locations: bool = False, full: bool = False, out: Callable = _say) -> int:
     dsn = config.PUBLISH_DATABASE_URL
     if publish_data and not dsn:
         out("PUBLISH_DATABASE_URL is not set in .env, so there is nowhere to publish. "
@@ -112,7 +112,7 @@ def run(only: Optional[List[str]] = None, skip: Optional[List[str]] = None, skip
         out(f"1/3 Scraping {len(keys)} chain(s)"
             + ("; a full run takes a few minutes (the Cometa flyers are the slow part)." if "cometa" in keys else "."))
         for key in keys:
-            result = scrape_chain(key)
+            result = scrape_chain(key, full=full)
             results.append(result)
             shown = f"{result.items} offers" if result.status in ("ok", "set aside") else result.status.upper()
             out(f"    {result.name:<22} {shown:<12} {result.seconds:>5.0f}s"
@@ -196,6 +196,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--only", nargs="+", metavar="CHAIN", help=f"scrape only these ({', '.join(SCRAPER_MAP)})")
     parser.add_argument("--skip", nargs="+", metavar="CHAIN",
                         help="scrape every chain except these (they keep the list their own timer stored)")
+    parser.add_argument("--full", action="store_true",
+                        help="read the whole catalogue of the chains that have one (the weekly run); "
+                             "without it they read only their offers and keep the rest of their list")
     parser.add_argument("--skip-scrape", action="store_true", help="validate and publish the stored prices")
     parser.add_argument("--no-publish", action="store_true", help="do everything except publish")
     parser.add_argument("--force", action="store_true", help="publish even if validation found errors")
@@ -209,7 +212,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     logging.basicConfig(level=level, format="%(levelname)s %(message)s")
     logging.getLogger("scrapling").setLevel(level)  # Scrapling sets up its own INFO logging
     return run(only=args.only, skip=args.skip, skip_scrape=args.skip_scrape, publish_data=not args.no_publish, force=args.force,
-              sync_locations=args.sync_locations)
+              sync_locations=args.sync_locations, full=args.full)
 
 
 if __name__ == "__main__":

@@ -128,6 +128,7 @@ def _parse_time(value) -> Optional[datetime]:
 
 class MercadappScraper(BaseScraper):
     brand_id: str = ""  # the platform's id for the chain; subclasses set it
+    has_full_catalogue = True
 
     product_url_keywords = (
         "produtos", "categoria", "ofertas", "promocoes",
@@ -165,13 +166,16 @@ class MercadappScraper(BaseScraper):
         return match.group(1)
 
     def scrape(self, query: str = "", limit: int = DEFAULT_LIMIT) -> List[ProductPrice]:
-        """The whole catalog; failing that, the offers the page loads; failing that, its rendered cards."""
-        logger.info("[%s] Starting scrape (limit=%d)", self.site_name, limit)
-        products = self._scrape_catalog(limit)
-        if products:
-            self._log_sample(products)
-            return products
-        logger.warning("[%s] The catalog could not be read; falling back to the offers", self.site_name)
+        """The offers the page loads (the whole catalog too when ``full_catalogue`` is on, as the weekly run does);
+        failing that, its rendered cards."""
+        logger.info("[%s] Starting scrape (limit=%d, %s)", self.site_name, limit,
+                    "whole catalog" if self.full_catalogue else "offers")
+        if self.full_catalogue:
+            products = self._scrape_catalog(limit)
+            if products:
+                self._log_sample(products)
+                return products
+            logger.warning("[%s] The catalog could not be read; falling back to the offers", self.site_name)
         products = self._scrape_json(limit)
         if products:
             self._log_sample(products)

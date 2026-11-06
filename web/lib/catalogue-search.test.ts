@@ -114,4 +114,14 @@ describe("searchCatalogue", () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ nope: 1 })));
     await expect(searchCatalogue("arroz", new AbortController().signal)).rejects.toThrow("unexpected");
   });
+  it("uses the retailer's own freshness window when given one", () => {
+    const { offers } = catalogueToData(
+      [item("k1", [price("Atacadão", 549)])],
+      retailers,
+      "Fortaleza",
+      new Set(),
+      () => 192,
+    );
+    expect(offers.every((o) => o.ttl_hours === 192)).toBe(true);
+  });
 });

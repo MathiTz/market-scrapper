@@ -8,7 +8,8 @@ VTEX stores expose a public JSON product search, so no browser is needed:
 Each product carries ``items[0].sellers[0].commertialOffer`` with ``Price``
 (what you pay), ``ListPrice`` (before any discount) and ``AvailableQuantity``.
 
-Two modes, chosen per store with ``only_discounted``:
+Two modes, chosen per store with ``only_discounted`` (and overridden by ``full_catalogue``, which the weekly
+full run turns on to read everything regardless):
 
 * True: read each category sorted by discount and stop at the first product
   without one, so only real offers are collected (Sam's Club);
@@ -67,12 +68,20 @@ _LOCATIONS_CENTER = "-38.5267;-3.7319"
 
 class VtexScraper(BaseScraper):
     page_size = 50
+    has_full_catalogue = True
+    # The daily run reads only the discounted products (sorted by discount, it stops at the first without one);
+    # the weekly full run (``full_catalogue``) reads everything. A chain with no deals sets this False.
     only_discounted = True
     categories: Tuple[str, ...] = ()
     # The search API stops at MAX_PAGES pages, so a department with more products than that loses the rest.
     # With this on, each department is read one subcategory at a time (``mercearia/category-2/arroz``), which
     # fits under the limit; the departments keep to ``categories``. Off, ``categories`` are read as they are.
+    # Only the full run needs it: the deals of a department fit under the limit.
     split_subcategories = False
+
+    @property
+    def _discounted_only(self) -> bool:
+        return self.only_discounted and not self.full_catalogue
 
     @property
     def search_url(self) -> str:
@@ -80,7 +89,7 @@ class VtexScraper(BaseScraper):
 
     def _category_paths(self) -> List[str]:
         """The category paths to read: ``categories``, or the subcategories of each when ``split_subcategories``."""
-        if not self.split_subcategories:
+        if not (self.split_subcategories and self.full_catalogue):
             return list(self.categories)
         try:
             tree = json.loads(self.fetch_raw(self.base_url + "/api/catalog_system/pub/category/tree/2"))
@@ -122,7 +131,7 @@ class VtexScraper(BaseScraper):
         offers: List[ProductPrice] = []
         page = 1
         params = {"count": self.page_size}
-        if self.only_discounted:
+        if self._discounted_only:
             params["sort"] = "discount:desc"
         while len(offers) < cap:
             if page > MAX_PAGES:
@@ -137,7 +146,7 @@ class VtexScraper(BaseScraper):
                 break
             for product in products:
                 price, list_price, quantity = self._commercial_offer(product)
-                if self.only_discounted and not list_price > price > 0:
+                if self._discounted_only and not list_price > price > 0:
                     return offers  # sorted by discount: everything after this has none
                 if quantity > 0 and price > 0:
                     offers.append(self._to_product_price(product, price, list_price, quantity))

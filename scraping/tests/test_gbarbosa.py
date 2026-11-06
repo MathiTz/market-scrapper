@@ -29,6 +29,7 @@ TREE = json.dumps([
 class TestGBarbosa(unittest.TestCase):
     def setUp(self):
         self.scraper = GBarbosaScraper()
+        self.scraper.full_catalogue = True  # the weekly run: every product, a subcategory at a time
         self.scraper.categories = ("mercearia", "peixaria")  # the real list has eleven; two cover both shapes
 
     def test_it_is_registered_under_its_key(self):

@@ -79,7 +79,7 @@ class TestRun(unittest.TestCase):
     def setUp(self):
         self.lines = []
         self.publish = MagicMock(return_value=True)
-        self.scrape = MagicMock(side_effect=lambda key: ok(key, key))
+        self.scrape = MagicMock(side_effect=lambda key, full=False: ok(key, key))
         self.live = MagicMock(return_value=3)
         self.sync_locations = MagicMock(return_value={})
         self.sync_points = MagicMock(return_value=7)
@@ -119,6 +119,13 @@ class TestRun(unittest.TestCase):
         self.run_refresh(only=["pinheiro", "cometa"])
         self.assertEqual([c.args[0] for c in self.scrape.call_args_list], ["pinheiro", "cometa"])
 
+    def test_full_is_passed_to_every_chain_scrape_and_off_by_default(self):
+        self.run_refresh()
+        self.assertTrue(all(c.kwargs["full"] is False for c in self.scrape.call_args_list))
+        self.scrape.reset_mock()
+        self.run_refresh(full=True)
+        self.assertTrue(all(c.kwargs["full"] is True for c in self.scrape.call_args_list))
+
     def test_skip_leaves_those_chains_out_of_the_scrape(self):
         self.assertEqual(self.run_refresh(skip=["atacadao"]), 0)
         scraped = [c.args[0] for c in self.scrape.call_args_list]
@@ -150,13 +157,13 @@ class TestRun(unittest.TestCase):
         self.sync_locations.assert_called_once_with(site_key=None)
 
     def test_a_chain_that_fails_is_a_warning_and_the_rest_still_publish(self):
-        self.scrape.side_effect = lambda key: ChainResult(key, key, "failed", detail="boom") if key == "cometa" else ok(key, key)
+        self.scrape.side_effect = lambda key, full=False: ChainResult(key, key, "failed", detail="boom") if key == "cometa" else ok(key, key)
         self.assertEqual(self.run_refresh(), 0)
         self.assertIn("WARNING cometa: failed", self.text())
         self.publish.assert_called_once()
 
     def test_when_no_chain_produced_fresh_data_nothing_is_published(self):
-        self.scrape.side_effect = lambda key: ChainResult(key, key, "failed", detail="down")
+        self.scrape.side_effect = lambda key, full=False: ChainResult(key, key, "failed", detail="down")
         self.assertEqual(self.run_refresh(), 1)
         self.publish.assert_not_called()
         self.assertIn("no chain produced fresh data", self.text())
@@ -243,7 +250,7 @@ class TestScrapeChain(unittest.TestCase):
         scrape = MagicMock(side_effect=RuntimeError("browser crashed"))
         result = refresh.scrape_chain("pinheiro", scrape=scrape)
         self.assertEqual((result.status, result.detail), ("failed", "browser crashed"))
-        scrape.assert_called_once_with(site="pinheiro")
+        scrape.assert_called_once_with(site="pinheiro", full=False)
 
 
 if __name__ == "__main__":

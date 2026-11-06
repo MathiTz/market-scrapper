@@ -309,12 +309,23 @@ export default function Market({ demo = false }: { demo?: boolean }) {
     () => new Set((result.data?.offers ?? []).flatMap((o) => (o.price_key ? [o.price_key] : []))),
     [result.data],
   );
+  // How long each chain's prices count as current (a chain read in full only weekly has a longer window).
+  const ttlByRetailer = useMemo(
+    () => new Map((result.data?.offers ?? []).map((o) => [o.retailer_id, o.ttl_hours] as const)),
+    [result.data],
+  );
   const fromCatalogue = useMemo(
     () =>
       result.data && catalogue.data && typed
-        ? catalogueToData(catalogue.data.results, result.data.retailers, result.data.regions?.[0] ?? BRAND.city, knownPriceKeys)
+        ? catalogueToData(
+            catalogue.data.results,
+            result.data.retailers,
+            result.data.regions?.[0] ?? BRAND.city,
+            knownPriceKeys,
+            (id) => ttlByRetailer.get(id) ?? 36,
+          )
         : null,
-    [result.data, catalogue.data, typed, knownPriceKeys],
+    [result.data, catalogue.data, typed, knownPriceKeys, ttlByRetailer],
   );
   // What the person should know about the server search, if anything.
   const catalogueNote = !typed || demo

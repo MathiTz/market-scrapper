@@ -22,9 +22,8 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
 | File | What it does |
 |---|---|
 | `exit-tunnel.service` | Keeps `ssh -D 127.0.0.1:1081` to the exit node up, restarting it if it drops |
-| `market-atacadao.service` / `.timer` | `refresh.py --only atacadao` once a day at 03:00 Fortaleza time: Atacadão's whole price list (~4,300 products, ~10 min). It has no deals, so once a day is enough, and the release skips it |
-| `market-gbarbosa.service` / `.timer` | `refresh.py --only gbarbosa` once a day at 04:00 Fortaleza time, an hour after Atacadão: GBarbosa's whole catalogue (~8,000 products, 11+ min). The release skips it |
-| `market-release.service` / `.timer` | `refresh.py --skip atacadao gbarbosa` (scrape every other chain, validate, publish, sync price history and catalogue) at 06:00 and 18:00 Fortaleza time |
+| `market-catalogue.service` / `.timer` | `refresh.py --full --only carnauba mercadinho gbarbosa sams_club atacadao` on Sundays at 02:00 Fortaleza time: the whole catalogue of the chains that have one (4,000 to 8,000 products each, over an hour in all). Each chain's run becomes its list for the week |
+| `market-release.service` / `.timer` | `refresh.py --skip atacadao` (scrape every chain's offers, validate, publish, sync price history and catalogue) at 06:00 and 18:00 Fortaleza time. The chains with a whole catalogue read only their deals here and lay them over the weekly list, putting ended deals back to the regular price; Atacadão has no deals, so only the weekly run reads it |
 | `market-locations.service` / `.timer` | `refresh.py --skip-scrape --sync-locations` at 07:00 and 19:00 Fortaleza, one hour after each release, so the branch lookup never shares the machine with a scrape |
 | `market-discovery.service` / `.timer` | `python -m services.store_discovery` on Sundays at 08:00 Fortaleza: looks on OpenStreetMap for supermarket chains we have no scraper for and saves them in `candidate_chains` (not published) |
 | `market-update.service` / `.timer` / `update.sh` | `git pull --ff-only` at 23:30, plus `pip install` when `requirements.txt` changed |
@@ -47,7 +46,7 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
    (`sqlite3 market.db ".backup /tmp/copy.db"`, then `scp`) so branch locations, store rows and price history carry
    over. **Only one machine may publish**: stop any other scheduler (`scheduler.py` on a laptop) first.
 6. **Units.** `cp scraping/deploy/*.service scraping/deploy/*.timer /etc/systemd/system/`, then
-   `systemctl daemon-reload` and `systemctl enable --now exit-tunnel market-release.timer market-atacadao.timer market-gbarbosa.timer market-locations.timer market-discovery.timer market-update.timer`.
+   `systemctl daemon-reload` and `systemctl enable --now exit-tunnel market-release.timer market-catalogue.timer market-locations.timer market-discovery.timer market-update.timer`.
 7. **First run by hand**, to see it work: `systemctl start market-release` and `journalctl -fu market-release`.
 
 ## Day to day
