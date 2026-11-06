@@ -308,15 +308,15 @@ def expire_deals(site_name: str, run_id: str) -> int:
         store = db.query(Store).filter(Store.name == site_name).first()
         if store is None:
             return 0
-        rows = (db.query(Price).filter(Price.store_id == store.id, Price.run_id == run_id,
-                                       Price.offer.isnot(None), Price.regular_price.isnot(None)).all())
+        rows = db.query(Price).filter(Price.store_id == store.id, Price.run_id == run_id, Price.offer.isnot(None)).all()
         count = 0
         for row in rows:
-            if row.regular_price and row.regular_price > row.price:
-                _upsert_price(db, row.product_id, row.store_id,
-                              ProductPrice(store_name=site_name, product_name="", price=row.regular_price,
-                                           url=row.url, stock=row.stock), run_id)
-                count += 1
+            # A deal can be a lower price ("25% OFF") or only a label ("Leve 3 e pague 2") that leaves the price as is.
+            back = row.regular_price if row.regular_price and row.regular_price > row.price else row.price
+            _upsert_price(db, row.product_id, row.store_id,
+                          ProductPrice(store_name=site_name, product_name="", price=back, url=row.url, stock=row.stock),
+                          run_id)
+            count += 1
         db.commit()
         return count
     finally:

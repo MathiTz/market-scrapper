@@ -97,6 +97,14 @@ class TestFullAndOffersRuns(unittest.TestCase):
         self.assertEqual(prices["Novo"], (1.0, "50% OFF", full_run))  # a deal on a product the list lacked
         self.assertEqual(self.listed(), full_run)  # the list is still the full run's
 
+    def test_a_label_only_deal_that_ended_loses_its_label_too(self):
+        self.round = [self.entry("Leite", 4.0, offer="Leve 3 e pague 2")]
+        run_all_offers(site="overlay_chain", full=True)
+        full_run = self.listed()
+        self.round = [self.entry("Pao", 1.0)]
+        run_all_offers(site="overlay_chain")
+        self.assertEqual(self.prices()["Leite"], (4.0, None, full_run))
+
     def test_the_next_full_run_replaces_the_list(self):
         self.round = [self.entry("Arroz", 5.0), self.entry("Feijao", 8.0)]
         run_all_offers(site="overlay_chain", full=True)
