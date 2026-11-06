@@ -1,0 +1,23 @@
+# Caddy in front of market-ocr.service. Replace HOST with the server's address in sslip.io form, for example
+# 203-0-113-7.sslip.io for 203.0.113.7 (sslip.io answers every such name with that IP, so Caddy can get a real
+# certificate without a domain of your own). Only the receipt route is forwarded; every other path is a 404,
+# and the service itself refuses a request without the shared secret.
+HOST {
+	@ocr {
+		method POST
+		path /api/receipt/ocr
+	}
+	handle @ocr {
+		request_body {
+			max_size 11MB
+		}
+		reverse_proxy 127.0.0.1:5051 {
+			transport http {
+				response_header_timeout 130s
+			}
+		}
+	}
+	handle {
+		respond "Not found" 404
+	}
+}

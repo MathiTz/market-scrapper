@@ -1,0 +1,19 @@
+[Unit]
+Description=Receipt OCR API (POST /api/receipt/ocr), reached by the Worker through Caddy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/opt/market-scrapper/scraping
+# config.py loads scraping/.env: OLLAMA_API_KEY (the vision provider) and OCR_SHARED_SECRET (what the Worker sends).
+# Two workers bound how many receipts are read at once; more wait in the queue. The timeout covers the provider's
+# retries (a reading is normally 2-6 s).
+ExecStart=/opt/market-scrapper/scraping/venv/bin/gunicorn --bind 127.0.0.1:5051 --workers 2 --timeout 120 local_api.app:app
+Restart=always
+RestartSec=5
+# The scrapers share this machine: a runaway OCR must not take a release down with it.
+MemoryMax=1G
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

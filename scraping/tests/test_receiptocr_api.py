@@ -90,6 +90,28 @@ class TestReceiptOcrNotInstalled(unittest.TestCase):
         self.assertIn("error", resp.get_json())
 
 
+class TestReceiptOcrSharedSecret(unittest.TestCase):
+    """With OCR_SHARED_SECRET set (the VPS), only the Worker, which sends it, can use the route."""
+
+    def setUp(self):
+        env = patch.dict(os.environ, {"OCR_SHARED_SECRET": "s3cret", "OLLAMA_API_KEY": "test-key"})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def post(self, headers=None):
+        return app.test_client().post("/api/receipt/ocr", data={}, headers=headers or {})
+
+    def test_a_request_without_the_secret_is_refused(self):
+        self.assertEqual(self.post().status_code, 401)
+
+    def test_a_wrong_secret_is_refused(self):
+        self.assertEqual(self.post({"X-OCR-Secret": "nope"}).status_code, 401)
+
+    def test_the_right_secret_gets_through_to_the_route_itself(self):
+        # no file in the form: the 400 (or 503 without the OCR extras) proves it passed the secret check
+        self.assertIn(self.post({"X-OCR-Secret": "s3cret"}).status_code, (400, 503))
+
+
 @unittest.skipUnless(OCR_INSTALLED, "optional OCR dependencies (requirements-ocr.txt) are not installed")
 class TestReceiptOcrRoute(unittest.TestCase):
     def setUp(self):

@@ -49,6 +49,27 @@ from a Brazilian one. Which chains go through it is set per chain with `PROXY_<C
    `systemctl daemon-reload` and `systemctl enable --now exit-tunnel market-release.timer market-catalogue.timer market-locations.timer market-discovery.timer market-update.timer`.
 7. **First run by hand**, to see it work: `systemctl start market-release` and `journalctl -fu market-release`.
 
+## Receipt OCR (optional)
+
+"Conferir com o cupom" reads a receipt photo with `POST /api/receipt/ocr`, which needs OpenCV and the vision
+provider's key, so it runs here and the Worker forwards to it (`api/src/app.ts`: per-address rate limit, 10 MB cap,
+shared secret). The path is Worker -> Caddy (HTTPS, only that route) -> gunicorn on `127.0.0.1:5051`.
+
+1. Packages: `scraping/venv/bin/pip install -r requirements.txt -r requirements-ocr.txt` (gunicorn is in the first).
+2. `.env` in `scraping/`: `OLLAMA_API_KEY=` (the provider key) and `OCR_SHARED_SECRET=` (make one with
+   `openssl rand -hex 24`). Without the secret the route is open to anyone who reaches it.
+3. Caddy (`apt install caddy`), then `scraping/deploy/Caddyfile.ocr` as `/etc/caddy/Caddyfile` with `HOST` replaced by
+   the server's address in sslip.io form (`203.0.113.7` -> `203-0-113-7.sslip.io`, no domain needed). Ports 80 and 443
+   must be open (Caddy gets its certificate on 80), here and in the provider's firewall.
+4. `cp scraping/deploy/market-ocr.service /etc/systemd/system/`, `systemctl daemon-reload`,
+   `systemctl enable --now market-ocr`.
+5. On the Worker (from `api/`): `npx wrangler secret put OCR_URL` (`https://<HOST>`) and
+   `npx wrangler secret put OCR_SECRET` (the same value as `OCR_SHARED_SECRET`), then `npm run deploy` (it builds the
+   UI with `VITE_RECEIPT_OCR=1`).
+
+Check: `curl -i -X POST https://<HOST>/api/receipt/ocr` answers 401 (the secret is required), any other path 404, and
+`journalctl -u market-ocr -n 50` shows the requests. The Worker answers 501 until both secrets are set.
+
 ## Day to day
 
 ```

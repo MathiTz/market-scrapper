@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "mkdir -p ../web/dist && wrangler dev",
     "build:ui": "cd ../web && npm run build",
-    "deploy": "npm run build:ui && wrangler deploy",
+    "deploy": "VITE_RECEIPT_OCR=1 npm run build:ui && wrangler deploy",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

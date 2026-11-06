@@ -24,7 +24,14 @@
     // back to HYPERDRIVE, which is fine only when that connection may write (local development).
     // (the comma after the block above belongs to that new entry)
     // , { "binding": "ACCOUNTS_HYPERDRIVE", "id": "<id>" }
-  ]
+  ],
+  // Receipt reading runs on the VPS (scraping/deploy/market-ocr.service behind Caddy): at most 6 photos a minute
+  // per address, so one visitor cannot burn the provider quota. Its address and the shared secret are secrets:
+  //   npx wrangler secret put OCR_URL     (https://<server-ip-with-dashes>.sslip.io)
+  //   npx wrangler secret put OCR_SECRET  (the same value as OCR_SHARED_SECRET in the server's scraping/.env)
+  "ratelimits": [
+    { "name": "RECEIPT_LIMITER", "namespace_id": "1001", "simple": { "limit": 6, "period": 60 } }
+  ],
   // Google sign-in: npx wrangler secret put GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (optional).
   // ACCOUNTS_PUBLIC_URL is only needed behind a proxy whose request origin is not the public one.
 }

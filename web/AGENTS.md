@@ -21,9 +21,11 @@ A Vite + React + TypeScript single-page app. There is no Next.js here.
   Dialogs stay native `<dialog>` elements opened through `useDialog`.
 - The shopping list's "Conferir com o cupom" (`components/receipt-check.tsx`) sends a receipt photo to
   `POST /api/receipt/ocr` and compares what it reads with the prices of the list's items (`lib/receipt.ts`,
-  `lib/receipt-api.ts`). That route exists only in the Flask API (`../scraping/local_api/app.py`: OpenCV and an
-  `OLLAMA_API_KEY`), which a Worker cannot host, so the Worker answers 501 and the UI is on only under `npm run dev`
-  or a build with `VITE_RECEIPT_OCR=1`. Do not enable it in a production build before the route has a host.
+  `lib/receipt-api.ts`). That route is Python (`../scraping/local_api/app.py`: OpenCV and an `OLLAMA_API_KEY`),
+  which a Worker cannot host: under `npm run dev` the Flask API serves it, and in production the Worker
+  (`../api/src/app.ts`) rate-limits and forwards the upload to the VPS (`../scraping/deploy/market-ocr.service`
+  behind Caddy), with a shared secret, answering 501 while `OCR_URL`/`OCR_SECRET` are unset. The UI is on under
+  `npm run dev` or a build with `VITE_RECEIPT_OCR=1` (set by `npm run deploy` in `../api`).
   A line is recognised by the barcode the receipt prints (`code`, from the OCR, check-digit validated), else by its name
   (`lib/product-match.ts`: abbreviations, clipped words, one misread letter, rare words weigh more, the price paid breaks
   a tie between sizes); with `scope: "catalogue"` it looks beyond the list.

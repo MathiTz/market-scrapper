@@ -2,10 +2,10 @@ import { z } from "zod";
 import type { ReceiptResult } from "./receipt";
 
 /**
- * Whether the receipt check is offered. POST /api/receipt/ocr exists only in the local Flask API
- * (scraping/local_api/app.py, which needs OpenCV and a provider key); the production Worker has no host for
- * it yet and answers 501. So it shows in development, and a production build opts in with
- * VITE_RECEIPT_OCR=1 once there is somewhere for it to run.
+ * Whether the receipt check is offered. POST /api/receipt/ocr is Python (scraping/local_api/app.py: OpenCV and a
+ * provider key): locally the Flask API serves it, and in production the Worker forwards it to the VPS
+ * (api/src/app.ts; answers 501 until OCR_URL and OCR_SECRET are set). So it shows in development, and a
+ * production build opts in with VITE_RECEIPT_OCR=1, which `npm run deploy` in api/ sets.
  */
 export const receiptOcrEnabled = import.meta.env.DEV || import.meta.env.VITE_RECEIPT_OCR === "1";
 

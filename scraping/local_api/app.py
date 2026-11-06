@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import hashlib
+import hmac
 import io
 import json
 import logging
@@ -403,6 +404,12 @@ def api_receipt_ocr():
     ``OLLAMA_API_KEY`` in the environment (or scraping/.env) and the optional
     OCR dependencies from requirements-ocr.txt.
     """
+    # On the VPS the Worker is the only caller (Caddy forwards this one route to it): it sends the shared secret,
+    # and a request without it is refused before anything is read. Unset, as in development, the route is open.
+    secret = os.environ.get("OCR_SHARED_SECRET")
+    if secret and not hmac.compare_digest(request.headers.get("X-OCR-Secret", ""), secret):
+        return jsonify({"error": "Não autorizado."}), 401
+
     if ReceiptExtractor is None:
         logger.warning("Receipt OCR unavailable (missing optional dependency): %s", _receipt_ocr_import_error)
         return jsonify({"error": "O OCR de cupons não está instalado. Instale requirements-ocr.txt."}), 503

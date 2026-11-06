@@ -18,6 +18,11 @@ export type Bindings = {
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   ACCOUNTS_PUBLIC_URL?: string;
+  /** Where the receipt OCR runs (the VPS, behind Caddy), and the secret it expects. Without both: 501. */
+  OCR_URL?: string;
+  OCR_SECRET?: string;
+  /** Cloudflare's rate-limit binding (see wrangler.jsonc); absent in tests and local development. */
+  RECEIPT_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> };
 };
 
 type Deps = {
@@ -39,6 +44,11 @@ export const HISTORY_MAX_KEYS = 30;
 // A search result changes only when a scrape is published, so a minute of reuse is invisible.
 const SEARCH_CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=300";
 const PRICE_KEY = /^[0-9a-f]{32}$/;
+
+// The photo may be 10 MB (the VPS refuses more); the form around it adds a little.
+const RECEIPT_UPLOAD_MAX_BYTES = 10 * 1024 * 1024 + 64 * 1024;
+// The VPS reads a receipt in 2-6 s normally; its own provider retries can stretch that.
+const RECEIPT_TIMEOUT_MS = 120_000;
 
 export function createApp({ store, accounts, fetchImpl = fetch, now }: Deps) {
   const app = new Hono<{ Bindings: Bindings }>();
@@ -158,12 +168,51 @@ export function createApp({ store, accounts, fetchImpl = fetch, now }: Deps) {
   app.delete("/api/session", (c) => c.json({ ok: true }));
   app.post("/api/session", (c) => c.json({ error: "Login depende da integração com o backend." }, 501));
 
-  // Reading a receipt photo runs in the Python local API (scraping/local_api/app.py: OpenCV and a provider key),
-  // which a Worker cannot host. Until it has a production home, say so (the UI is off in production builds
-  // too, see receiptOcrEnabled in web/lib/receipt-api.ts) rather than answering a bare 404.
-  app.post("/api/receipt/ocr", (c) =>
-    c.json({ error: "A leitura de cupons ainda não está disponível nesta versão." }, 501),
-  );
+  // Reading a receipt photo runs in Python (scraping/local_api/app.py: OpenCV and a provider key), which a Worker
+  // cannot host, so it runs on the VPS behind Caddy (scraping/deploy/Caddyfile.ocr) and this route forwards the
+  // upload there. It costs a provider call per photo, so it is rate-limited per address, refused when too big,
+  // and sends the shared secret the VPS requires. Not configured (OCR_URL/OCR_SECRET unset): a plain 501.
+  app.post("/api/receipt/ocr", async (c) => {
+    const { OCR_URL, OCR_SECRET, RECEIPT_LIMITER } = c.env;
+    const fail = (message: string, status: 400 | 413 | 429 | 501 | 502, headers: Record<string, string> = {}) =>
+      c.json({ error: message }, status, { "Cache-Control": "no-store", ...headers });
+    if (!OCR_URL || !OCR_SECRET) return fail("A leitura de cupons ainda não está disponível nesta versão.", 501);
+
+    if (RECEIPT_LIMITER) {
+      const { success } = await RECEIPT_LIMITER.limit({ key: c.req.header("CF-Connecting-IP") ?? "unknown" });
+      if (!success)
+        return fail("Muitas leituras de cupom agora. Tente de novo em instantes.", 429, { "Retry-After": "60" });
+    }
+
+    const body = await c.req.arrayBuffer();
+    if (body.byteLength === 0) return fail("Envie uma imagem do cupom no campo 'image'.", 400);
+    if (body.byteLength > RECEIPT_UPLOAD_MAX_BYTES) return fail("A imagem do cupom é grande demais (máximo 10 MB).", 413);
+
+    let upstream: Response;
+    try {
+      upstream = await fetchImpl(new URL("/api/receipt/ocr", OCR_URL).toString(), {
+        method: "POST",
+        headers: { "Content-Type": c.req.header("Content-Type") ?? "", "X-OCR-Secret": OCR_SECRET },
+        body,
+        signal: AbortSignal.timeout(RECEIPT_TIMEOUT_MS),
+      });
+    } catch (error) {
+      console.error("Receipt OCR host unreachable:", (error as Error)?.message);
+      return fail("Não foi possível ler o cupom agora.", 502);
+    }
+    if (upstream.status === 401) {
+      // The VPS does not know our secret: a deploy mistake, nothing the visitor can fix.
+      console.error("Receipt OCR host refused the shared secret");
+      return fail("O serviço de leitura de cupons está indisponível agora.", 502);
+    }
+    // The VPS's own answer (the receipt, or its Portuguese error) goes back as it is; only these headers do.
+    const headers = new Headers({ "Cache-Control": "no-store" });
+    for (const name of ["Content-Type", "Retry-After"]) {
+      const value = upstream.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    return new Response(upstream.body, { status: upstream.status, headers });
+  });
 
   app.all("/api/*", (c) => c.json({ error: "Não encontrado." }, 404));
   app.onError((error, c) => {

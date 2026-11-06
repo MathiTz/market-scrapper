@@ -402,6 +402,74 @@ describe("other routes", () => {
     expect(await response.json()).toEqual({ error: "A leitura de cupons ainda não está disponível nesta versão." });
   });
 
+  describe("with the receipt OCR host configured", () => {
+    const ocrEnv = { ...env, OCR_URL: "https://203-0-113-7.sslip.io", OCR_SECRET: "s3cret" };
+    const upload = (bytes = 100) => ({
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=x", "CF-Connecting-IP": "198.51.100.4" },
+      body: new Uint8Array(bytes),
+    });
+    const receipt = { items: [], flags: { bad_math: [], missing_lines: [], duplicate_lines: [] }, failed_tiles: [], degraded: false };
+
+    it("forwards the upload with the shared secret and returns the host's answer as it is", async () => {
+      const fetchImpl = vi.fn(async () => Response.json(receipt));
+      const { app } = appWith(null, fetchImpl as unknown as typeof fetch);
+      const response = await app.request("/api/receipt/ocr", upload(), ocrEnv);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(receipt);
+      const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+      expect(url).toBe("https://203-0-113-7.sslip.io/api/receipt/ocr");
+      expect(init.method).toBe("POST");
+      expect(init.headers).toEqual({ "Content-Type": "multipart/form-data; boundary=x", "X-OCR-Secret": "s3cret" });
+      expect((init.body as ArrayBuffer | Uint8Array).byteLength).toBe(100);
+    });
+
+    it("hands back the host's error status, message and Retry-After", async () => {
+      const fetchImpl = vi.fn(
+        async () => Response.json({ error: "Muitas leituras de cupom agora." }, { status: 429, headers: { "Retry-After": "12" } }),
+      );
+      const { app } = appWith(null, fetchImpl as unknown as typeof fetch);
+      const response = await app.request("/api/receipt/ocr", upload(), ocrEnv);
+      expect(response.status).toBe(429);
+      expect(response.headers.get("Retry-After")).toBe("12");
+      expect(await response.json()).toEqual({ error: "Muitas leituras de cupom agora." });
+    });
+
+    it("refuses an empty or oversized upload without calling the host", async () => {
+      const fetchImpl = vi.fn(async () => Response.json(receipt));
+      const { app } = appWith(null, fetchImpl as unknown as typeof fetch);
+      expect((await app.request("/api/receipt/ocr", upload(0), ocrEnv)).status).toBe(400);
+      expect((await app.request("/api/receipt/ocr", upload(10 * 1024 * 1024 + 70 * 1024), ocrEnv)).status).toBe(413);
+      expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
+    it("rate-limits per address before spending anything", async () => {
+      const fetchImpl = vi.fn(async () => Response.json(receipt));
+      const limit = vi.fn(async () => ({ success: false }));
+      const { app } = appWith(null, fetchImpl as unknown as typeof fetch);
+      const response = await app.request("/api/receipt/ocr", upload(), { ...ocrEnv, RECEIPT_LIMITER: { limit } });
+      expect(response.status).toBe(429);
+      expect(response.headers.get("Retry-After")).toBe("60");
+      expect(limit).toHaveBeenCalledWith({ key: "198.51.100.4" });
+      expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
+    it("answers 502 when the host is down, and when it does not accept our secret", async () => {
+      const down = vi.fn(async () => {
+        throw new Error("connect refused");
+      });
+      const refused = vi.fn(async () => Response.json({ error: "Não autorizado." }, { status: 401 }));
+      const quiet = vi.spyOn(console, "error").mockImplementation(() => {});
+      for (const fetchImpl of [down, refused]) {
+        const { app } = appWith(null, fetchImpl as unknown as typeof fetch);
+        const response = await app.request("/api/receipt/ocr", upload(), ocrEnv);
+        expect(response.status).toBe(502);
+        expect(typeof ((await response.json()) as { error: string }).error).toBe("string");
+      }
+      quiet.mockRestore();
+    });
+  });
+
   it("has a health check and a JSON 404 for unknown API paths", async () => {
     const { app } = appWith(null);
     expect(await (await app.request("/api/health", {}, env)).json()).toEqual({ ok: true });
